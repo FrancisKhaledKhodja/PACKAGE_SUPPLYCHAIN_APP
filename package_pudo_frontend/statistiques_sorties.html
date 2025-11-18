@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Statistiques sorties - SupplyChainApp</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <script src="https://d3js.org/d3.v7.min.js" defer></script>
+  <script src="js/stats_exit.js?v=1" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main class="layout" style="padding:2rem; font-size:1rem;">
+    <section class="card" style="flex:1;">
+      <h2 style="margin-top:0;">Recherche d'articles</h2>
+      <form id="form-search-stats" class="row" onsubmit="return false;" style="margin-bottom:1rem; gap:0.5rem;">
+        <input type="text" id="q-stats" placeholder="Code article, libellé, etc." style="flex:1;" />
+        <button id="btn-search-stats" type="submit">Rechercher</button>
+      </form>
+      <div id="results-meta-stats" class="row" style="justify-content:space-between; margin-bottom:0.5rem;">
+        <div id="results-count-stats" class="muted"></div>
+        <div></div>
+      </div>
+      <div class="card" style="margin-top:0.5rem;">
+        <div style="overflow:auto; max-height:70vh;">
+          <table id="tbl-items-stats" style="width:100%; border-collapse:collapse;">
+            <thead><tr id="thead-stats"></tr></thead>
+            <tbody id="tbody-stats"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" style="flex:1;">
+      <h2 style="margin-top:0;">Statistiques sorties</h2>
+      <p id="selected-article" class="muted">Aucun article sélectionné.</p>
+      <form id="form-filter-stats" class="row" onsubmit="return false;" style="margin-bottom:1rem; gap:0.5rem;">
+        <input type="text" id="type-exit" placeholder="Filtre type de sortie (lib_motif_mvt, optionnel)" style="flex:1;" />
+        <button id="btn-load-stats" type="submit">Recharger les statistiques</button>
+      </form>
+      <p id="stats-message" class="muted">Sélectionnez un article dans la liste de gauche pour afficher ses statistiques de sorties.</p>
+      <div class="card" style="margin-top:0.5rem; overflow:auto; max-height:30vh;">
+        <table id="tbl-stats-exit" style="width:100%; border-collapse:collapse;">
+          <thead><tr id="thead-stats-exit"></tr></thead>
+          <tbody id="tbody-stats-exit"></tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-top:0.5rem; overflow:auto;">
+        <svg id="stats-exit-chart" width="800" height="300"></svg>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Affectation technicien ↔️ PUDO</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <script src="js/technician_assignments.js" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main style="padding:2rem;">
+    <div class="layout" style="font-size:1rem;">
+      <aside class="card">
+        <h2 style="margin-top:0;">Filtres</h2>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="assign-q" class="muted">Recherche texte</label>
+          <input type="text" id="assign-q" placeholder="Technicien, code magasin, code PR, enseigne, ville..." />
+        </div>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="assign-store" class="muted">Code magasin</label>
+          <input type="text" id="assign-store" placeholder="Ex: 1234" />
+        </div>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="assign-pr" class="muted">Code point relais</label>
+          <input type="text" id="assign-pr" placeholder="Code PR" />
+        </div>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="assign-status" class="muted">Statut</label>
+          <input type="text" id="assign-status" placeholder="Ex: ouvert, fermé, actif..." />
+        </div>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="assign-team" class="muted">Équipe</label>
+          <select id="assign-team">
+            <option value="">Toutes les équipes</option>
+          </select>
+        </div>
+        <button id="assign-apply" type="button">Appliquer les filtres</button>
+      </aside>
+
+      <section class="card">
+        <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+          <div>
+            <h2 style="margin:0;">Affectation technicien ↔️ PUDO</h2>
+            <div id="assign-count" class="muted"></div>
+          </div>
+          <button id="assign-export" type="button">Exporter (CSV)</button>
+        </div>
+        <div style="overflow:auto; max-height:70vh;">
+          <table>
+            <thead>
+              <tr>
+                <th>Code magasin</th>
+                <th>Équipe</th>
+                <th>Technicien</th>
+                <th>Type de dépôt</th>
+                <th>Rôle PR</th>
+                <th>Code PR</th>
+                <th>Enseigne</th>
+                <th>Adresse point relais</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody id="assign-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

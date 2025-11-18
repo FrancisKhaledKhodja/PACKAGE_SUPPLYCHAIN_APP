@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Accueil - SupplyChainApp</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <script src="js/home.js" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main style="padding:2rem;">
+    <section class="card" style="margin-bottom:1.5rem;">
+      <h2 style="margin-top:0;">Mise à jour des données</h2>
+      <p id="update-status" class="muted">Chargement du statut des mises à jour...</p>
+      <div id="update-details" class="section"></div>
+      <button id="btn-update-data" type="button">Lancer la mise à jour</button>
+    </section>
+
+    <div class="layout" style="font-size:1rem;">
+      <section class="card">
+        <h2 style="margin-top:0;">Bienvenue</h2>
+        <p>Vous êtes connecté à SupplyChainApp, votre tableau de bord pour la gestion des points relais, magasins et articles.</p>
+        <ul>
+          <li><strong>Magasins &amp; points relais</strong> : rechercher les magasins et PR à proximité d'une adresse et visualiser la carte.</li>
+          <li><strong>Items</strong> : rechercher des articles, consulter leurs caractéristiques détaillées et leur nomenclature.</li>
+          <li><strong>Parc Helios</strong> : analyser le parc en production pour un article et visualiser les sites actifs sur la carte.</li>
+          <li><strong>Téléchargements</strong> : récupérer les derniers fichiers métier (annuaire PR, Chronopost, LM2S, carnet Chronopost).</li>
+          <li><strong>Sélection du technicien</strong> : consulter les magasins, leurs responsables et les points relais associés.</li>
+          <li><strong>Affectation technicien ↔️ PUDO</strong> : analyser et exporter les affectations technicien / point relais.</li>
+        </ul>
+      </section>
+      <section class="card">
+        <h2 style="margin-top:0;">Accès rapide</h2>
+        <p>Choisissez une section :</p>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.5rem;">
+          <a class="btn" href="stores.html" target="_blank" rel="noopener noreferrer">Magasins & points relais</a>
+          <a class="btn" href="items.html" target="_blank" rel="noopener noreferrer">Recherche items</a>
+          <a class="btn" href="helios.html" target="_blank" rel="noopener noreferrer">Parc Helios</a>
+          <a class="btn" href="downloads.html" target="_blank" rel="noopener noreferrer">Téléchargements</a>
+          <a class="btn" href="technician.html" target="_blank" rel="noopener noreferrer">Sélection du technicien</a>
+          <a class="btn" href="technician_assignments.html" target="_blank" rel="noopener noreferrer">Affectation technicien ↔️ PUDO</a>
+          <a class="btn" href="statistiques_sorties.html" target="_blank" rel="noopener noreferrer">Statistiques sorties</a>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

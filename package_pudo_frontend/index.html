@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>SupplyChainApp</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+</head>
+<body>
+  <header style="background:#1f2933; color:#fff; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; gap:1.5rem;">
+    <h1 style="margin:0; font-size:1.25rem;">
+      <span class="logo-scapp">
+        <span class="logo-part-supply">Supply</span>
+        <span class="logo-part-chain">Chain</span>
+        <span class="logo-part-app">App</span>
+      </span>
+    </h1>
+    <div style="display:flex; align-items:center; gap:1rem;">
+      <nav>
+        <a href="items.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Items</a>
+        <a href="stores.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Magasins</a>
+        <a href="downloads.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Téléchargements</a>
+        <a href="statistiques_sorties.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Statistiques sorties</a>
+      </nav>
+      <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
+    </div>
+  </header>
+
+  <main style="padding:2rem;">
+    <div class="card" style="max-width:400px; margin:0 auto;">
+      <h2 style="margin-top:0; color:var(--muted);">Connexion</h2>
+      <p style="margin-bottom:1rem;">Veuillez vous identifier pour accéder à SupplyChainApp.</p>
+      <form id="login-form" style="display:flex; flex-direction:column; gap:0.75rem;">
+        <input type="text" id="login" name="login" placeholder="Identifiant" required />
+        <input type="password" id="password" name="password" placeholder="Mot de passe" required />
+        <button type="submit">Se connecter</button>
+      </form>
+      <div id="login-message" class="muted" style="margin-top:0.75rem;"></div>
+    </div>
+  </main>
+  <script>
+    (function() {
+      const form = document.getElementById("login-form");
+      const input = document.getElementById("login");
+      const passwordInput = document.getElementById("password");
+      const message = document.getElementById("login-message");
+
+      if (!form || !input || !passwordInput) return;
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        message.textContent = "Connexion en cours...";
+
+        try {
+          const response = await fetch(API("/auth/login"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ login: input.value, password: passwordInput.value })
+          });
+
+          if (!response.ok) {
+            message.textContent = "Échec de la connexion (" + response.status + ").";
+            return;
+          }
+
+          const data = await response.json();
+          if (data && data.ok) {
+            message.textContent = "Connexion réussie, redirection...";
+            window.location.href = "home.html";
+          } else {
+            message.textContent = "Identifiants invalides.";
+          }
+        } catch (error) {
+          message.textContent = "Erreur de connexion au serveur.";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

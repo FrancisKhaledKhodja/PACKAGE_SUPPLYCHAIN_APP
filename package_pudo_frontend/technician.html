@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sélection du technicien</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <script src="js/technician.js?v=3" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main class="layout" style="font-size:1rem;">
+    <aside class="card">
+      <h2 style="margin-top:0;">Filtres</h2>
+      <div class="section">
+        <label for="tech-search" class="muted">Recherche</label>
+        <input type="text" id="tech-search" placeholder="Code, contact, ville, téléphone, email" />
+      </div>
+      <div class="section">
+        <div class="muted" style="margin-bottom:0.25rem;">Type de dépôt</div>
+        <div id="tech-types" class="row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; align-items:flex-start;"></div>
+      </div>
+      <button id="btn-tech-apply" type="button">Appliquer</button>
+
+      <div class="section"></div>
+      <h2 style="margin-top:0;">Contacts</h2>
+      <select id="tech-contacts" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#ffffff; color:#111827;">
+      </select>
+      <div class="muted" style="margin-top:0.5rem;">Liste construite à partir de la table magasins.</div>
+      <button id="btn-tech-show" type="button" style="margin-top:0.75rem;">Afficher</button>
+    </aside>
+
+    <section class="card" id="tech-details">
+      <h2 style="margin-top:0;">Détails du technicien</h2>
+      <p id="tech-details-empty" class="muted">Sélectionnez un contact dans la colonne de gauche puis cliquez sur "Afficher".</p>
+      <div id="tech-details-content" style="display:none;">
+        <div class="section">
+          <table>
+            <tbody>
+              <tr><th style="text-align:left; width:220px;">Code magasin</th><td id="tech-code-magasin"></td></tr>
+              <tr><th style="text-align:left;">Libellé magasin</th><td id="tech-libelle-magasin"></td></tr>
+              <tr><th style="text-align:left;">Équipe</th><td id="tech-equipe"></td></tr>
+              <tr><th style="text-align:left;">Responsable</th><td id="tech-responsable"></td></tr>
+              <tr><th style="text-align:left;">Contact</th><td id="tech-contact"></td></tr>
+              <tr><th style="text-align:left;">Téléphone</th><td id="tech-telephone"></td></tr>
+              <tr><th style="text-align:left;">Email</th><td id="tech-email"></td></tr>
+              <tr><th style="text-align:left;">Adresse</th><td id="tech-adresse"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <h3>Code IG / site</h3>
+          <div id="tech-code-ig" style="font-size:1.1rem; font-weight:600;"></div>
+          <div id="tech-libelle-long-ig" class="muted" style="margin-top:0.15rem;"></div>
+          <div id="tech-adresse-ig" class="muted" style="margin-top:0.25rem;"></div>
+        </div>
+
+        <div class="section">
+          <h3>Points relais associés</h3>
+          <div class="row" style="gap:12px; flex-wrap:wrap; align-items:stretch;">
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais principal</div>
+              <div id="pr-principal-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-principal-enseigne" class="muted" style="margin-bottom:4px;"></div>
+              <div id="pr-principal-adresse"></div>
+              <div id="pr-principal-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-principal-statut" style="margin-top:4px;"></div>
+            </div>
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais backup</div>
+              <div id="pr-backup-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-backup-enseigne" class="muted" style="margin-bottom:4px;"></div>
+              <div id="pr-backup-adresse"></div>
+              <div id="pr-backup-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-backup-statut" style="margin-top:4px;"></div>
+            </div>
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais hors normes</div>
+              <div id="pr-hn-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-hn-enseigne" class="muted" style="margin-bottom:4px;"></div>
+              <div id="pr-hn-adresse"></div>
+              <div id="pr-hn-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-hn-statut" style="margin-top:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
