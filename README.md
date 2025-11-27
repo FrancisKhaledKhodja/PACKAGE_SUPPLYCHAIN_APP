@@ -215,10 +215,16 @@ L'application frontend (dossier `package_pudo_frontend`) propose plusieurs ongle
   - synthèse du parc installé par code article.
 - **Magasins & points relais (`stores.html`)** :
   - recherche et infos de contact des magasins et points relais.
+- **Stock ultra détaillé** :
+  - vue API/exports permettant d’analyser le stock `lot / série / projet / colis` avec date de stock pour un article donné (cf. endpoint `/api/auth/stock/<code_article>/ultra-details`).
+- **Localisation du stock (`stock_map.html`)** :
+  - carte (Leaflet) montrant les magasins/dépôts qui détiennent du stock pour un article,
+  - filtres sur type de dépôt, qualité, type de stock, HORS TRANSIT,
+  - calcul optionnel de la distance par rapport à un point de référence (code IG ou adresse).
 - **Téléchargements (`downloads.html`)** :
-  - accès aux fichiers générés/exportés.
-- **Sélection du technicien / Affectation technicien ↔️ PUDO** :
-  - écrans dédiés au suivi des techniciens et de leurs points relais.
+  - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
+- **Écrans techniciens / affectations technicien ↔️ PUDO** :
+  - écrans dédiés au suivi des techniciens, de leurs magasins de rattachement et de leurs PUDO (principal / backup / hors normes).
 
 ### 3.1. Catégorie "sans sortie" (categorie_sans_sortie)
 
