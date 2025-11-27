@@ -137,7 +137,7 @@ La construction de l'exécutable se fait directement depuis l'environnement virt
 1. Activer l'environnement virtuel (si ce n'est pas déjà fait) :
 
 ```powershell
-\.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 ```
 
 2. Installer PyInstaller (une seule fois) si nécessaire, ainsi que le projet en mode éditable :
@@ -270,6 +270,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ## 4. Remarques
 
-- Pour construire l'exécutable **toujours utiliser `.venv_build`**, pas l'environnement `.venv` qui est réservé au développement.
-- Si, au lancement de l'exécutable, une erreur `ModuleNotFoundError` apparaît pour un paquet supplémentaire, installer ce paquet dans `.venv_build` puis relancer la commande PyInstaller.
-- En cas de modification importante de la structure du frontend (`package_pudo_frontend`), il faut simplement reconstruire l'exe avec la même commande PyInstaller.
+- Pour construire l'exécutable, utiliser l'environnement virtuel principal `.venv` (section 2) avec le projet et PyInstaller installés.
+- Il est possible de rejouer une configuration de build existante via les fichiers `.spec` fournis, par exemple : `pyinstaller SUPPLYCHAIN_APP_v1.2.0.spec`.
+- Si, au lancement de l'exécutable, une erreur `ModuleNotFoundError` apparaît pour un paquet supplémentaire, installer ce paquet dans `.venv` puis relancer la commande PyInstaller.
+- En cas de modification importante de la structure du frontend (`package_pudo_frontend`), il suffit de reconstruire l'exécutable avec la même commande PyInstaller (ou via le `.spec`).
