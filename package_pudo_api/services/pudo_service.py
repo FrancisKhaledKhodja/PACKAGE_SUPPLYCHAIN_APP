@@ -2,7 +2,6 @@ import os
 import datetime
 from math import radians, sin, cos, sqrt, atan2
 import polars as pl
-from package_pudo_api.data.pudo_etl import update_data
 from package_pudo_api.constants import (
     path_datan,
     folder_name_app,
@@ -10,71 +9,60 @@ from package_pudo_api.constants import (
     CHOIX_PR_TECH_FILE,
 )
 
-
 try:
     pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
+except FileNotFoundError:
+    pudos = pl.DataFrame()
+
+try:
     stores = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
+except FileNotFoundError:
+    stores = pl.DataFrame()
+
+try:
     helios = pl.read_parquet(os.path.join(path_datan, folder_name_app, "helios.parquet"))
+except FileNotFoundError:
+    helios = pl.DataFrame()
+
+try:
     items = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items.parquet"))
+except FileNotFoundError:
+    items = pl.DataFrame()
+
+try:
     nomenclatures = pl.read_parquet(os.path.join(path_datan, folder_name_app, "nomenclatures.parquet"))
+except FileNotFoundError:
+    nomenclatures = pl.DataFrame()
+
+try:
     manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
+except FileNotFoundError:
+    manufacturers = pl.DataFrame()
+
+try:
     equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
+except FileNotFoundError:
+    equivalents = pl.DataFrame()
+
+try:
     stats_exit = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stats_exit.parquet"))
-    items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
-    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
-    
     try:
         stats_exit = stats_exit.with_columns(pl.col("date_mvt").dt.year().alias("annee"))
     except Exception:
         # si la colonne date_mvt n'existe pas ou n'est pas de type date/temps, on laisse stats_exit tel quel
         pass
 except FileNotFoundError:
-    update_data()
-    try:
-        items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
-    except FileNotFoundError:
-        items_parent_buildings = pl.DataFrame()
-    try:
-        items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
-    except FileNotFoundError:
-        items_son_buildings = pl.DataFrame()
-    try:
-        pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
-    except FileNotFoundError:
-        pudos = pl.DataFrame()
-    try:
-        stores = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
-    except FileNotFoundError:
-        stores = pl.DataFrame()
-    try:
-        helios = pl.read_parquet(os.path.join(path_datan, folder_name_app, "helios.parquet"))
-    except FileNotFoundError:
-        helios = pl.DataFrame()
-    try:
-        items = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items.parquet"))
-    except FileNotFoundError:
-        items = pl.DataFrame()
-    try:
-        nomenclatures = pl.read_parquet(os.path.join(path_datan, folder_name_app, "nomenclatures.parquet"))
-    except FileNotFoundError:
-        nomenclatures = pl.DataFrame()
-    try:
-        manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
-    except FileNotFoundError:
-        manufacturers = pl.DataFrame()
-    try:
-        equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
-    except FileNotFoundError:
-        equivalents = pl.DataFrame()
-    try:
-        stats_exit = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stats_exit.parquet"))
-        try:
-            stats_exit = stats_exit.with_columns(pl.col("date_mvt").dt.year().alias("annee"))
-        except Exception:
-            # si la colonne date_mvt n'existe pas ou n'est pas de type date/temps, on laisse stats_exit tel quel
-            pass
-    except FileNotFoundError:
-        stats_exit = pl.DataFrame()
+    stats_exit = pl.DataFrame()
+
+try:
+    items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
+except FileNotFoundError:
+    items_parent_buildings = pl.DataFrame()
+
+try:
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+except FileNotFoundError:
+    items_son_buildings = pl.DataFrame()
 
 # Dictionnaires utiles (magasins/helios)
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
@@ -114,16 +102,38 @@ def get_available_pudo(lat, long, radius, enseignes: list[str] | None = None):
 
     df = pl.DataFrame()
     if enseignes:
-        if "Chronopost 9H00" in enseignes:
-            df = pl.concat([df, pudos_filtered.filter(pl.col("categorie_pr_chronopost").is_in(["C9", "C9_C13"]))])
-        if "Chronopost 13H00" in enseignes:
-            df = pl.concat([df, pudos_filtered.filter(pl.col("categorie_pr_chronopost").is_in(["C9_C13", "C13"]))])
-        if "LM2S" in enseignes:
-            df = pl.concat([df, pudos_filtered.filter(pl.col("nom_prestataire") == "lm2s")])
-        if "TDF" in enseignes:
-            df = pl.concat([df, pudos_filtered.filter(pl.col("nom_prestataire") == "TDF")])
-            
-        df = df.select(pl.col("code_point_relais", "enseigne", "adresse_1", "code_postal", "ville", "categorie_pr_chronopost", "nom_prestataire", "distance", "latitude", "longitude"))
+        # Normaliser les valeurs demandées (insensible à la casse)
+        wanted = {e.strip().lower() for e in enseignes if e}
+
+        # Préparer des colonnes en minuscules pour les comparaisons texte
+        pudos_lc = pudos_filtered.with_columns([
+            pl.col("categorie_pr_chronopost").cast(pl.Utf8).str.to_lowercase().alias("_cat_lc"),
+            pl.col("nom_prestataire").cast(pl.Utf8).str.to_lowercase().alias("_prest_lc"),
+        ])
+
+        if "chronopost 9h00" in wanted:
+            df = pl.concat([
+                df,
+                pudos_lc.filter(pl.col("_cat_lc").is_in(["c9", "c9_c13"]))
+            ])
+        if "chronopost 13h00" in wanted:
+            df = pl.concat([
+                df,
+                pudos_lc.filter(pl.col("_cat_lc").is_in(["c9_c13", "c13"]))
+            ])
+        if "lm2s" in wanted:
+            df = pl.concat([
+                df,
+                pudos_lc.filter(pl.col("_prest_lc") == "lm2s")
+            ])
+        if "tdf" in wanted:
+            df = pl.concat([
+                df,
+                pudos_lc.filter(pl.col("_prest_lc") == "tdf")
+            ])
+
+        if not df.is_empty():
+            df = df.select(pl.col("code_point_relais", "enseigne", "adresse_1", "code_postal", "ville", "categorie_pr_chronopost", "nom_prestataire", "distance", "latitude", "longitude"))
 
         return df
 
@@ -727,3 +737,54 @@ def stats_exit_items(item_code: str, type_exit: str | list[str] | None = None) -
         return out
     except Exception:
         return pl.DataFrame()
+
+
+def stats_exit_items_monthly(item_code: str, type_exit: str | list[str] | None = None) -> pl.DataFrame:
+    if 'stats_exit' not in globals():
+        return pl.DataFrame()
+    df = stats_exit
+    try:
+        current_year = datetime.datetime.now().year
+        if "mois" not in df.columns:
+            try:
+                df = df.with_columns(
+                    pl.col("date_mvt").dt.month().alias("mois")
+                )
+            except Exception:
+                return pl.DataFrame()
+
+        expr = (pl.col("code_article") == item_code) & (pl.col("annee") == current_year)
+        if type_exit is not None:
+            if isinstance(type_exit, list):
+                values = [v for v in type_exit if v is not None]
+            else:
+                values = [type_exit]
+            if values:
+                expr = expr & pl.col("lib_motif_mvt").is_in(values)
+
+        out = (
+            df.filter(expr)
+              .group_by([pl.col("annee"), pl.col("mois")])
+              .agg(pl.col("qte_mvt").sum())
+        )
+
+        # Construire un DataFrame avec les 12 mois de l'année courante
+        full_months = pl.DataFrame({
+            "annee": [current_year] * 12,
+            "mois": list(range(1, 13)),
+        })
+
+        # Joindre pour garantir une ligne par mois, en remplissant les manquants à 0
+        out = (
+            full_months
+            .join(out, on=["annee", "mois"], how="left")
+            .with_columns(
+                pl.col("qte_mvt").fill_null(0)
+            )
+            .sort([pl.col("annee"), pl.col("mois")])
+        )
+
+        return out
+    except Exception:
+        return pl.DataFrame()
+

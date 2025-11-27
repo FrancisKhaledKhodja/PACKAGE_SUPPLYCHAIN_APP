@@ -44,18 +44,38 @@
             <label><input type="checkbox" class="exit-motif-stats" value="SORTIE PRODUCTION"> PRODUCTION</label>
           </div>
         </div>
-        <input type="text" id="type-exit" placeholder="Filtre libre type de sortie (lib_motif_mvt, optionnel)" style="flex:1 1 220px;" />
-        <button id="btn-load-stats" type="submit">Recharger les statistiques</button>
       </form>
       <p id="stats-message" class="muted">Sélectionnez un article dans la liste de gauche pour afficher ses statistiques de sorties.</p>
-      <div class="card" style="margin-top:0.5rem; overflow:auto; max-height:30vh;">
-        <table id="tbl-stats-exit" style="width:100%; border-collapse:collapse;">
-          <thead><tr id="thead-stats-exit"></tr></thead>
-          <tbody id="tbody-stats-exit"></tbody>
-        </table>
-      </div>
       <div class="card" style="margin-top:0.5rem; overflow:auto;">
-        <svg id="stats-exit-chart" width="800" height="300"></svg>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          <!-- Colonne gauche : stats annuelles -->
+          <div style="flex:1 1 300px; min-width:0;">
+            <div class="muted" style="margin-bottom:4px; font-weight:500;">Statistiques annuelles</div>
+            <div style="max-height:30vh; overflow:auto;">
+              <table id="tbl-stats-exit-yearly" style="width:100%; border-collapse:collapse;">
+                <thead><tr id="thead-stats-exit-yearly"></tr></thead>
+                <tbody id="tbody-stats-exit-yearly"></tbody>
+              </table>
+            </div>
+            <div style="margin-top:0.5rem; overflow:auto;">
+              <svg id="stats-exit-chart-yearly" width="380" height="260"></svg>
+            </div>
+          </div>
+
+          <!-- Colonne droite : stats mensuelles de l'année en cours -->
+          <div style="flex:1 1 300px; min-width:0;">
+            <div class="muted" style="margin-bottom:4px; font-weight:500;">Statistiques mensuelles (année en cours)</div>
+            <div style="max-height:30vh; overflow:auto;">
+              <table id="tbl-stats-exit-monthly" style="width:100%; border-collapse:collapse;">
+                <thead><tr id="thead-stats-exit-monthly"></tr></thead>
+                <tbody id="tbody-stats-exit-monthly"></tbody>
+              </table>
+            </div>
+            <div style="margin-top:0.5rem; overflow:auto;">
+              <svg id="stats-exit-chart-monthly" width="380" height="260"></svg>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </main>

@@ -5,6 +5,7 @@ from package_pudo_api.services.pudo_service import (
     get_manufacturers_for,
     get_equivalents_for,
     stats_exit_items,
+    stats_exit_items_monthly,
 )
 
 def search_items_df(q: str, filters: dict, limit: int) -> pl.DataFrame | None:
@@ -20,3 +21,5 @@ def get_item_full(code: str) -> dict:
 def get_stats_exit(code: str, type_exit: str | list[str] | None = None) -> pl.DataFrame:
     return stats_exit_items(code, type_exit)
 
+def get_stats_exit_monthly(code: str, type_exit: str | list[str] | None = None) -> pl.DataFrame:
+    return stats_exit_items_monthly(code, type_exit)

@@ -32,6 +32,15 @@ def stores_nearby_address():
     if lat is None or lon is None:
         return jsonify({"error": "could not geocode address"}), 400
 
+    # Si store_types est une liste vide, l'intention est "aucun type de magasin" ⇒ 0 résultat
+    if isinstance(types, list) and not types:
+        return jsonify({
+            "rows": [],
+            "geocoded_address": coords.get("address"),
+            "center_lat": float(lat),
+            "center_lon": float(lon),
+        }), 200
+
     df = get_nearby_stores(float(lat), float(lon), radius, types)
     rows = [r for r in df.iter_rows(named=True)] if df is not None else []
     return jsonify({

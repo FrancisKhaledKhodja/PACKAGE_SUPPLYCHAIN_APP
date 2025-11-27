@@ -1,4 +1,6 @@
-# SupplyChainApp – Spécification des usages et besoins métiers
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.3.0)
+
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.3.0**.
 
 ## 1. Contexte et objectifs
 
@@ -14,6 +16,20 @@ Elle centralise plusieurs sources de données (fichiers Excel, exports BO, fichi
 - **suivre les assignations technicien ↔ point relais**.
 
 L’objectif métier est de **faciliter la décision opérationnelle** (gestion des stocks, arbitrage des articles dormants, choix des emplacements, suivi du parc) en réduisant les manipulations manuelles sur Excel et en proposant une vue consolidée.
+
+---
+
+### 1.1. Impacts métiers spécifiques à la version 1.3.0
+
+- **Catégorie "sans sortie"**
+  - Permet d’identifier rapidement les articles dormants ou à faible rotation.
+  - Sert de support aux décisions d’optimisation de stock (dégagement, redéploiement, ajustement de min/max).
+- **Recherche enrichie par les données fournisseurs**
+  - Facilite le travail des équipes qui raisonnent par **référence fabricant** ou par **nom de fournisseur**.
+  - Réduit les allers-retours entre outils (PIM, Excel, fiches fournisseurs) pour retrouver un article.
+- **Mise à jour automatique des données**
+  - Assure une vision plus fraîche des stocks, PUDO, magasins, stats de sorties, sans action manuelle.
+  - Diminue le risque de décision prise sur des données obsolètes.
 
 ---
 
@@ -682,3 +698,23 @@ Accept: application/json
 
 - **Description** : fournir les fichiers d’export (CSV, Excel, …) pour les différents domaines (stock détaillé, stats de sorties, PUDO, etc.).
 - **Réponse typique** : liste d’objets (`id`, `label`, `url` ou équivalent) permettant de déclencher un téléchargement.
+
+---
+
+## B. Changelog fonctionnel (extrait)
+
+- **Version 1.3.0**
+  - Introduction de la **catégorie "sans sortie"** pour les articles, avec exposition API et intégration dans les écrans `info_article` et `RECHERCHE_STOCK`.
+  - Enrichissement des recherches d’articles par les **données fournisseurs** (nom fabricant, référence fabricant) via agrégation des informations de `manufacturers`.
+  - Mise en place d’un **processus de mise à jour automatique** des données toutes les 30 minutes, avec suivi via l’endpoint `/api/updates/status` et affichage dans l’interface.
+  - Alignement avec le packaging technique : binaire `SUPPLYCHAIN_APP_v1.3.0.exe` distribué aux utilisateurs internes.
+
+---
+
+## C. Diffusion et déploiement auprès des utilisateurs métiers
+
+- L’application est mise à disposition des utilisateurs sous forme d’un **exécutable Windows autonome** : `SUPPLYCHAIN_APP_v1.3.0.exe`.
+- Les modalités techniques de livraison (répertoire cible, création de raccourcis, gestion des messages de sécurité Windows, etc.) sont décrites dans le `README.md` (section "Livraison / déploiement de l'exécutable").
+- Du point de vue métier, il est recommandé :
+  - de diffuser l’outil via les canaux habituels (portail interne, partage réseau sécurisé, procédure d’installation bureautique),
+  - d’accompagner la diffusion par une courte **note d’usage** rappelant les principaux cas d’usage (consultation stock, identification articles dormants, recherche fournisseur, etc.).

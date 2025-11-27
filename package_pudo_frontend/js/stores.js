@@ -61,54 +61,94 @@ document.addEventListener("DOMContentLoaded", () => {
     if (pudoTbodyRows) pudoTbodyRows.innerHTML = "";
 
     try {
-      const [storesResp, pudoResp] = await Promise.all([
-        fetch(API("/stores/nearby-address"), {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            address,
-            radius_km: radius,
-            store_types: storeTypes,
-          }),
-        }),
-        prTypes.length
-          ? fetch(API("/pudo/nearby-address"), {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              credentials: "include",
-              body: JSON.stringify({
-                address,
-                radius_km: radius,
-                enseignes: prTypes,
-              }),
-            })
-          : Promise.resolve(null),
-      ]);
+      const promises = [];
 
-      if (!storesResp.ok) {
-        statusDiv.textContent = "Erreur API magasins (" + storesResp.status + ")";
+      // Appel magasins uniquement si au moins un type est sélectionné
+      if (storeTypes.length) {
+        promises.push(
+          fetch(API("/stores/nearby-address"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              address,
+              radius_km: radius,
+              store_types: storeTypes,
+            }),
+          })
+        );
+      } else {
+        // Aucun type de magasin sélectionné : on nettoie la partie magasins
+        countDiv.textContent = "";
+        theadRow.innerHTML = "";
+        tbodyRows.innerHTML = "";
+        if (storesLayer && map) {
+          storesLayer.clearLayers();
+        }
+      }
+
+      // Appel PR uniquement si au moins un type PR est sélectionné
+      if (prTypes.length) {
+        promises.push(
+          fetch(API("/pudo/nearby-address"), {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              address,
+              radius_km: radius,
+              enseignes: prTypes,
+            }),
+          })
+        );
+      } else {
+        if (pudoCountDiv) pudoCountDiv.textContent = "";
+        if (pudoTheadRow) pudoTheadRow.innerHTML = "";
+        if (pudoTbodyRows) pudoTbodyRows.innerHTML = "";
+      }
+
+      // Si aucun filtre n'est sélectionné (ni magasins ni PR), on arrête là
+      if (!storeTypes.length && !prTypes.length) {
+        statusDiv.textContent = "Aucun type de magasin ni de point relais sélectionné (cochez au moins un filtre).";
         return;
       }
 
-      const storesData = await storesResp.json();
-      const storeRows = storesData.rows || [];
-      currentStoreRows = storeRows;
+      const [storesResp, pudoResp] = await Promise.all([
+        // Pour conserver la structure, on remet null si pas d'appel correspondant
+        storeTypes.length ? promises[0] : Promise.resolve(null),
+        prTypes.length ? (storeTypes.length ? promises[1] : promises[0]) : Promise.resolve(null),
+      ]);
 
-      if (storesData.geocoded_address) {
-        geocodedDiv.textContent = "Adresse géocodée : " + storesData.geocoded_address;
-      }
+      // ---- Traitement magasins ----
+      let storeRows = [];
+      let centerLat = null;
+      let centerLon = null;
 
-      const centerLat = storesData.center_lat;
-      const centerLon = storesData.center_lon;
-      if (centerLat != null && centerLon != null) {
-        ensureMap(centerLat, centerLon);
-      }
+      if (storesResp) {
+        if (!storesResp.ok) {
+          statusDiv.textContent = "Erreur API magasins (" + storesResp.status + ")";
+          return;
+        }
 
-      if (!storeRows.length) {
-        countDiv.textContent = "Aucun magasin trouvé.";
-      } else {
-        countDiv.textContent = storeRows.length + " magasin(s) trouvé(s)";
+        const storesData = await storesResp.json();
+        storeRows = storesData.rows || [];
+        currentStoreRows = storeRows;
+
+        if (storesData.geocoded_address) {
+          geocodedDiv.textContent = "Adresse géocodée : " + storesData.geocoded_address;
+        }
+
+        centerLat = storesData.center_lat;
+        centerLon = storesData.center_lon;
+        if (centerLat != null && centerLon != null) {
+          ensureMap(centerLat, centerLon);
+        }
+
+        if (!storeRows.length) {
+          countDiv.textContent = "Aucun magasin trouvé.";
+        } else {
+          countDiv.textContent = storeRows.length + " magasin(s) trouvé(s)";
+        }
       }
 
       if (storeRows.length) {
@@ -166,6 +206,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // ---- Traitement points relais ----
       if (pudoResp && pudoResp.ok) {
         const pudoData = await pudoResp.json();
         const pudoRows = pudoData.rows || [];

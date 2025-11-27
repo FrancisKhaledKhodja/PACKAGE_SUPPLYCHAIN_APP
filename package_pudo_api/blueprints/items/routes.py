@@ -4,7 +4,7 @@ import polars as pl
 from flask import request, jsonify
 
 from . import bp
-from ...services.items_service import search_items_df, get_item_full, get_stats_exit
+from ...services.items_service import search_items_df, get_item_full, get_stats_exit, get_stats_exit_monthly
 from package_pudo_api.items import Nomenclatures
 from package_pudo_api.constants import path_datan, folder_name_app, path_output
 
@@ -117,6 +117,23 @@ def item_stats_exit(code: str):
         type_exits_arg = type_exits
 
     df = get_stats_exit(code, type_exits_arg)
+    return jsonify({
+        "columns": (df.columns if df is not None else []),
+        "rows": ([r for r in df.iter_rows(named=True)] if df is not None else []),
+    })
+
+
+@bp.get("/<code>/stats-exit-monthly")
+def item_stats_exit_monthly(code: str):
+    type_exits = request.args.getlist("type_exit")
+    if not type_exits:
+        type_exits_arg: str | list[str] | None = None
+    elif len(type_exits) == 1:
+        type_exits_arg = type_exits[0]
+    else:
+        type_exits_arg = type_exits
+
+    df = get_stats_exit_monthly(code, type_exits_arg)
     return jsonify({
         "columns": (df.columns if df is not None else []),
         "rows": ([r for r in df.iter_rows(named=True)] if df is not None else []),

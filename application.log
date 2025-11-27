@@ -452,3 +452,652 @@ FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\
 2025-11-27 05:24:46.227 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
 2025-11-27 05:24:47.088 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
 2025-11-27 05:24:49.852 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 13:59:53.761 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:00:29.584 | ERROR    | package_pudo_api.services.pudo_service:<module>:32 - An error has been caught in function '<module>', process 'MainProcess' (12636), thread 'MainThread' (17144):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 24, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x0000026813A1C5E0>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x0000026817131D00>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x0000026817132840>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x0000026817132480>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x0000026816F5B380>
+           └ <LazyFrame at 0x26817698D50>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x26817698D50>,)
+           └ <function LazyFrame.collect at 0x0000026816F5B4C0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x0000026816CA6E40>}
+           │         └ (<LazyFrame at 0x26817698D50>,)
+           └ <function LazyFrame.collect at 0x0000026816F5B420>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x0000026817556A70>
+           └ <function wrap_df at 0x0000026816E19580>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\run_supplychainapp.py", line 7, in <module>
+    from package_pudo_api.constants import path_supply_chain_app
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 5, in <module>
+    from .blueprints.items import bp as items_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\__init__.py", line 5, in <module>
+    from . import routes  # noqa: E402,F401
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\routes.py", line 7, in <module>
+    from ...services.items_service import search_items_df, get_item_full, get_stats_exit, get_stats_exit_monthly
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\items_service.py", line 2, in <module>
+    from package_pudo_api.services.pudo_service import (
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 32, in <module>
+    update_data()
+    └ <function update_data at 0x00000268176AD760>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x000002681769FCE0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-27 14:00:30.457 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:00:30.458 | ERROR    | package_pudo_api.data.pudo_service:<module>:21 - An error has been caught in function '<module>', process 'MainProcess' (12636), thread 'MainThread' (17144):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_service.py", line 14, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x0000026813A1C5E0>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x0000026817131D00>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x0000026817132840>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x0000026817132480>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x0000026816F5B380>
+           └ <LazyFrame at 0x2682C1A15B0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x2682C1A15B0>,)
+           └ <function LazyFrame.collect at 0x0000026816F5B4C0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x000002682C1A1670>}
+           │         └ (<LazyFrame at 0x2682C1A15B0>,)
+           └ <function LazyFrame.collect at 0x0000026816F5B420>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x000002682C08E590>
+           └ <function wrap_df at 0x0000026816E19580>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\run_supplychainapp.py", line 7, in <module>
+    from package_pudo_api.constants import path_supply_chain_app
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 8, in <module>
+    from .blueprints.stores import bp as stores_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\stores\__init__.py", line 5, in <module>
+    from . import routes  # noqa
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\stores\routes.py", line 5, in <module>
+    from package_pudo_api.data.pudo_service import get_stock_map_for_item, get_coords_for_ig
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_service.py", line 21, in <module>
+    update_data()
+    └ <function update_data at 0x00000268176AD760>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x000002681769FCE0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-27 14:06:53.312 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:06:57.081 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:06:57.563 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:07:00.244 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:11:26.457 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:12:04.017 | ERROR    | package_pudo_api.services.pudo_service:<module>:32 - An error has been caught in function '<module>', process 'MainProcess' (6840), thread 'MainThread' (3764):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 24, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x000001D461C6C5E0>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x000001D4652F1D00>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x000001D4652F2840>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x000001D4652F2480>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x000001D46511B380>
+           └ <LazyFrame at 0x1D465888E50>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x1D465888E50>,)
+           └ <function LazyFrame.collect at 0x000001D46511B4C0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x000001D46585E3F0>}
+           │         └ (<LazyFrame at 0x1D465888E50>,)
+           └ <function LazyFrame.collect at 0x000001D46511B420>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x000001D465746DB0>
+           └ <function wrap_df at 0x000001D464FD9580>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\run_supplychainapp.py", line 7, in <module>
+    from package_pudo_api.constants import path_supply_chain_app
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 5, in <module>
+    from .blueprints.items import bp as items_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\__init__.py", line 5, in <module>
+    from . import routes  # noqa: E402,F401
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\routes.py", line 7, in <module>
+    from ...services.items_service import search_items_df, get_item_full, get_stats_exit, get_stats_exit_monthly
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\items_service.py", line 2, in <module>
+    from package_pudo_api.services.pudo_service import (
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 32, in <module>
+    update_data()
+    └ <function update_data at 0x000001D46589D760>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x000001D46588FCE0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-27 14:12:06.062 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:12:13.271 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:15:35.468 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:16:24.497 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:16:25.973 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:16:33.889 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:20:31.893 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:20:36.937 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:20:37.536 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:20:40.518 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:26:55.201 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:27:21.036 | ERROR    | package_pudo_api.services.pudo_service:<module>:32 - An error has been caught in function '<module>', process 'MainProcess' (23212), thread 'MainThread' (26236):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 24, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x000001C92DF8C5E0>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x000001C9316A1D00>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x000001C9316A2840>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x000001C9316A2480>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x000001C9314CB380>
+           └ <LazyFrame at 0x1C931C34E50>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x1C931C34E50>,)
+           └ <function LazyFrame.collect at 0x000001C9314CB4C0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x000001C931C123F0>}
+           │         └ (<LazyFrame at 0x1C931C34E50>,)
+           └ <function LazyFrame.collect at 0x000001C9314CB420>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x000001C931AF6DB0>
+           └ <function wrap_df at 0x000001C931389580>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\run_supplychainapp.py", line 7, in <module>
+    from package_pudo_api.constants import path_supply_chain_app
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 5, in <module>
+    from .blueprints.items import bp as items_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\__init__.py", line 5, in <module>
+    from . import routes  # noqa: E402,F401
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\routes.py", line 7, in <module>
+    from ...services.items_service import search_items_df, get_item_full, get_stats_exit, get_stats_exit_monthly
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\items_service.py", line 2, in <module>
+    from package_pudo_api.services.pudo_service import (
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 32, in <module>
+    update_data()
+    └ <function update_data at 0x000001C931C4D760>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x000001C931C43CE0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-27 14:27:23.115 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:27:31.000 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:36:50.960 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:37:23.750 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:37:24.480 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:37:27.645 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:47:38.645 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:47:42.926 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:47:43.577 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:47:47.134 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:54:06.237 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:54:37.244 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 14:54:38.791 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 14:54:44.299 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 15:02:58.823 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 15:03:01.631 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 15:08:10.917 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 15:08:14.685 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 15:36:51.313 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 15:37:28.014 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 16:18:33.688 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 16:18:36.508 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 16:22:38.906 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 16:22:41.221 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 16:26:10.191 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 16:26:12.592 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-27 16:35:41.585 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-27 16:36:48.080 | ERROR    | package_pudo_api.data.pudo_service:<module>:21 - An error has been caught in function '<module>', process 'MainProcess' (16816), thread 'MainThread' (13940):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_service.py", line 14, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x00000259D653FF60>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x00000259DA1FFCE0>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x00000259DA228220>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x00000259DA1FFE20>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x00000259DA030D60>
+           └ <LazyFrame at 0x259ED059C10>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x259ED059C10>,)
+           └ <function LazyFrame.collect at 0x00000259DA030EA0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x00000259ED0E8E10>}
+           │         └ (<LazyFrame at 0x259ED059C10>,)
+           └ <function LazyFrame.collect at 0x00000259DA030E00>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x00000259ECF4F910>
+           └ <function wrap_df at 0x00000259D9ED6DE0>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\PyInstaller\isolated\_child.py", line 100, in <module>
+    while run_next_command(read_fh, write_fh):
+          │                │        └ <_io.BufferedWriter name=4>
+          │                └ <_io.BufferedReader name=3>
+          └ <function run_next_command at 0x00000259D6769300>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\PyInstaller\isolated\_child.py", line 63, in run_next_command
+    output = function(*args, **kwargs)
+             │         │       └ {}
+             │         └ ('package_pudo_api',)
+             └ <function find_binary_dependencies.<locals>.import_library at 0x00000259D978C400>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\PyInstaller\building\build_main.py", line 227, in import_library
+    __import__(package)
+               └ 'package_pudo_api'
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 8, in <module>
+    from .blueprints.stores import bp as stores_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\stores\__init__.py", line 5, in <module>
+    from . import routes  # noqa
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\stores\routes.py", line 5, in <module>
+    from package_pudo_api.data.pudo_service import get_stock_map_for_item, get_coords_for_ig
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_service.py", line 21, in <module>
+    update_data()
+    └ <function update_data at 0x00000259DB6413A0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x00000259DB633920>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'

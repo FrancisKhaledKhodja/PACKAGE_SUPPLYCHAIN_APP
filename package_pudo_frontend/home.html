@@ -25,7 +25,8 @@
       background: #f5f7fb;
       border: 1px solid #dfe3f0;
       transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease;
-      color: inherit;
+      /* Couleur de texte unifiée pour toutes les tuiles (titre + description) */
+      color: #111827;
     }
 
     .sp-tile:hover {
@@ -61,6 +62,8 @@
     .sp-content h3 {
       margin: 0 0 0.15rem;
       font-size: 0.95rem;
+      /* Forcer la même couleur de titre pour les 4 liens, indépendamment de l'état du lien */
+      color: #111827;
     }
 
     .sp-content p {

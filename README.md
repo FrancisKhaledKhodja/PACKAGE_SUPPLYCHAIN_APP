@@ -87,7 +87,7 @@ Vue d'ensemble des principaux composants :
   - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
 - `package_pudo_api.data.pudo_etl` :
   - gère les **tâches d'ETL** (chargement/parquetisation, mise à jour périodique dans `path_datan/<folder_name_app>`).
-- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.2.0.exe`) :
+- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.3.0.exe`) :
   - embarque le même code Python et le dossier `package_pudo_frontend` ;
   - reproduit exactement le comportement de `python run_supplychainapp.py` sans dépendre de Python installé sur le poste utilisateur.
 
@@ -148,24 +148,34 @@ python -m pip install -e . pyinstaller
 
 Une fois ces commandes exécutées, toutes les dépendances de l'application ainsi que PyInstaller sont disponibles dans `.venv`.
 
-### 2.2. Commande PyInstaller
+### 2.2. Commande PyInstaller (via le fichier .spec)
 
 Depuis la racine du projet, avec `.venv` activé :
 
 ```powershell
-pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.2.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
+pyinstaller --clean SUPPLYCHAIN_APP_v1.3.0.spec
 ```
 
-Détails des options :
-
-- `--onefile` : génère un seul fichier `.exe` autonome.
-- `--name SUPPLYCHAIN_APP_v1.2.0` : nom du binaire généré.
-- `--add-data "package_pudo_frontend;package_pudo_frontend"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
-- `run_supplychainapp.py` : point d'entrée qui démarre API + frontend.
+Cette commande utilise la configuration de build décrite dans `SUPPLYCHAIN_APP_v1.3.0.spec` (point d'entrée, données embarquées, options PyInstaller, etc.).
 
 > Remarque :
-> - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` à la commande ci-dessus ;
-> - des fichiers `.spec` sont également fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`) pour rejouer une configuration de build existante avec `pyinstaller SUPPLYCHAIN_APP_v1.2.0.spec`.
+> - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` dans le fichier `.spec` ou en ligne de commande ;
+> - les fichiers `.spec` fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`, `SUPPLYCHAIN_APP_v1.3.0.spec`) permettent de rejouer des configurations de build existantes.
+
+#### Alternative : commande directe sans `.spec`
+
+Il est également possible de construire l'exécutable sans utiliser le fichier `.spec` (utile pour un premier build rapide) :
+
+```powershell
+pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.3.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
+```
+
+Les options sont identiques à celles des versions précédentes :
+
+- `--onefile` : génère un seul fichier `.exe` autonome.
+- `--name SUPPLYCHAIN_APP_v1.3.0` : nom du binaire généré.
+- `--add-data "package_pudo_frontend;package_pudo_frontend"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
+- `run_supplychainapp.py` : point d'entrée qui démarre API + frontend.
 
 ### 2.3. Résultat
 
@@ -174,7 +184,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.2.0.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.3.0.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -185,7 +195,7 @@ Depuis un terminal :
 
 ```powershell
 cd .\dist\
-.\SUPPLYCHAIN_APP_v1.2.0.exe
+.\SUPPLYCHAIN_APP_v1.3.0.exe
 ```
 
 L'exécutable :
@@ -277,6 +287,46 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 ## 4. Remarques
 
 - Pour construire l'exécutable, utiliser l'environnement virtuel principal `.venv` (section 2) avec le projet et PyInstaller installés.
-- Il est possible de rejouer une configuration de build existante via les fichiers `.spec` fournis, par exemple : `pyinstaller SUPPLYCHAIN_APP_v1.2.0.spec`.
+- Il est possible de rejouer une configuration de build existante via les fichiers `.spec` fournis, par exemple : `pyinstaller --clean SUPPLYCHAIN_APP_v1.3.0.spec`.
 - Si, au lancement de l'exécutable, une erreur `ModuleNotFoundError` apparaît pour un paquet supplémentaire, installer ce paquet dans `.venv` puis relancer la commande PyInstaller.
 - En cas de modification importante de la structure du frontend (`package_pudo_frontend`), il suffit de reconstruire l'exécutable avec la même commande PyInstaller (ou via le `.spec`).
+- Sous Windows + OneDrive, l'option `--clean` peut parfois échouer avec une erreur de type `PermissionError [WinError 5]` lors de la suppression du dossier `build/` (fichiers verrouillés par OneDrive ou un antivirus). Dans ce cas :
+  - fermer les fenêtres/terminaux qui pointent sur `build/` ou `dist/`,
+  - mettre en pause temporairement la synchronisation OneDrive ou déplacer le projet hors OneDrive,
+  - ou lancer PyInstaller sans `--clean` si nécessaire.
+
+---
+
+## 5. Livraison / déploiement de l'exécutable
+
+- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.3.0.exe`.
+- **Public cible** : postes Windows internes ne disposant pas forcément de Python.
+
+### 5.1. Prérequis côté utilisateur
+
+- Windows 10 ou 11.
+- Accès réseau aux répertoires de données métiers attendus (partages réseau, `path_datan`, etc.).
+- Droits en écriture sur un répertoire local de travail (logs, copies de parquets, exports).
+
+### 5.2. Mode opératoire recommandé
+
+1. Copier `SUPPLYCHAIN_APP_v1.3.0.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
+3. Double-cliquer sur l'exécutable :
+   - une console s'ouvre avec les logs,
+   - le navigateur s'ouvre sur `http://127.0.0.1:8000/`.
+4. Pour fermer l'application :
+   - cliquer sur la croix de la console **ou**
+   - utiliser `Ctrl + C` dans la console.
+
+> Remarque : en cas de message de sécurité SmartScreen, l'utilisateur doit choisir "Informations complémentaires" puis "Exécuter quand même" si l'exécutable est distribué en interne.
+
+---
+
+## 6. Changelog (extrait)
+
+- **1.3.0**
+  - Ajout de l'information **categorie_sans_sortie** sur les articles (backend + affichage dans `info_article` et `RECHERCHE_STOCK`).
+  - Amélioration de la recherche d'articles par **fournisseur** / **référence fabricant** (enrichissement du parquet `items.parquet` avec `manufacturers.parquet`).
+  - Mise en place d'une **mise à jour automatique** des données toutes les 30 minutes (`update_data()` et endpoint `/api/updates/status`).
+  - Nouvel exécutable packagé `SUPPLYCHAIN_APP_v1.3.0.exe` (PyInstaller, fichier `SUPPLYCHAIN_APP_v1.3.0.spec`).

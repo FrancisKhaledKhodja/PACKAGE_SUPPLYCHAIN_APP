@@ -9,11 +9,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Zone statistiques (colonne de droite)
   const selectedArticleP = document.getElementById("selected-article");
   const formFilterStats = document.getElementById("form-filter-stats");
-  const typeExitInput = document.getElementById("type-exit");
   const messageP = document.getElementById("stats-message");
-  const theadStatsExit = document.getElementById("thead-stats-exit");
-  const tbodyStatsExit = document.getElementById("tbody-stats-exit");
-  const svgEl = document.getElementById("stats-exit-chart");
+  const theadStatsExitYearly = document.getElementById("thead-stats-exit-yearly");
+  const tbodyStatsExitYearly = document.getElementById("tbody-stats-exit-yearly");
+  const theadStatsExitMonthly = document.getElementById("thead-stats-exit-monthly");
+  const tbodyStatsExitMonthly = document.getElementById("tbody-stats-exit-monthly");
+  const svgYearly = document.getElementById("stats-exit-chart-yearly");
+  const svgMonthly = document.getElementById("stats-exit-chart-monthly");
   const exitMotifCheckboxes = document.querySelectorAll(".exit-motif-stats");
 
   let selectedCodeArticle = null;
@@ -88,80 +90,117 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const typeExitRaw = (typeExitInput && typeExitInput.value || "").trim();
-
     if (messageP) messageP.textContent = "Chargement des statistiques...";
-    if (theadStatsExit) theadStatsExit.innerHTML = "";
-    if (tbodyStatsExit) tbodyStatsExit.innerHTML = "";
-    if (svgEl) svgEl.innerHTML = "";
+    if (theadStatsExitYearly) theadStatsExitYearly.innerHTML = "";
+    if (tbodyStatsExitYearly) tbodyStatsExitYearly.innerHTML = "";
+    if (theadStatsExitMonthly) theadStatsExitMonthly.innerHTML = "";
+    if (tbodyStatsExitMonthly) tbodyStatsExitMonthly.innerHTML = "";
+    if (svgYearly) svgYearly.innerHTML = "";
+    if (svgMonthly) svgMonthly.innerHTML = "";
 
     try {
-      const url = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit`));
+      // Construire les 2 URLs : annuelle (table) et mensuelle (graph)
+      const urlYear = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit`));
+      const urlMonth = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit-monthly`));
 
       // 1) types de sortie via cases à cocher
       if (exitMotifCheckboxes && exitMotifCheckboxes.length) {
         exitMotifCheckboxes.forEach(cb => {
           if (cb.checked) {
-            url.searchParams.append("type_exit", cb.value);
+            urlYear.searchParams.append("type_exit", cb.value);
+            urlMonth.searchParams.append("type_exit", cb.value);
           }
         });
       }
 
-      // 2) filtre libre additionnel (séparé par virgules)
-      if (typeExitRaw) {
-        typeExitRaw.split(",").map(s => s.trim()).filter(Boolean).forEach(v => {
-          url.searchParams.append("type_exit", v);
-        });
-      }
+      // Appels parallèles : annuelle + mensuelle
+      const [resYear, resMonth] = await Promise.all([
+        fetch(urlYear.toString()),
+        fetch(urlMonth.toString()),
+      ]);
 
-      const res = await fetch(url.toString());
-      if (!res.ok) {
-        if (messageP) messageP.textContent = `Erreur API (${res.status}).`;
+      if (!resYear.ok) {
+        if (messageP) messageP.textContent = `Erreur API annuelle (${resYear.status}).`;
+        return;
+      }
+      if (!resMonth.ok) {
+        if (messageP) messageP.textContent = `Erreur API mensuelle (${resMonth.status}).`;
         return;
       }
 
-      const data = await res.json();
-      const rows = data.rows || [];
+      const dataYear = await resYear.json();
+      const dataMonth = await resMonth.json();
 
-      // Tableau des stats (annee, qte_mvt)
-      const cols = ["annee", "qte_mvt"];
-      if (theadStatsExit) {
-        theadStatsExit.innerHTML = cols.map(c => `<th>${escapeHtml(c)}</th>`).join("");
+      const rowsYear = dataYear.rows || [];
+      const rowsMonth = dataMonth.rows || [];
+
+      // Tableau des stats par année (annee, qte_mvt)
+      const colsYear = ["annee", "qte_mvt"];
+      if (theadStatsExitYearly) {
+        theadStatsExitYearly.innerHTML = colsYear.map(c => `<th>${escapeHtml(c)}</th>`).join("");
       }
-      if (tbodyStatsExit) {
-        tbodyStatsExit.innerHTML = rows.map(r => {
+      if (tbodyStatsExitYearly) {
+        tbodyStatsExitYearly.innerHTML = rowsYear.map(r => {
           const annee = r.annee != null ? String(r.annee) : "";
-          const qte = r.qte_mvt != null ? String(r.qte_mvt) : "";
+          const qte = r.qte_mvt != null ? String(r.qte_mvt) : "0";
           return `<tr><td>${escapeHtml(annee)}</td><td>${escapeHtml(qte)}</td></tr>`;
         }).join("");
       }
 
-      const stats = rows.map(r => ({
+      // Tableau des stats mensuelles (annee en cours, 12 mois)
+      const colsMonth = ["annee", "mois", "qte_mvt"];
+      if (theadStatsExitMonthly) {
+        theadStatsExitMonthly.innerHTML = colsMonth.map(c => `<th>${escapeHtml(c)}</th>`).join("");
+      }
+      if (tbodyStatsExitMonthly) {
+        tbodyStatsExitMonthly.innerHTML = rowsMonth.map(r => {
+          const annee = r.annee != null ? String(r.annee) : "";
+          const mois = r.mois != null ? String(r.mois) : "";
+          const qte = r.qte_mvt != null ? String(r.qte_mvt) : "0";
+          return `<tr><td>${escapeHtml(annee)}</td><td>${escapeHtml(mois)}</td><td>${escapeHtml(qte)}</td></tr>`;
+        }).join("");
+      }
+
+      // Données pour graph annuel
+      const statsYear = rowsYear.map(r => ({
         annee: +r.annee,
         qte_mvt: +r.qte_mvt,
       })).filter(d => !Number.isNaN(d.annee) && !Number.isNaN(d.qte_mvt));
 
-      if (!stats.length) {
+      // Données pour graph mensuel (annee en cours, 12 mois)
+      const statsMonth = rowsMonth.map(r => ({
+        annee: +r.annee,
+        mois: +r.mois,
+        qte_mvt: +r.qte_mvt,
+      })).filter(d => !Number.isNaN(d.annee) && !Number.isNaN(d.mois) && !Number.isNaN(d.qte_mvt));
+
+      if (!statsYear.length && !statsMonth.length) {
         if (messageP) messageP.textContent = "Aucune donnée de sortie trouvée pour cet article (et ce filtre).";
         return;
       }
 
       if (messageP) {
         const lib = selectedLibelle ? ` - ${selectedLibelle}` : "";
-        messageP.textContent = `Statistiques chargées pour l'article ${code}${lib}.`;
+        messageP.textContent = "";
+        messageP.textContent = `Statistiques annuelles et mensuelles chargées pour l'article ${code}${lib}.`;
       }
 
-      renderBarChart(stats);
+      if (statsYear.length && svgYearly) {
+        renderYearlyBarChart(svgYearly, statsYear);
+      }
+      if (statsMonth.length && svgMonthly) {
+        renderMonthlyBarChart(svgMonthly, statsMonth);
+      }
     } catch (e) {
       if (messageP) messageP.textContent = "Erreur lors du chargement des statistiques.";
     }
   }
 
-  function renderBarChart(data) {
-    if (!svgEl || typeof d3 === "undefined") return;
-    svgEl.innerHTML = "";
+  function renderYearlyBarChart(svgElement, data) {
+    if (!svgElement || typeof d3 === "undefined") return;
+    svgElement.innerHTML = "";
 
-    const svg = d3.select(svgEl);
+    const svg = d3.select(svgElement);
     const width = +svg.attr("width");
     const height = +svg.attr("height");
     const margin = { top: 20, right: 20, bottom: 40, left: 60 };
@@ -181,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .range([innerHeight, 0])
       .nice();
 
-    const bars = g.selectAll(".bar")
+    g.selectAll(".bar")
       .data(data, d => d.annee)
       .enter()
       .append("rect")
@@ -192,7 +231,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("height", d => innerHeight - y(d.qte_mvt))
       .attr("fill", "steelblue");
 
-    // Labels au-dessus des barres
     g.selectAll(".bar-label")
       .data(data, d => d.annee)
       .enter()
@@ -208,6 +246,66 @@ document.addEventListener("DOMContentLoaded", () => {
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
       .call(d3.axisBottom(x).tickFormat(d3.format("d")));
+
+    g.append("g")
+      .call(d3.axisLeft(y));
+  }
+
+
+  function renderMonthlyBarChart(svgElement, data) {
+    if (!svgElement || typeof d3 === "undefined") return;
+    svgElement.innerHTML = "";
+
+    const svg = d3.select(svgElement);
+    const width = +svg.attr("width");
+    const height = +svg.attr("height");
+    const margin = { top: 20, right: 20, bottom: 40, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+
+    const g = svg.append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Domain X = 12 mois (1..12) même si data en a moins
+    const allMonths = d3.range(1, 13);
+    const monthLabels = ["Jan", "Fév", "Mar", "Avr", "Mai", "Jun", "Jul", "Aoû", "Sep", "Oct", "Nov", "Déc"];
+
+    const x = d3.scaleBand()
+      .domain(allMonths)
+      .range([0, innerWidth])
+      .padding(0.1);
+
+    const y = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.qte_mvt) || 0])
+      .range([innerHeight, 0])
+      .nice();
+
+    g.selectAll(".bar")
+      .data(data, d => d.mois)
+      .enter()
+      .append("rect")
+      .attr("class", "bar")
+      .attr("x", d => x(d.mois))
+      .attr("y", d => y(d.qte_mvt))
+      .attr("width", x.bandwidth())
+      .attr("height", d => innerHeight - y(d.qte_mvt))
+      .attr("fill", "steelblue");
+
+    g.selectAll(".bar-label")
+      .data(data, d => d.mois)
+      .enter()
+      .append("text")
+      .attr("class", "bar-label")
+      .attr("x", d => (x(d.mois) || 0) + x.bandwidth() / 2)
+      .attr("y", d => y(d.qte_mvt) - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .attr("fill", "#fff")
+      .text(d => d.qte_mvt);
+
+    g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(x).tickFormat(m => monthLabels[m - 1] || String(m)));
 
     g.append("g")
       .call(d3.axisLeft(y));

@@ -122,28 +122,67 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function renderExitStats(rows) {
+  function renderExitStats(yearlyRows, monthlyRows) {
     if (!exitStatsContainer) return;
 
-    if (!rows || !rows.length) {
+    const hasYear = yearlyRows && yearlyRows.length;
+    const hasMonth = monthlyRows && monthlyRows.length;
+
+    if (!hasYear && !hasMonth) {
       exitStatsContainer.textContent = "Aucune statistique de sortie disponible pour cet article.";
       if (exitStatsLinkWrapper) exitStatsLinkWrapper.innerHTML = "";
       return;
     }
 
-    let html = "<table style='width:100%; border-collapse:collapse;'>";
-    html += "<thead><tr>";
-    html += "<th style='text-align:left; padding:2px 4px;'>Année</th>";
-    html += "<th style='text-align:right; padding:2px 4px;'>Quantité sortie</th>";
-    html += "</tr></thead><tbody>";
+    let html = "";
 
-    rows.forEach(r => {
-      const annee = r.annee != null ? String(r.annee) : "";
-      const qte = r.qte_mvt != null ? String(r.qte_mvt) : "0";
-      html += `<tr><td style="padding:2px 4px;">${annee}</td><td style="padding:2px 4px; text-align:right;">${qte}</td></tr>`;
-    });
+    // Conteneur flex pour afficher gauche/droite
+    html += "<div style='display:flex; flex-wrap:wrap; gap:8px;'>";
 
-    html += "</tbody></table>";
+    if (hasYear) {
+      html += "<div style='flex:1 1 200px; min-width:0;'>";
+      html += "<div style='margin-bottom:6px; font-weight:500;'>Statistiques de sorties par année</div>";
+      html += "<table style='width:100%; border-collapse:collapse; margin-bottom:8px;'>";
+      html += "<thead><tr>";
+      html += "<th style='text-align:left; padding:2px 4px;'>Année</th>";
+      html += "<th style='text-align:right; padding:2px 4px;'>Quantité sortie</th>";
+      html += "</tr></thead><tbody>";
+
+      yearlyRows.forEach(r => {
+        const annee = r.annee != null ? String(r.annee) : "";
+        const qte = r.qte_mvt != null ? String(r.qte_mvt) : "0";
+        html += `<tr><td style="padding:2px 4px;">${annee}</td><td style="padding:2px 4px; text-align:right;">${qte}</td></tr>`;
+      });
+
+      html += "</tbody></table>";
+      html += "</div>"; // fin colonne annuelle
+    }
+
+    if (hasMonth) {
+      const currentYear = monthlyRows[0] && monthlyRows[0].annee != null
+        ? String(monthlyRows[0].annee)
+        : String(new Date().getFullYear());
+
+      html += "<div style='flex:1 1 200px; min-width:0;'>";
+      html += `<div style='margin:4px 0 2px; font-weight:500;'>Détail mensuel pour l'année ${currentYear}</div>`;
+      html += "<table style='width:100%; border-collapse:collapse;'>";
+      html += "<thead><tr>";
+      html += "<th style='text-align:left; padding:2px 4px;'>Mois</th>";
+      html += "<th style='text-align:right; padding:2px 4px;'>Quantité sortie</th>";
+      html += "</tr></thead><tbody>";
+
+      monthlyRows.forEach(r => {
+        const mois = r.mois != null ? String(r.mois) : "";
+        const qte = r.qte_mvt != null ? String(r.qte_mvt) : "0";
+        html += `<tr><td style="padding:2px 4px;">${mois}</td><td style="padding:2px 4px; text-align:right;">${qte}</td></tr>`;
+      });
+
+      html += "</tbody></table>";
+      html += "</div>"; // fin colonne mensuelle
+    }
+
+    html += "</div>"; // fin conteneur flex
+
     exitStatsContainer.innerHTML = html;
 
     if (exitStatsLinkWrapper) {
@@ -246,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const remaining = cols.filter(c => !ordered.includes(c));
     cols = [...ordered, ...remaining];
 
-    theadStock.innerHTML = cols.map(c => `<th>${c}</th>`).join("");
+    theadStock.innerHTML = cols.map(c => `<th style="text-align:left;">${c}</th>`).join("");
 
     rows.forEach(r => {
       const tr = document.createElement("tr");
@@ -357,27 +396,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      let url = `/items/${encodeURIComponent(code)}/stats-exit`;
-      const params = [];
+      const urlYear = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit`));
+      const urlMonth = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit-monthly`));
+
+      const paramsYear = urlYear.searchParams;
+      const paramsMonth = urlMonth.searchParams;
+
       if (exitMotifCheckboxes && exitMotifCheckboxes.length) {
         exitMotifCheckboxes.forEach(cb => {
           if (cb.checked) {
-            params.push(`type_exit=${encodeURIComponent(cb.value)}`);
+            paramsYear.append("type_exit", cb.value);
+            paramsMonth.append("type_exit", cb.value);
           }
         });
       }
-      if (params.length) {
-        url += `?${params.join("&")}`;
-      }
 
-      const res = await fetch(API(url));
-      if (!res.ok) {
-        exitStatsContainer.textContent = `Erreur API statistiques de sorties (${res.status})`;
+      const [resYear, resMonth] = await Promise.all([
+        fetch(urlYear.toString()),
+        fetch(urlMonth.toString()),
+      ]);
+
+      if (!resYear.ok) {
+        exitStatsContainer.textContent = `Erreur API statistiques de sorties annuelles (${resYear.status})`;
         return;
       }
-      const data = await res.json();
-      const rows = data.rows || [];
-      renderExitStats(rows);
+      if (!resMonth.ok) {
+        exitStatsContainer.textContent = `Erreur API statistiques de sorties mensuelles (${resMonth.status})`;
+        return;
+      }
+
+      const dataYear = await resYear.json();
+      const dataMonth = await resMonth.json();
+      const rowsYear = dataYear.rows || [];
+      const rowsMonth = dataMonth.rows || [];
+
+      renderExitStats(rowsYear, rowsMonth);
     } catch (e) {
       exitStatsContainer.textContent = "Erreur de communication avec l'API statistiques de sorties";
     }

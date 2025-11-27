@@ -18,6 +18,36 @@ document.addEventListener("DOMContentLoaded", () => {
   let refLayer = null;
   let currentRows = [];
 
+  function buildGoogleMapsDirectionsUrl(row, apiData) {
+    if (!row) return null;
+
+    const storeLat = row.latitude;
+    const storeLon = row.longitude;
+    const storeAddr = row.adresse || "";
+
+    const centerLat = typeof apiData.center_lat === "number" ? apiData.center_lat : null;
+    const centerLon = typeof apiData.center_lon === "number" ? apiData.center_lon : null;
+    const centerLabel = apiData.center_label || "";
+
+    const base = "https://www.google.com/maps/dir/?api=1";
+
+    // Cas idéal : coordonnées pour l'origine et la destination
+    if (centerLat != null && centerLon != null && storeLat != null && storeLon != null) {
+      const origin = `${centerLat},${centerLon}`;
+      const dest = `${storeLat},${storeLon}`;
+      return `${base}&origin=${encodeURIComponent(origin)}&destination=${encodeURIComponent(dest)}&travelmode=driving`;
+    }
+
+    // Fallback : adresses textuelles si disponibles
+    const originText = centerLabel || "";
+    const destText = storeAddr || "";
+    if (originText || destText) {
+      return `${base}&origin=${encodeURIComponent(originText)}&destination=${encodeURIComponent(destText)}&travelmode=driving`;
+    }
+
+    return null;
+  }
+
   function ensureMap(lat, lon, zoom) {
     if (!window.L) return;
     if (!map) {
@@ -142,6 +172,10 @@ document.addEventListener("DOMContentLoaded", () => {
         th.textContent = col;
         theadRow.appendChild(th);
       }
+      // Colonne supplémentaire pour l'itinéraire Google Maps
+      const thDir = document.createElement("th");
+      thDir.textContent = "Itinéraire";
+      theadRow.appendChild(thDir);
 
       tbodyRows.innerHTML = "";
       for (const row of rows) {
@@ -156,6 +190,20 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           tr.appendChild(td);
         }
+
+        // Cellule lien itinéraire Google Maps
+        const tdDir = document.createElement("td");
+        const gmapsUrl = buildGoogleMapsDirectionsUrl(row, data);
+        if (gmapsUrl) {
+          const a = document.createElement("a");
+          a.href = gmapsUrl;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.textContent = "Itinéraire";
+          tdDir.appendChild(a);
+        }
+        tr.appendChild(tdDir);
+
         tbodyRows.appendChild(tr);
       }
 
