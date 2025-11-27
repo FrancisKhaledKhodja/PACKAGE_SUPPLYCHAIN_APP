@@ -16,12 +16,6 @@
       </span>
     </h1>
     <div style="display:flex; align-items:center; gap:1rem;">
-      <nav>
-        <a href="items.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Items</a>
-        <a href="stores.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Magasins</a>
-        <a href="downloads.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Téléchargements</a>
-        <a href="statistiques_sorties.html" style="color:#fff; margin-left:1rem; text-decoration:none;">Statistiques sorties</a>
-      </nav>
       <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
     </div>
   </header>
@@ -66,8 +60,11 @@
 
           const data = await response.json();
           if (data && data.ok) {
-            message.textContent = "Connexion réussie, redirection...";
-            window.location.href = "home.html";
+            message.textContent = "Connexion réussie, ouverture de l'application...";
+            // Ouvrir / réutiliser l'onglet dédié à home.html
+            const href = "home.html";
+            const name = "scapp-" + href.replace(/[^\w-]/g, "_");
+            window.open(href, name);
           } else {
             message.textContent = "Identifiants invalides.";
           }

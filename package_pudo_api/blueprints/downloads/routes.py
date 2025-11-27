@@ -1,7 +1,11 @@
 import os
+import tempfile
+
+import polars as pl
 from flask import jsonify, send_file
+
 from . import bp
-from package_pudo_api.constants import path_r, folder_gestion_pr, path_lmline
+from package_pudo_api.constants import path_r, folder_gestion_pr, path_lmline, path_datan, folder_name_app
 
 
 CARNET_CHRONOPOST_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\GESTION_PR\CARNET_CHRONOPOST"
@@ -39,6 +43,10 @@ def list_latest_files():
     # Carnet Chronopost
     latest_carnet = _latest_file_in_dir(CARNET_CHRONOPOST_DIR)
 
+    # Stock final parquet (pour export CSV)
+    stock_final_parquet = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
+    latest_stock_final = stock_final_parquet if os.path.exists(stock_final_parquet) else None
+
     def _info(path: str | None):
         if not path:
             return {"available": False, "filename": None}
@@ -49,6 +57,7 @@ def list_latest_files():
         "chronopost_fusionne": _info(latest_chrono),
         "lm2s": _info(latest_lm2s),
         "carnet_chronopost": _info(latest_carnet),
+        "stock_final_csv": _info(latest_stock_final),
     })
 
 
@@ -59,6 +68,34 @@ def download_annuaire_pr_api():
     if not latest:
         return jsonify({"error": "not_found"}), 404
     return send_file(latest, as_attachment=True, download_name=os.path.basename(latest))
+
+
+@bp.get("/stock_final_csv")
+def download_stock_final_csv_api():
+    stock_parquet = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
+    if not os.path.exists(stock_parquet):
+        return jsonify({"error": "not_found"}), 404
+
+    try:
+        df = pl.read_parquet(stock_parquet)
+    except Exception:
+        return jsonify({"error": "read_failed"}), 500
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+    tmp_path = tmp.name
+    tmp.close()
+
+    try:
+        df.write_csv(tmp_path)
+    except Exception:
+        return jsonify({"error": "export_failed"}), 500
+
+    return send_file(
+        tmp_path,
+        as_attachment=True,
+        download_name="stock_final.csv",
+        mimetype="text/csv; charset=utf-8",
+    )
 
 
 @bp.get("/lm2s")

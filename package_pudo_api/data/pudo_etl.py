@@ -47,6 +47,9 @@ def get_update_status():
     src_items_wo_exit = os.path.join(path_exit_parquet, "items_without_exit_final.parquet")
     dst_items_wo_exit = os.path.join(path_datan, folder_name_app, "items_without_exit_final.parquet")
     
+    src_items_parent_buildings = os.path.join(path_exit_parquet, "items_parent_buildings.parquet")
+    dst_items_parent_buildings = os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet")
+    
     src_nomenclatures = os.path.join(path_exit_parquet, "nomenclatures.parquet")
     dst_nomenclatures = os.path.join(path_datan, folder_name_app, "nomenclatures.parquet")
     
@@ -64,6 +67,9 @@ def get_update_status():
 
     src_stock_554 = SRC_STOCK_554_SUPPLYCHAIN_APP
     dst_stock_554 = os.path.join(path_datan, folder_name_app, "stock_554.parquet")
+
+    src_stock_final = os.path.join(path_exit_parquet, "stock_final.parquet")
+    dst_stock_final = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
 
     items = []
     if src_annuaire:
@@ -94,6 +100,13 @@ def get_update_status():
         "dst": dst_items,
         "src_mtime": _mtime(src_items),
         "dst_mtime": _mtime(dst_items),
+    })
+    items.append({
+        "key": "items_parent_buildings",
+        "src": src_items_parent_buildings,
+        "dst": dst_items_parent_buildings,
+        "src_mtime": _mtime(src_items_parent_buildings),
+        "dst_mtime": _mtime(dst_items_parent_buildings),
     })
     items.append({
         "key": "items_without_exit_final",
@@ -144,6 +157,13 @@ def get_update_status():
         "src_mtime": _mtime(src_stock_554),
         "dst_mtime": _mtime(dst_stock_554),
     })
+    items.append({
+        "key": "stock_final",
+        "src": src_stock_final,
+        "dst": dst_stock_final,
+        "src_mtime": _mtime(src_stock_final),
+        "dst_mtime": _mtime(dst_stock_final),
+    })
 
     for it in items:
         sm = it.get("src_mtime")
@@ -160,7 +180,6 @@ def update_data():
     global last_update_summary
     status = get_update_status()
 
-    
     # 1) Convert latest annuaire Excel to parquet if newer or missing
     annuaire_info = next((x for x in status if x["key"] == "pudo_directory"), None)
     if annuaire_info and annuaire_info["src"] and annuaire_info["needs_update"]:
@@ -182,7 +201,12 @@ def update_data():
     items_info = next((x for x in status if x["key"] == "items"), None)
     if items_info and items_info["src_mtime"] is not None and items_info["needs_update"]:
         shutil.copy(items_info["src"], items_info["dst"])
-    
+
+    # 5) Copy items_parent_buildings parquet if newer or missing
+    items_parent_buildings_info = next((x for x in status if x["key"] == "items_parent_buildings"), None)
+    if items_parent_buildings_info and items_parent_buildings_info["src_mtime"] is not None and items_parent_buildings_info["needs_update"]:
+        shutil.copy(items_parent_buildings_info["src"], items_parent_buildings_info["dst"])
+
     items_wo_exit_info = next((x for x in status if x["key"] == "items_without_exit_final"), None)
     if items_wo_exit_info and items_wo_exit_info["src_mtime"] is not None and items_wo_exit_info["needs_update"]:
         shutil.copy(items_wo_exit_info["src"], items_wo_exit_info["dst"])
@@ -208,7 +232,7 @@ def update_data():
         shutil.copy(stats_exit_info["src"], stats_exit_info["dst"])
 
     stock_554_info = next((x for x in status if x["key"] == "stock_554"), None)
-    if stock_554_info and stock_554_info["src_mtime"] is not None and stock_554_info["needs_update"]:
+    if stock_554_info:
         stock_554_df = read_excel(SRC_STOCK_554_SUPPLYCHAIN_APP, NAME_FILE_554)
 
         stores_df = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
@@ -230,6 +254,9 @@ def update_data():
 
         stock_554_df.write_parquet(stock_554_info["dst"])
 
+    stock_final_info = next((x for x in status if x["key"] == "stock_final"), None)
+    if stock_final_info and stock_final_info["src_mtime"] is not None and stock_final_info["needs_update"]:
+        shutil.copy(stock_final_info["src"], stock_final_info["dst"])
 
     # Recompute after updates to report final state
     status_after = get_update_status()
@@ -304,6 +331,62 @@ def get_stock_details(code_article: str) -> pl.DataFrame:
                 "flag_stock_d_m",
                 "code_qualite",
                 "qte_stock",
+            )
+        )
+    )
+
+    return stock_filtered
+
+
+def get_stock_final_details(code_article: str) -> pl.DataFrame:
+    """Retourne un état de stock ultra détaillé pour un code_article.
+
+    Source : stock_final.parquet
+    Colonnes retournées :
+      - code_magasin, libelle_magasin, type_de_depot, flag_stock_d_m, emplacement,
+        code_article, libelle_court_article, n_lot, n_serie, qte_stock, qualite,
+        n_colis_aller, n_colis_retour, n_cde_dpm_dpi, demandeur_dpi,
+        code_projet, libelle_projet, statut_projet, responsable_projet,
+        date_reception_corrigee, categorie_anciennete, categorie_sans_sortie,
+        bu, date_stock
+    """
+    stock_parquet = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
+
+    if not os.path.exists(stock_parquet):
+        raise FileNotFoundError(stock_parquet)
+
+    stock = pl.read_parquet(stock_parquet)
+
+    stock_filtered = (
+        stock
+        .filter(pl.col("code_article") == code_article)
+        .filter(pl.col("qte_stock") > 0)
+        .select(
+            pl.col(
+                "code_magasin",
+                "libelle_magasin",
+                "type_de_depot",
+                "flag_stock_d_m",
+                "emplacement",
+                "code_article",
+                "libelle_court_article",
+                "n_lot",
+                "n_serie",
+                "qte_stock",
+                "qualite",
+                "n_colis_aller",
+                "n_colis_retour",
+                "n_cde_dpm_dpi",
+                "demandeur_dpi",
+                "code_projet",
+                "libelle_projet",
+                "statut_projet",
+                "responsable_projet",
+                "date_reception_corrigee",
+                "categorie_anciennete",
+                "categorie_sans_sortie",
+                "bu",
+                "date_stock",
             )
         )
     )

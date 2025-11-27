@@ -1,0 +1,197 @@
+2025-11-21 15:01:57.069 | INFO     | package_pudo_api.data.pudo_etl:update_data:167 - Update data
+2025-11-21 15:02:05.185 | INFO     | package_pudo_api.data.pudo_etl:update_data:249 - Data updated successfully
+2025-11-26 13:13:18.840 | INFO     | package_pudo_api.data.pudo_etl:update_data:167 - Update data
+2025-11-26 13:13:22.926 | INFO     | package_pudo_api.data.pudo_etl:update_data:249 - Data updated successfully
+2025-11-26 13:40:54.879 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 13:40:57.725 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 13:41:20.095 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 13:41:23.457 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 13:56:46.700 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 16:39:11.971 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 16:39:14.497 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 16:52:45.386 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 16:52:47.751 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 16:52:48.220 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 16:52:50.285 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 16:58:39.681 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 16:58:43.554 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:06:26.055 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:06:28.278 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:06:28.781 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:06:30.765 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:08:21.927 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:08:24.050 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:08:24.520 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:08:26.561 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:09:41.532 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:09:43.934 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:09:44.396 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:09:46.380 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:11:53.132 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:11:55.276 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:11:55.804 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:11:58.092 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:13:31.544 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:13:33.762 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:13:34.289 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:13:36.407 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:15:18.669 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:15:20.841 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:15:21.308 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:15:23.325 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:17:43.840 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:17:46.089 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 17:17:46.575 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 17:17:48.566 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:03:18.131 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:03:20.529 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:03:21.242 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:03:23.845 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:30:16.034 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:31:11.941 | ERROR    | package_pudo_api.services.pudo_service:<module>:32 - An error has been caught in function '<module>', process 'MainProcess' (24156), thread 'MainThread' (16760):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 24, in <module>
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+                          │  │            │  │    │    │           └ 'supply_chain_app'
+                          │  │            │  │    │    └ 'D:\\Datan'
+                          │  │            │  │    └ <function join at 0x000001898F2AC540>
+                          │  │            │  └ <module 'ntpath' (frozen)>
+                          │  │            └ <module 'os' (frozen)>
+                          │  └ <function read_parquet at 0x00000189929BD620>
+                          └ <module 'polars' from 'C:\\Users\\Khaled-Khodja\\OneDrive - TDF SAS\\SCRIPTS_PYTHON\\PACKAGE_SUPPLYCHAIN_APP\\.venv\\Lib\\sit...
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x00000189929BDB20>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 128, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ ('D:\\Datan\\supply_chain_app\\items_son_buildings.parquet',)
+           └ <function read_parquet at 0x00000189929BD760>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\io\parquet\functions.py", line 283, in read_parquet
+    return lf.collect()
+           │  └ <function LazyFrame.collect at 0x00000189927D2660>
+           └ <LazyFrame at 0x18992F18F50>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\_utils\deprecation.py", line 97, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {}
+           │         └ (<LazyFrame at 0x18992F18F50>,)
+           └ <function LazyFrame.collect at 0x00000189927D27A0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\opt_flags.py", line 330, in wrapper
+    return function(*args, **kwargs)
+           │         │       └ {'optimizations': <polars.lazyframe.opt_flags.QueryOptFlags object at 0x0000018992C99E50>}
+           │         └ (<LazyFrame at 0x18992F18F50>,)
+           └ <function LazyFrame.collect at 0x00000189927D2700>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\polars\lazyframe\frame.py", line 2332, in collect
+    return wrap_df(ldf.collect(engine, callback))
+           │       │   │       │       └ None
+           │       │   │       └ 'auto'
+           │       │   └ <method 'collect' of 'builtins.PyLazyFrame' objects>
+           │       └ <builtins.PyLazyFrame object at 0x0000018992DC2DB0>
+           └ <function wrap_df at 0x0000018992690720>
+
+FileNotFoundError: Le fichier spécifié est introuvable. (os error 2): D:\Datan\supply_chain_app\items_son_buildings.parquet
+
+This error occurred with the following context stack:
+	[1] 'parquet scan'
+	[2] 'sink'
+
+
+
+During handling of the above exception, another exception occurred:
+
+
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\run_supplychainapp.py", line 7, in <module>
+    from package_pudo_api.constants import path_supply_chain_app
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1310, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\__init__.py", line 5, in <module>
+    from .blueprints.items import bp as items_bp
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\__init__.py", line 5, in <module>
+    from . import routes  # noqa: E402,F401
+
+  File "<frozen importlib._bootstrap>", line 1415, in _handle_fromlist
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\items\routes.py", line 7, in <module>
+    from ...services.items_service import search_items_df, get_item_full, get_stats_exit
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\items_service.py", line 2, in <module>
+    from package_pudo_api.services.pudo_service import (
+
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 1027, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\services\pudo_service.py", line 32, in <module>
+    update_data()
+    └ <function update_data at 0x0000018992F28A40>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x0000018992F16FC0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-26 18:31:12.657 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:31:16.573 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:31:38.800 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:31:42.668 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:33:51.470 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:33:53.692 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:33:54.165 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:33:56.184 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:43:50.097 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:43:52.330 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:43:52.795 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:43:55.070 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:56:30.570 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:56:33.171 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 18:56:33.742 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 18:56:35.971 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 19:12:48.040 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 19:12:50.692 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 19:12:51.218 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 19:12:53.642 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 19:34:32.217 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 19:34:35.670 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-11-26 19:34:36.172 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-26 19:34:39.200 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully

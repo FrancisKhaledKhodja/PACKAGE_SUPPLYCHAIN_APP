@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>LOCALISATION DU STOCK PAR ARTICLE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+    defer
+  ></script>
+  <script src="js/stock_map.js" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout" style="font-size:1rem; grid-template-columns: 22vw minmax(0, 1fr);">
+    <aside class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Localisation du stock par article</h2>
+      <form id="form-stock-map" class="section" onsubmit="return false;" style="display:flex; flex-direction:column; gap:0.75rem;">
+        <div style="display:flex; flex-direction:column; gap:0.35rem;">
+          <label class="muted" for="code_article">Code article</label>
+          <input type="text" id="code_article" placeholder="Saisir un code article" required />
+        </div>
+
+        <div class="section" style="font-size:0.85rem; padding-top:0.5rem; display:flex; flex-direction:column; gap:0.75rem;">
+          <div class="muted" style="margin-bottom:0.15rem;">
+            Optionnel : renseigner un <strong>code IG</strong> ou une <strong>adresse postale</strong> pour positionner le centre de la carte
+            et calculer la distance à vol d'oiseau entre chaque magasin et ce point.
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.25rem;">
+            <label class="muted" for="code_ig">Code IG</label>
+            <input type="text" id="code_ig" placeholder="Ex : FR12345" />
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0.25rem;">
+            <label class="muted" for="address">Adresse postale</label>
+            <input type="text" id="address" placeholder="Ex : 100 rue ..., 75000 Paris" />
+          </div>
+
+          <div class="section" style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px dashed var(--border);">
+            <div class="muted" style="margin-bottom:0.25rem;">Filtres stock</div>
+
+            <div style="margin-bottom:0.35rem;">
+              <div class="muted" style="font-size:0.8rem; margin-bottom:0.15rem;">Type de dépôt</div>
+              <div style="display:flex; flex-wrap:wrap; gap:0.2rem 0.75rem; font-size:0.8rem;">
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="NATIONAL" checked> NATIONAL</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="LOCAL" checked> LOCAL</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="REO" checked> REO</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="PIED DE SITE" checked> PIED DE SITE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="EMBARQUE"> EMBARQUE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="LABORATOIRE"> LABORATOIRE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="DIVERS"> DIVERS</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="END"> END</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="FOURNISSEURS"> FOURNISSEURS</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="SOUS TRAITANTS"> SOUS TRAITANTS</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="DTOM"> DTOM</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="EXPERT DTE"> EXPERT DTE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="EXPERT DPR"> EXPERT DPR</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="REPARATEUR INTERNE"> REPARATEUR INTERNE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="REPARATEUR EXTERNE"> REPARATEUR EXTERNE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="RESERVE"> RESERVE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="FILIALE"> FILIALE</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="type_de_depot" value="DATACENTER"> DATACENTER</label>
+              </div>
+            </div>
+
+            <div style="margin-bottom:0.35rem;">
+              <div class="muted" style="font-size:0.8rem; margin-bottom:0.15rem;">Code qualité</div>
+              <div style="display:flex; flex-wrap:wrap; gap:0.2rem 0.75rem; font-size:0.8rem;">
+                <label style="flex:0 0 48%;"><input type="checkbox" name="code_qualite" value="GOOD" checked> GOOD</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="code_qualite" value="BLOQG"> BLOQG</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="code_qualite" value="BAD"> BAD</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="code_qualite" value="BLOQB"> BLOQB</label>
+              </div>
+            </div>
+
+            <div>
+              <div class="muted" style="font-size:0.8rem; margin-bottom:0.15rem;">Type de stock (flag_stock_d_m)</div>
+              <div style="display:flex; flex-wrap:wrap; gap:0.2rem 0.75rem; font-size:0.8rem;">
+                <label style="flex:0 0 48%;"><input type="checkbox" name="flag_stock_d_m" value="M" checked> M</label>
+                <label style="flex:0 0 48%;"><input type="checkbox" name="flag_stock_d_m" value="D"> D</label>
+              </div>
+            </div>
+
+            <div style="margin-top:0.5rem;">
+              <div class="muted" style="font-size:0.8rem; margin-bottom:0.15rem;">Autres filtres</div>
+              <div style="display:flex; flex-wrap:wrap; gap:0.2rem 0.75rem; font-size:0.8rem;">
+                <label style="flex:0 0 100%;"><input type="checkbox" id="hors_transit" checked> HORS TRANSIT (exclure les emplacements se terminant par -T)</label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-search-stock-map" type="submit" style="margin-top:0.5rem;">Afficher sur la carte</button>
+        <div id="stock-map-status" class="muted"></div>
+      </form>
+      <div class="section">
+        <div id="stock-map-article-info" class="muted" style="font-size:0.9rem;"></div>
+        <div id="stock-map-center-info" class="muted" style="font-size:0.85rem; margin-top:0.35rem;"></div>
+      </div>
+    </aside>
+
+    <main class="card">
+      <div class="card" style="margin-bottom:1rem;">
+        <h3 style="margin-top:0;">Carte des magasins avec stock</h3>
+        <div id="stock-map" style="height:600px; border-radius:0.5rem; overflow:hidden;"></div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <div>
+            <div id="stock-map-count" class="muted"></div>
+          </div>
+        </div>
+        <div style="overflow:auto; max-height:35vh;">
+          <table id="tbl-stock-map">
+            <thead><tr id="stock-map-thead-row"></tr></thead>
+            <tbody id="stock-map-tbody-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

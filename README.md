@@ -4,8 +4,92 @@ Application Python pour la gestion SupplyChain (PUDO, stocks, Helios, statistiqu
 
 Ce document résume :
 
+- comment installer les dépendances du projet,
 - comment lancer l'application en mode développeur,
 - comment construire un exécutable Windows (`.exe`) avec PyInstaller.
+
+---
+
+## 0. Installation & environnement
+
+### 0.1. Prérequis
+
+- **Python 3.13+** (conforme au `pyproject.toml`)
+- Windows (tests et packaging ciblés sur cette plateforme)
+- Accès aux fichiers sources métiers (parquets, etc.) attendus par `package_pudo_api`.
+
+### 0.2. Installation des dépendances avec `uv` (recommandé)
+
+Les dépendances de l'application sont décrites dans `pyproject.toml` et figées dans `uv.lock`.
+
+Depuis la racine du projet :
+
+```powershell
+uv sync
+```
+
+`uv` crée/actualise automatiquement l'environnement virtuel et installe toutes les dépendances déclarées.
+
+### 0.3. Installation des dépendances sans `uv` (option manuelle)
+
+Si `uv` n'est pas disponible, il est possible d'utiliser un environnement virtuel classique :
+
+```powershell
+python -m venv .venv
+ .\.venv\Scripts\Activate.ps1
+python -m pip install -U pip
+python -m pip install -e .
+```
+
+---
+
+## 0.4. Architecture de l'application
+
+Vue d'ensemble des principaux composants :
+
+```text
+        +-------------------------+
+        |  Utilisateur / Navigateur|
+        +-------------+-----------+
+                      |
+                      | HTTP (port 8000)
+                      v
+        +-------------+-----------+
+        |   Frontend statique     |
+        |  (package_pudo_frontend)|
+        |  HTML / CSS / JS        |
+        +-------------+-----------+
+                      |
+                      | HTTP (AJAX, port 5001)
+                      v
+        +-------------+-----------+
+        |   API Flask             |
+        |  (package_pudo_api)     |
+        |  /api/items, /api/pudo, |
+        |  /api/stores, /api/...  |
+        +-------------+-----------+
+                      |
+                      | Accès fichiers / ETL
+                      v
+        +-------------+-----------+
+        | Données métiers         |
+        | (parquets, Excel, etc.) |
+        | path_supply_chain_app   |
+        +-------------------------+
+```
+
+- `run_supplychainapp.py` :
+  - démarre **l'API Flask** sur `127.0.0.1:5001` ;
+  - démarre un **serveur HTTP simple** (module `http.server`) sur `127.0.0.1:8000` pour servir `package_pudo_frontend` ;
+  - ouvre automatiquement le navigateur sur `http://127.0.0.1:8000/`.
+- `package_pudo_api` :
+  - organise l'API en **blueprints** (`items`, `pudo`, `stores`, `helios`, `technicians`, `downloads`, etc.) ;
+  - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
+- `package_pudo_api.data.pudo_etl` :
+  - gère les **tâches d'ETL** (chargement/parquetisation, mise à jour périodique dans `path_datan/<folder_name_app>`).
+- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.2.0.exe`) :
+  - embarque le même code Python et le dossier `package_pudo_frontend` ;
+  - reproduit exactement le comportement de `python run_supplychainapp.py` sans dépendre de Python installé sur le poste utilisateur.
 
 ---
 
@@ -77,17 +161,19 @@ Adapter cette liste si d'autres dépendances sont ajoutées au projet.
 Toujours depuis la racine du projet :
 
 ```powershell
-pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.1.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
+pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.2.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
 ```
 
 Détails des options :
 
 - `--onefile` : génère un seul fichier `.exe` autonome.
-- `--name SUPPLYCHAIN_APP_v1.1.0` : nom du binaire généré.
+- `--name SUPPLYCHAIN_APP_v1.2.0` : nom du binaire généré.
 - `--add-data "package_pudo_frontend;package_pudo_frontend"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
 - `run_supplychainapp.py` : point d'entrée qui démarre API + frontend.
 
-> Remarque : si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` à la commande ci-dessus.
+> Remarque :
+> - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` à la commande ci-dessus ;
+> - des fichiers `.spec` sont également fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`) pour rejouer une configuration de build existante avec `pyinstaller SUPPLYCHAIN_APP_v1.2.0.spec`.
 
 ### 2.4. Résultat
 
@@ -96,7 +182,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.1.0.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.2.0.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).

@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tbodyRows = document.getElementById("tbody-rows");
   const resultsCount = document.getElementById("results-count");
   const detailsDiv = document.getElementById("details");
+  const photosLinkWrapperItems = document.getElementById("photos-link-wrapper-items");
 
   function escapeHtml(str) {
     return (str == null ? "" : String(str))
@@ -214,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return "#33CC00";
       case "2 - entre 2 et 6 mois":
         return "#66AA00";
-      case "3 - entre 6 mois et 1 an ":
+      case "3 - entre 6 mois et 1 an":
         return "#999900";
       case "4 - entre 1 et 2 ans":
         return "#CC6600";
@@ -352,6 +353,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function updatePhotosLinkItems(code) {
+    if (!photosLinkWrapperItems) return;
+    photosLinkWrapperItems.innerHTML = "";
+    if (!code) return;
+
+    try {
+      const res = await fetch(API(`/auth/photos/${encodeURIComponent(code)}`));
+      if (!res.ok) return;
+      const data = await res.json();
+      const files = data.files || [];
+      if (!files.length) return;
+
+      const url = `photos.html?code=${encodeURIComponent(code)}`;
+      photosLinkWrapperItems.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">Voir les photos de l'article</a>`;
+    } catch (e) {
+      // en cas d'erreur, on n'affiche rien
+    }
+  }
+
   async function loadDetailsForRow(tr) {
     if (!tr) return;
     const rowsNode = tbodyRows;
@@ -381,6 +401,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsDiv) {
         detailsDiv.innerHTML = renderKeyValueTable(full);
       }
+      if (photosLinkWrapperItems) photosLinkWrapperItems.innerHTML = "";
       return;
     }
 
@@ -426,6 +447,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsDiv) {
         detailsDiv.innerHTML = html;
       }
+      updatePhotosLinkItems(code);
     } catch (e) {
       if (detailsDiv) {
         let themed = renderThemedDetails(full);
@@ -434,12 +456,16 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         detailsDiv.innerHTML = themed;
       }
+      updatePhotosLinkItems(code);
     }
   }
 
   async function loadDetailsByCode(codeParam) {
     const code = (codeParam || "").toString().trim();
-    if (!code) return;
+    if (!code) {
+      if (photosLinkWrapperItems) photosLinkWrapperItems.innerHTML = "";
+      return;
+    }
     if (detailsDiv) {
       detailsDiv.innerHTML = "Chargement des détails de l'article...";
     }
@@ -489,6 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsDiv) {
         detailsDiv.innerHTML = `<div class="card"><div class="muted" style="padding:8px 12px;">Impossible de charger les détails pour le code ${code}.</div></div>`;
       }
+      updatePhotosLinkItems(code);
     }
   }
 

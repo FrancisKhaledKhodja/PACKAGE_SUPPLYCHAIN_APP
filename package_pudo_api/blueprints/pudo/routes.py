@@ -1,8 +1,9 @@
 from flask import request, jsonify
 from . import bp
-from package_pudo_api.services.pudo_service import get_available_pudo
+from package_pudo_api.services.pudo_service import get_available_pudo, get_pudo_directory
 from package_pudo_api.services.geocoding import get_latitude_and_longitude
 from package_pudo_api.data.pudo_etl import get_update_status, update_data
+
 
 @bp.post("/search")
 def pudo_search():
@@ -35,6 +36,15 @@ def pudo_nearby_address():
     df = get_available_pudo(float(lat), float(lon), radius, enseignes)
     rows = [r for r in df.iter_rows(named=True)] if df is not None else []
     return jsonify({"rows": rows, "geocoded_address": coords.get("address")}), 200
+
+
+@bp.get("/directory")
+def pudo_directory_api():
+    """
+    Retourne l'annuaire des points relais pour l'administration PR.
+    """
+    rows = get_pudo_directory()
+    return jsonify({"rows": rows})
 
 
 @bp.get("/update-status")

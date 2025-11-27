@@ -99,8 +99,22 @@ def read_excel(folder_path: str, file_name: str, sheet_name: str=None) -> pl.Dat
         else:
             headers = [str(h) if h is not None else "" for h in rows[0]]
             data_rows = rows[1:]
-            records = [dict(zip(headers, r)) for r in data_rows]
-            df = pl.DataFrame(records)
+
+            # Construire les colonnes explicitement pour garantir un type homogne par colonne
+            columns_dict: dict[str, list] = {h: [] for h in headers}
+            for row in data_rows:
+                for idx, header in enumerate(headers):
+                    value = row[idx] if idx < len(row) else None
+                    columns_dict[header].append(value)
+
+            # Si une colonne contient plusieurs types Python (hors None),
+            # on la convertit en str pour viter les erreurs Polars de type ComputeError
+            for header, values in columns_dict.items():
+                non_none_types = {type(v) for v in values if v is not None}
+                if len(non_none_types) > 1:
+                    columns_dict[header] = [str(v) if v is not None else None for v in values]
+
+            df = pl.DataFrame(columns_dict)
     except Exception as e:
         raise Exception(f"Erreur lors de la lecture du fichier Excel: {str(e)}")
 

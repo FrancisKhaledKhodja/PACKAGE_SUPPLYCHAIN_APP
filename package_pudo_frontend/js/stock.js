@@ -13,6 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const summaryDiv = document.getElementById("item-summary");
   const itemLinkWrapper = document.getElementById("item-link-wrapper");
+  const photosLinkWrapper = document.getElementById("photos-link-wrapper");
   const heliosSummaryDiv = document.getElementById("helios-summary");
   const heliosLinkWrapper = document.getElementById("helios-link-wrapper");
   const exitStatsContainer = document.getElementById("exit-stats-container");
@@ -26,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!row) {
       summaryDiv.textContent = "";
       if (itemLinkWrapper) itemLinkWrapper.innerHTML = "";
+      if (photosLinkWrapper) photosLinkWrapper.innerHTML = "";
       return;
     }
 
@@ -63,6 +65,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  async function updatePhotosLink(code) {
+    if (!photosLinkWrapper) return;
+    photosLinkWrapper.innerHTML = "";
+    if (!code) return;
+
+    try {
+      const res = await fetch(API(`/auth/photos/${encodeURIComponent(code)}`));
+      if (!res.ok) return;
+      const data = await res.json();
+      const files = data.files || [];
+      if (!files.length) return;
+
+      const url = `photos.html?code=${encodeURIComponent(code)}`;
+      photosLinkWrapper.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">Voir les photos de l'article</a>`;
+    } catch (e) {
+      // en cas d'erreur, on n'affiche rien
+    }
+  }
+
   function getCategorieSansSortieColor(value) {
     const v = (value || "").trim();
     switch (v) {
@@ -70,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return "#33CC00";
       case "2 - entre 2 et 6 mois":
         return "#66AA00";
-      case "3 - entre 6 mois et 1 an ":
+      case "3 - entre 6 mois et 1 an":
         return "#999900";
       case "4 - entre 1 et 2 ans":
         return "#CC6600";
@@ -199,6 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
           loadHeliosSummary(code);
           loadExitStats(code);
           loadCategorieSansSortie(code);
+          updatePhotosLink(code);
         }
       });
       tbodyItems.appendChild(tr);
@@ -239,8 +261,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (stockSummaryLinkWrapper) {
       const code = codeArticle || "";
       if (code) {
-        const url = `stock_detailed.html?code=${encodeURIComponent(code)}`;
-        stockSummaryLinkWrapper.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">Voir le stock détaillé par magasin pour cet article</a>`;
+        const urlDetailed = `stock_detailed.html?code=${encodeURIComponent(code)}`;
+        const urlHyper = `stock_hyper_detaille.html?code=${encodeURIComponent(code)}`;
+        stockSummaryLinkWrapper.innerHTML = `
+          <a href="${urlDetailed}" target="_blank" rel="noopener noreferrer">Voir le stock détaillé par magasin pour cet article</a><br>
+          <a href="${urlHyper}" target="_blank" rel="noopener noreferrer">Ouvrir le stock hyper détaillé (par lot / série / projet)</a>
+        `;
       } else {
         stockSummaryLinkWrapper.innerHTML = "";
       }

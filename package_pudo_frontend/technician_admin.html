@@ -2,15 +2,27 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>CONSULTATION MAGASIN</title>
+  <title>ADMINISTRATION PR</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/api.js?v=1" defer></script>
-  <script src="js/technician.js?v=3" defer></script>
+  <script src="js/technician_admin.js?v=1" defer></script>
 </head>
+
 <body>
   <div id="scapp-header"></div>
 
-  <main class="layout" style="font-size:1rem;">
+  <!-- Bloc de protection ADMIN PR -->
+  <div id="admin-pr-login" class="card" style="max-width:400px; margin:2rem auto; padding:1.5rem;">
+    <h2 style="margin-top:0;">Accès ADMINISTRATION PR</h2>
+    <p class="muted">Veuillez saisir le mot de passe pour accéder à cette page.</p>
+    <input type="password" id="admin-pr-password" placeholder="Mot de passe" style="width:100%; margin-bottom:0.75rem;" />
+    <button id="admin-pr-login-btn" type="button">Valider</button>
+    <div id="admin-pr-login-msg" class="muted" style="margin-top:0.5rem; color:#dc2626;"></div>
+  </div>
+
+  <!-- Contenu réel, masqué tant que le mot de passe n'est pas correct -->
+  <main id="admin-pr-content" class="layout" style="font-size:1rem; display:none;">
+    <!-- ICI on remet tout ton ancien contenu de <main> -->
     <aside class="card">
       <h2 style="margin-top:0;">Filtres</h2>
       <div class="section">
@@ -31,9 +43,10 @@
       <button id="btn-tech-show" type="button" style="margin-top:0.75rem;">Afficher</button>
     </aside>
 
+    <!-- le reste de ton HTML existant (section technicien + cartes PR) -->
     <section class="card" id="tech-details">
-      <h2 style="margin-top:0;">Détails du technicien</h2>
-      <p id="tech-details-empty" class="muted">Sélectionnez un contact dans la colonne de gauche puis cliquez sur "Afficher".</p>
+      <h2 style="margin-top:0;">Administration PR pour le technicien</h2>
+      <p id="tech-details-empty" class="muted">Sélectionnez un contact puis cliquez sur « Afficher ».</p>
       <div id="tech-details-content" style="display:none;">
         <div class="section">
           <table>
@@ -66,6 +79,13 @@
               <div id="pr-principal-adresse"></div>
               <div id="pr-principal-meta" class="muted" style="margin-top:4px;"></div>
               <div id="pr-principal-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-principal-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-principal-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-principal-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
             </div>
             <div class="card" style="flex:1 1 260px; min-width:260px;">
               <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais backup</div>
@@ -74,6 +94,13 @@
               <div id="pr-backup-adresse"></div>
               <div id="pr-backup-meta" class="muted" style="margin-top:4px;"></div>
               <div id="pr-backup-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-backup-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-backup-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-backup-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
             </div>
             <div class="card" style="flex:1 1 260px; min-width:260px;">
               <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais hors normes</div>
@@ -82,11 +109,25 @@
               <div id="pr-hn-adresse"></div>
               <div id="pr-hn-meta" class="muted" style="margin-top:4px;"></div>
               <div id="pr-hn-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-hn-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-hn-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-hn-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
             </div>
+          </div>
+
+          <div class="section" style="margin-top:1rem; text-align:right;">
+            <button id="btn-pr-admin-save" type="button">Sauvegarder les choix PR administrateur</button>
           </div>
         </div>
       </div>
     </section>
   </main>
 </body>
+
+
+
 </html>

@@ -14,6 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const theadStatsExit = document.getElementById("thead-stats-exit");
   const tbodyStatsExit = document.getElementById("tbody-stats-exit");
   const svgEl = document.getElementById("stats-exit-chart");
+  const exitMotifCheckboxes = document.querySelectorAll(".exit-motif-stats");
 
   let selectedCodeArticle = null;
   let selectedLibelle = null;
@@ -96,6 +97,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const url = new URL(API(`/items/${encodeURIComponent(code)}/stats-exit`));
+
+      // 1) types de sortie via cases à cocher
+      if (exitMotifCheckboxes && exitMotifCheckboxes.length) {
+        exitMotifCheckboxes.forEach(cb => {
+          if (cb.checked) {
+            url.searchParams.append("type_exit", cb.value);
+          }
+        });
+      }
+
+      // 2) filtre libre additionnel (séparé par virgules)
       if (typeExitRaw) {
         typeExitRaw.split(",").map(s => s.trim()).filter(Boolean).forEach(v => {
           url.searchParams.append("type_exit", v);
@@ -169,7 +181,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .range([innerHeight, 0])
       .nice();
 
-    g.selectAll(".bar")
+    const bars = g.selectAll(".bar")
       .data(data, d => d.annee)
       .enter()
       .append("rect")
@@ -179,6 +191,19 @@ document.addEventListener("DOMContentLoaded", () => {
       .attr("width", x.bandwidth())
       .attr("height", d => innerHeight - y(d.qte_mvt))
       .attr("fill", "steelblue");
+
+    // Labels au-dessus des barres
+    g.selectAll(".bar-label")
+      .data(data, d => d.annee)
+      .enter()
+      .append("text")
+      .attr("class", "bar-label")
+      .attr("x", d => (x(d.annee) || 0) + x.bandwidth() / 2)
+      .attr("y", d => y(d.qte_mvt) - 4)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .attr("fill", "#fff")
+      .text(d => d.qte_mvt);
 
     g.append("g")
       .attr("transform", `translate(0,${innerHeight})`)
@@ -226,6 +251,14 @@ document.addEventListener("DOMContentLoaded", () => {
     formFilterStats.addEventListener("submit", (ev) => {
       ev.preventDefault();
       loadStatsForSelectedArticle();
+    });
+  }
+
+  if (exitMotifCheckboxes && exitMotifCheckboxes.length) {
+    exitMotifCheckboxes.forEach(cb => {
+      cb.addEventListener("change", () => {
+        loadStatsForSelectedArticle();
+      });
     });
   }
 

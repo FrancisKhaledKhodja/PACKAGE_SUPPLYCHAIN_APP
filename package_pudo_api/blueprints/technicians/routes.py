@@ -6,6 +6,8 @@ from package_pudo_api.services.pudo_service import (
     get_store_types,
     get_store_details,
     list_technician_pudo_assignments,
+    get_pr_overrides_for_store,
+    save_pr_overrides_for_store,
 )
 
 
@@ -104,3 +106,24 @@ def technician_assignments_api():
 
     filtered = [r for r in rows if matches(r)]
     return jsonify({"rows": filtered})
+
+
+@bp.get("/<code>/pr_overrides")
+def technician_pr_overrides_get(code: str):
+    code = (code or "").strip()
+    if not code:
+        return jsonify({"error": "code is required"}), 400
+    data = get_pr_overrides_for_store(code)
+    return jsonify(data)
+
+
+@bp.post("/<code>/pr_overrides")
+def technician_pr_overrides_post(code: str):
+    code = (code or "").strip()
+    if not code:
+        return jsonify({"error": "code is required"}), 400
+    payload = request.get_json(silent=True) or {}
+    data = save_pr_overrides_for_store(code, payload)
+    if "error" in data:
+        return jsonify(data), 400
+    return jsonify(data)

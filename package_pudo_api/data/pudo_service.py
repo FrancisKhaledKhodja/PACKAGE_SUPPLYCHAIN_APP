@@ -4,10 +4,9 @@ from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from package_pudo_api.data.pudo_etl import update_data
 
-from package_pudo_api.constants import path_output, folder_bdd_python, path_datan, folder_name_app
+from package_pudo_api.constants import path_datan, folder_name_app
 
 try:
-    
     pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
     stores = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
     helios = pl.read_parquet(os.path.join(path_datan, folder_name_app, "helios.parquet"))
@@ -17,6 +16,7 @@ try:
     nomenclatures = pl.read_parquet(os.path.join(path_datan, folder_name_app, "nomenclatures.parquet"))
     manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
     equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
+    stock_554 = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stock_554.parquet"))
 except FileNotFoundError:
     update_data()
     try:
@@ -55,6 +55,10 @@ except FileNotFoundError:
         equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
     except FileNotFoundError:
         equivalents = pl.DataFrame()
+    try:
+        stock_554 = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stock_554.parquet"))
+    except FileNotFoundError:
+        stock_554 = pl.DataFrame()
 
 # Dictionnaires utiles (magasins/helios)
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
@@ -83,6 +87,151 @@ def get_items_parent_buildings_df() -> pl.DataFrame:
     return items_parent_buildings
 
 
+def get_stock_map_for_item(
+    code_article: str,
+    ref_lat: float | None = None,
+    ref_lon: float | None = None,
+    type_de_depot_filters: list[str] | None = None,
+    code_qualite_filters: list[str] | None = None,
+    flag_stock_d_m_filters: list[str] | None = None,
+    hors_transit_only: bool = False,
+) -> list[dict]:
+    """Retourne les magasins ayant du stock pour un article donné, prêts pour affichage carte.
+
+    Le résultat est agrégé par magasin et enrichi avec les coordonnées du magasin
+    (latitude_right, longitude_right) et les infos d'adresse si disponibles.
+
+    Si ref_lat/ref_lon sont fournis, une distance à vol d'oiseau (km) est calculée
+    entre chaque magasin et ce point de référence, puis les résultats sont triés
+    par distance croissante.
+    """
+    rows: list[dict] = []
+    try:
+        if 'stock_554' not in globals() or stock_554.is_empty():
+            return rows
+        if 'stores' not in globals() or stores.is_empty():
+            return rows
+
+        norm = (code_article or "").strip().upper()
+        if not norm:
+            return rows
+
+        df = stock_554
+        required_cols = {"code_article", "code_magasin", "code_qualite", "flag_stock_d_m", "type_de_depot", "qte_stock"}
+        if not required_cols.issubset(df.columns):
+            return rows
+
+        df = df.filter(pl.col("code_article") == norm)
+
+        # Filtres optionnels fournis par l'appelant
+        if type_de_depot_filters:
+            df = df.filter(pl.col("type_de_depot").is_in(type_de_depot_filters))
+        if code_qualite_filters:
+            df = df.filter(pl.col("code_qualite").is_in(code_qualite_filters))
+        if flag_stock_d_m_filters:
+            df = df.filter(pl.col("flag_stock_d_m").is_in(flag_stock_d_m_filters))
+
+        # Filtre HORS TRANSIT : exclure les emplacements se terminant par "-T"
+        # On détecte dynamiquement une colonne dont le nom contient "emplacement".
+        if hors_transit_only:
+            emp_cols = [c for c in df.columns if "emplacement" in c.lower()]
+            if emp_cols:
+                emp_col = emp_cols[0]
+                df = (
+                    df.with_columns(
+                        pl.col(emp_col).cast(pl.Utf8).alias("__emplacement_tmp__")
+                    )
+                    .filter(~pl.col("__emplacement_tmp__").str.ends_with("-T"))
+                    .drop("__emplacement_tmp__")
+                )
+        if df.is_empty():
+            return rows
+
+        df = (
+            df.with_columns(
+                pl.col("qte_stock").cast(pl.Float64, strict=False).fill_null(0.0).alias("qte_stock_float")
+            )
+            .group_by("code_magasin")
+            .agg(
+                pl.col("qte_stock_float").sum().alias("qte_stock_total"),
+                pl.col("code_article").first().alias("code_article"),
+                pl.col("libelle_court_article").first().alias("libelle_court_article"),
+                pl.col("libelle_magasin").first().alias("libelle_magasin"),
+                pl.col("type_de_depot").first().alias("type_de_depot"),
+                pl.col("code_qualite").first().alias("code_qualite"),
+                pl.col("flag_stock_d_m").first().alias("flag_stock_d_m"),
+            )
+        )
+        if df.is_empty():
+            return rows
+
+        store_cols = [
+            "code_magasin",
+            "libelle_magasin",
+            "type_de_depot",
+            "adresse1",
+            "adresse_1",
+            "code_postal",
+            "ville",
+            "latitude_right",
+            "longitude_right",
+        ]
+        store_cols = [c for c in store_cols if c in stores.columns]
+        stores_sub = stores.select(store_cols)
+
+        joined = df.join(stores_sub, on="code_magasin", how="left")
+
+        def _pick(row: dict, keys: list[str]):
+            for k in keys:
+                v = row.get(k)
+                if v is not None and v != "":
+                    return v
+            return None
+
+        out_rows: list[dict] = []
+        for r in joined.iter_rows(named=True):
+            adr1 = _pick(r, ["adresse_1", "adresse1"]) or ""
+            cp = r.get("code_postal") or ""
+            ville = r.get("ville") or ""
+            adresse = " ".join([str(x) for x in [adr1, cp, ville] if x]).strip()
+
+            lat = r.get("latitude_right")
+            lon = r.get("longitude_right")
+
+            row_dict: dict = {
+                "code_magasin": r.get("code_magasin"),
+                "libelle_magasin": r.get("libelle_magasin"),
+                "type_de_depot": r.get("type_de_depot"),
+                "code_qualite": r.get("code_qualite"),
+                "flag_stock_d_m": r.get("flag_stock_d_m"),
+                "code_article": r.get("code_article"),
+                "libelle_court_article": r.get("libelle_court_article"),
+                "qte_stock_total": float(r.get("qte_stock_total")) if r.get("qte_stock_total") is not None else 0.0,
+                "adresse": adresse,
+                "latitude": float(lat) if lat is not None else None,
+                "longitude": float(lon) if lon is not None else None,
+            }
+
+            if ref_lat is not None and ref_lon is not None and lat is not None and lon is not None:
+                try:
+                    d = haversine_distance(float(ref_lat), float(ref_lon), float(lat), float(lon))
+                    row_dict["distance_km"] = float(d)
+                except Exception:
+                    row_dict["distance_km"] = None
+
+            out_rows.append(row_dict)
+
+        if ref_lat is not None and ref_lon is not None:
+            try:
+                out_rows.sort(key=lambda x: (x.get("distance_km") is None, x.get("distance_km") or 0.0))
+            except Exception:
+                pass
+
+        return out_rows
+    except Exception:
+        return []
+
+
 def get_helios_quantity_for_item(code_article: str) -> float:
     """Retourne la quantité totale du parc Helios pour un article donné.
 
@@ -99,7 +248,7 @@ def get_helios_quantity_for_item(code_article: str) -> float:
     try:
         norm = str(code_article).strip().upper()
         filtered = df.filter(
-            pl.col("code_article").cast(pl.Utf8).str.strip().str.to_uppercase() == norm
+            pl.col("code_article") == norm
         )
         if filtered.is_empty():
             return 0.0
@@ -136,15 +285,15 @@ def get_helios_production_summary_for_item(code_article: str) -> dict:
         "active_sites": 0,
     }
     try:
-
         required_cols = {"code_article_fils", "quantite_fils_actif", "code_ig"}
         if not required_cols.issubset(items_parent_buildings.columns):
             return result
 
         norm = result["code"]
+        # Normaliser code_article_fils côté DF (trim + upper) pour éviter les
+        # écarts de casse ou d'espaces qui conduisent à un parc nul.
         filtered = items_parent_buildings.filter(
-            (pl.col("code_article_fils") == norm)
-            & (pl.col("quantite_fils_actif").cast(pl.Float64, strict=False) > 0)
+            (pl.col("code_article_fils") == norm) & (pl.col("quantite_fils_actif") > 0)
         )
         if filtered.is_empty():
             return result
@@ -192,9 +341,11 @@ def get_helios_active_sites_for_item(code_article: str) -> list[dict]:
             return out
 
         parents_building = items_parent_buildings
+        # Même logique de normalisation que pour le résumé de production,
+        # afin que les sites actifs soient correctement trouvés.
         filtered = parents_building.filter(
             (pl.col("code_article_fils") == norm)
-            & (pl.col("quantite_fils_actif").cast(pl.Float64, strict=False) > 0)
+            & (pl.col("quantite_fils_actif") > 0)
         )
         if filtered.is_empty():
             return out
@@ -203,7 +354,7 @@ def get_helios_active_sites_for_item(code_article: str) -> list[dict]:
         per_site = (
             filtered
             .group_by(pl.col("code_ig"))
-            .agg(pl.col("quantite_fils_actif").cast(pl.Float64, strict=False).sum().alias("quantity_active"))
+            .agg(pl.col("quantite_fils_actif").sum().alias("quantity_active"))
         )
         if per_site.is_empty():
             return out

@@ -1,8 +1,15 @@
 import os
+import datetime
 from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from package_pudo_api.data.pudo_etl import update_data
-from package_pudo_api.constants import path_output, folder_bdd_python, path_datan, folder_name_app
+from package_pudo_api.constants import (
+    path_datan,
+    folder_name_app,
+    CHOIX_PR_TECH_DIR,
+    CHOIX_PR_TECH_FILE,
+)
+
 
 try:
     pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
@@ -13,6 +20,9 @@ try:
     manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
     equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
     stats_exit = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stats_exit.parquet"))
+    items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
+    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+    
     try:
         stats_exit = stats_exit.with_columns(pl.col("date_mvt").dt.year().alias("annee"))
     except Exception:
@@ -20,6 +30,14 @@ try:
         pass
 except FileNotFoundError:
     update_data()
+    try:
+        items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
+    except FileNotFoundError:
+        items_parent_buildings = pl.DataFrame()
+    try:
+        items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+    except FileNotFoundError:
+        items_son_buildings = pl.DataFrame()
     try:
         pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
     except FileNotFoundError:
@@ -82,11 +100,16 @@ def get_available_pudo(lat, long, radius, enseignes: list[str] | None = None):
         pudos_filtered
         .with_columns(
             pl.struct(["latitude", "longitude"]).map_elements(
-                lambda row: haversine_distance(lat, long, row["latitude"], row["longitude"]),
+                lambda row: haversine_distance(
+                    float(lat),
+                    float(long),
+                    float(row["latitude"]),
+                    float(row["longitude"]),
+                ),
                 return_dtype=pl.Float32,
             ).alias("distance")
         )
-        .filter(pl.col("distance") <= radius)
+        .filter(pl.col("distance") <= float(radius))
     )
 
     df = pl.DataFrame()
@@ -319,6 +342,153 @@ def get_equivalents_for(code_article: str) -> list[dict]:
         results.append(r)
 
     return results
+
+
+def get_pudo_directory() -> list[dict]:
+    """
+    Retourne une liste de points relais pour alimenter les listes déroulantes.
+
+    Chaque élément contient au minimum :
+      - code_point_relais
+      - enseigne
+      - ville
+      - label (code - enseigne - ville)
+    """
+    if "pudos" not in globals() or pudos.is_empty():
+        return []
+
+    cols = []
+    for c in ["code_point_relais", "enseigne", "ville", "adresse_1", "code_postal", "statut"]:
+        if c in pudos.columns:
+            cols.append(c)
+    df = pudos.select(cols)
+
+    rows: list[dict] = []
+    for r in df.iter_rows(named=True):
+        code = str(r.get("code_point_relais") or "").strip()
+        if not code:
+            continue
+        enseigne = str(r.get("enseigne") or "")
+        ville = str(r.get("ville") or "")
+        label_parts = [code]
+        if enseigne:
+            label_parts.append(enseigne)
+        if ville:
+            label_parts.append(ville)
+        r["label"] = " - ".join(label_parts)
+        rows.append(r)
+    return rows
+
+
+def _ensure_choix_pr_dir():
+    if not os.path.isdir(CHOIX_PR_TECH_DIR):
+        os.makedirs(CHOIX_PR_TECH_DIR, exist_ok=True)
+
+
+def _load_pr_overrides_df() -> pl.DataFrame:
+    _ensure_choix_pr_dir()
+    path = os.path.join(CHOIX_PR_TECH_DIR, CHOIX_PR_TECH_FILE)
+    if not os.path.exists(path):
+        return pl.DataFrame(
+            schema={
+                "code_magasin": pl.Utf8,
+                "pr_role": pl.Utf8,
+                "code_point_relais_override": pl.Utf8,
+                "commentaire": pl.Utf8,
+                "date_commentaire": pl.Utf8,
+            }
+        )
+    try:
+        return pl.read_parquet(path)
+    except Exception:
+        return pl.DataFrame(
+            schema={
+                "code_magasin": pl.Utf8,
+                "pr_role": pl.Utf8,
+                "code_point_relais_override": pl.Utf8,
+                "commentaire": pl.Utf8,
+                "date_commentaire": pl.Utf8,
+            }
+        )
+
+
+def _save_pr_overrides_df(df: pl.DataFrame) -> None:
+    _ensure_choix_pr_dir()
+    path = os.path.join(CHOIX_PR_TECH_DIR, CHOIX_PR_TECH_FILE)
+    df.write_parquet(path)
+
+
+def get_pr_overrides_for_store(code_magasin: str) -> dict:
+    if not code_magasin:
+        return {"principal": None, "backup": None, "hors_normes": None}
+
+    df = _load_pr_overrides_df()
+    if df.is_empty():
+        return {"principal": None, "backup": None, "hors_normes": None}
+
+    try:
+        sub = df.filter(pl.col("code_magasin") == str(code_magasin))
+    except Exception:
+        return {"principal": None, "backup": None, "hors_normes": None}
+
+    out = {"principal": None, "backup": None, "hors_normes": None}
+    for row in sub.iter_rows(named=True):
+        role = str(row.get("pr_role") or "")
+        if role not in out:
+            continue
+        out[role] = {
+            "code": row.get("code_point_relais_override"),
+            "commentaire": row.get("commentaire"),
+            "date_commentaire": row.get("date_commentaire"),
+        }
+    return out
+
+
+def save_pr_overrides_for_store(code_magasin: str, payload: dict) -> dict:
+    if not code_magasin:
+        return {"error": "code_magasin is required"}
+
+    df = _load_pr_overrides_df()
+    try:
+        df = df.filter(pl.col("code_magasin") != str(code_magasin))
+    except Exception:
+        df = pl.DataFrame(
+            schema={
+                "code_magasin": pl.Utf8,
+                "pr_role": pl.Utf8,
+                "code_point_relais_override": pl.Utf8,
+                "commentaire": pl.Utf8,
+                "date_commentaire": pl.Utf8,
+            }
+        )
+
+    rows = []
+    now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    for role in ["principal", "backup", "hors_normes"]:
+        conf = payload.get(role) if isinstance(payload, dict) else None
+        if not conf:
+            continue
+        code = (conf.get("code") or "").strip()
+        commentaire = (conf.get("commentaire") or "").strip()
+        if not code and not commentaire:
+            continue
+        rows.append(
+            {
+                "code_magasin": str(code_magasin),
+                "pr_role": role,
+                "code_point_relais_override": code or None,
+                "commentaire": commentaire or None,
+                "date_commentaire": now_str,
+            }
+        )
+
+    if rows:
+        df_new = pl.DataFrame(rows)
+        df = pl.concat([df, df_new], how="vertical")
+
+    _save_pr_overrides_df(df)
+    return get_pr_overrides_for_store(code_magasin)
 
 
 def get_store_details(code_magasin: str) -> dict | None:

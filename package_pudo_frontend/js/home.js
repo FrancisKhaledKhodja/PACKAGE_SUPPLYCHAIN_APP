@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusDiv = document.getElementById("update-status");
   const detailsDiv = document.getElementById("update-details");
   const btnUpdate = document.getElementById("btn-update-data");
+  const photosStatus = document.getElementById("photos-update-status");
+  const btnUpdatePhotos = document.getElementById("btn-update-photos");
 
   async function refreshStatus() {
     if (!statusDiv || !detailsDiv) return;
@@ -41,6 +43,41 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {
       statusDiv.textContent = "Erreur lors de la récupération du statut des mises à jour.";
     }
+  }
+
+  if (btnUpdatePhotos) {
+    btnUpdatePhotos.addEventListener("click", async () => {
+      if (!confirm("Lancer la mise à jour des photos (copie des fichiers .webp manquants depuis le répertoire réseau) ?")) {
+        return;
+      }
+      btnUpdatePhotos.disabled = true;
+      btnUpdatePhotos.textContent = "Mise à jour des photos en cours...";
+      if (photosStatus) {
+        photosStatus.textContent = "Synchronisation des photos en cours...";
+      }
+      try {
+        const res = await fetch("http://127.0.0.1:5001/api/auth/photos/sync", {
+          method: "POST",
+        });
+        if (!res.ok) {
+          alert("Erreur lors de la mise à jour des photos (" + res.status + ")");
+        } else {
+          const data = await res.json();
+          const copied = data.copied || 0;
+          const already = data.already_present || 0;
+          const total = data.total_network_files || 0;
+          if (photosStatus) {
+            photosStatus.textContent = `Mise à jour des photos terminée : ${copied} fichier(s) copié(s), ${already} déjà présent(s) sur ${total} fichier(s) réseau.`;
+          }
+          alert("Mise à jour des photos terminée.");
+        }
+      } catch (e) {
+        alert("Erreur de communication avec l'API pour la mise à jour des photos.");
+      } finally {
+        btnUpdatePhotos.disabled = false;
+        btnUpdatePhotos.textContent = "Lancer la mise à jour des photos";
+      }
+    });
   }
 
   if (btnUpdate) {

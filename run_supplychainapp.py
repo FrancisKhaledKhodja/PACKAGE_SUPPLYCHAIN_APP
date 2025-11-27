@@ -4,6 +4,7 @@ import threading
 import time
 import webbrowser
 from pathlib import Path
+from package_pudo_api.constants import path_supply_chain_app
 
 
 
@@ -37,6 +38,9 @@ def run_api():
 
 
 def main():
+    photos_dir = os.path.join(path_supply_chain_app, "photos")
+    os.makedirs(photos_dir, exist_ok=True)
+
     # Démarrer l'API et le frontend en parallèle
     t_api = threading.Thread(target=run_api, daemon=True)
     t_front = threading.Thread(target=run_frontend, daemon=True)

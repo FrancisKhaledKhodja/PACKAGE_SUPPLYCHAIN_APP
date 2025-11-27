@@ -45,6 +45,11 @@ path_exit_parquet = os.path.join(path_exit, "FICHIERS_ANALYSES_SUPPLY_CHAIN", "F
 folder_tracking_logistic = "SUIVI_ENCOURS_STOCK_EMBARQUES"
 path_tracking_logistic = os.path.join(path_exit, folder_tracking_logistic)
 
+
+# Choix PR technicien (overrides administration)
+CHOIX_PR_TECH_DIR = os.path.join(path_r, folder_gestion_pr, "CHOIX_PR_TECH")
+CHOIX_PR_TECH_FILE = "choix_pr_tech.parquet"
+
 # referential items
 file_name_521 = "521 - (PIM) - REFERENTIEL ARTICLES V2.xlsx"
 sheet_names_521 = ["ARTICLES PIM", "ARTICLES PIM - TRANSPORT", "EQUIVALENT", "FABRICANT"]
@@ -125,4 +130,5 @@ PROXY_TDF = os.environ.get("proxy_tdf", "fproxy-vip.tdf.fr:8080")
 
 
 path_supply_chain_app = r"D:\Datan\supply_chain_app"
-
+path_photos_local = os.path.join(path_supply_chain_app, "photos")
+path_photos_network = os.path.join(path_exit, "PHOTOS")

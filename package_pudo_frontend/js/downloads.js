@@ -22,6 +22,7 @@
       { key: 'chronopost_fusionne', label: 'Chronopost fusionné', path: '/downloads/chronopost' },
       { key: 'lm2s', label: 'LM2S', path: '/downloads/lm2s' },
       { key: 'carnet_chronopost', label: 'Carnet Chronopost', path: '/downloads/carnet_chronopost' },
+      { key: 'stock_final_csv', label: 'Stock final (CSV UTF-8)', path: '/downloads/stock_final_csv' },
     ];
 
     const rows = items.map(it => {

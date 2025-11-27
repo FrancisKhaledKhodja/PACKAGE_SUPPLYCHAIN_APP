@@ -1,8 +1,16 @@
 # Frontend
 
-This folder will contain a separate UI project (e.g., React + Vite). The UI should consume the backend API at /api/*.
+Static HTML/CSS/JS frontend served by a simple HTTP server.
 
-Suggested steps:
-1. npm create vite@latest frontend -- --template react-ts
-2. cd frontend && npm i && npm run dev
-3. Configure VITE_API_BASE_URL to point to the Flask API (http://127.0.0.1:5001).
+The Flask API is available on `http://127.0.0.1:5001/api/*` and is consumed via AJAX from these pages.
+
+In development, the frontend is served automatically by `run_supplychainapp.py` using `http.server` on `http://127.0.0.1:8000/`.
+
+Entry points:
+
+- `index.html` / `base.html`-style layout
+- `items.html` (recherche articles / info article)
+- `stock.html`, `stock_detailed.html` (stocks agrégés et détaillés)
+- `helios.html` (parc installé)
+- `stores.html` (magasins & points relais)
+- `downloads.html` (téléchargements)
