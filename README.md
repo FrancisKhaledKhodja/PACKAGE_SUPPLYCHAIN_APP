@@ -130,35 +130,27 @@ Pour arrêter : `Ctrl + C` dans le terminal.
 
 ## 2. Construire un exécutable Windows avec PyInstaller
 
-La construction de l'exécutable se fait dans un environnement virtuel dédié, `.venv_build`, pour éviter les problèmes liés à l'environnement de développement principal.
+La construction de l'exécutable se fait directement depuis l'environnement virtuel principal `.venv`.
 
-### 2.1. Activer l'environnement de build
+### 2.1. Préparer l'environnement de build
 
-Depuis la racine du projet :
-
-```powershell
-.\.venv_build\Scripts\Activate.ps1
-```
-
-Le prompt doit afficher :
-
-```text
-(.venv_build) PS C:\...>
-```
-
-### 2.2. Dépendances nécessaires dans `.venv_build`
-
-Dans cet environnement, il faut installer les paquets utilisés par l'application (exemples principaux) :
+1. Activer l'environnement virtuel (si ce n'est pas déjà fait) :
 
 ```powershell
-python -m pip install flask polars-lts-cpu loguru fastexcel
+\.\.venv\Scripts\Activate.ps1
 ```
 
-Adapter cette liste si d'autres dépendances sont ajoutées au projet.
+2. Installer PyInstaller (une seule fois) si nécessaire, ainsi que le projet en mode éditable :
 
-### 2.3. Commande PyInstaller
+```powershell
+python -m pip install -e . pyinstaller
+```
 
-Toujours depuis la racine du projet :
+Une fois ces commandes exécutées, toutes les dépendances de l'application ainsi que PyInstaller sont disponibles dans `.venv`.
+
+### 2.2. Commande PyInstaller
+
+Depuis la racine du projet, avec `.venv` activé :
 
 ```powershell
 pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.2.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
@@ -175,7 +167,7 @@ Détails des options :
 > - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` à la commande ci-dessus ;
 > - des fichiers `.spec` sont également fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`) pour rejouer une configuration de build existante avec `pyinstaller SUPPLYCHAIN_APP_v1.2.0.spec`.
 
-### 2.4. Résultat
+### 2.3. Résultat
 
 PyInstaller génère :
 
@@ -187,13 +179,13 @@ C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.2.0.exe
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
 
-### 2.5. Lancer l'exécutable
+### 2.4. Lancer l'exécutable
 
 Depuis un terminal :
 
 ```powershell
 cd .\dist\
-.\SUPPLYCHAIN_APP_v1.1.0.exe
+.\SUPPLYCHAIN_APP_v1.2.0.exe
 ```
 
 L'exécutable :
