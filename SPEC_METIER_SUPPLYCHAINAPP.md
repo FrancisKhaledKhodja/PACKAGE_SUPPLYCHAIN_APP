@@ -185,9 +185,31 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 ---
 
-### 2.6. Écrans techniciens / affectations PUDO
+### 2.6. Page d'accueil (`home.html`)
 
 #### 2.6.1. Usages
+
+- Fournir une **vue de synthèse** à l'ouverture de l'application :
+  - statut des **mises à jour de données** (stock, PUDO, magasins, etc.) ;
+  - statut et actions de **mise à jour des photos** ;
+  - accès rapide aux principaux écrans (info article, recherche stock, parc Helios, téléchargements, etc.) ;
+  - liens vers des ressources SharePoint logistique.
+- Afficher une **mention explicite sur les photos métier** :
+  - nombre de fichiers photo présents sur le **répertoire réseau** ;
+  - nombre de fichiers photo présents **en local** sur le poste utilisateur ;
+  - nombre de fichiers locaux **correspondant** à un fichier du répertoire réseau.
+
+#### 2.7.2. Besoins métiers
+
+- Vérifier rapidement que **les photos nécessaires sont disponibles** sur le poste (limiter les surprises lors de la consultation d’articles).
+- Rendre visible, dès l'accueil, le **niveau de complétude** de la bibliothèque de photos locale par rapport au référentiel réseau.
+- Permettre à l'utilisateur de **déclencher une synchronisation** des photos manquantes depuis le répertoire réseau.
+
+---
+
+### 2.7. Écrans techniciens / affectations PUDO
+
+#### 2.7.1. Usages
 
 - Associer des **techniciens** à des **magasins / PUDO** (points relais).
 - Visualiser pour un technicien donné :
@@ -203,9 +225,9 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 ---
 
-### 2.7. Onglet `Localisation du stock` (`stock_map.html`)
+### 2.8. Onglet `Localisation du stock` (`stock_map.html`)
 
-#### 2.7.1. Usages
+#### 2.8.1. Usages
 
 - Visualiser sur une **carte** (Leaflet) les **magasins / dépôts** qui détiennent du stock pour un **code article** donné.
 - Permettre de **centrer la carte** et de calculer la **distance à vol d’oiseau** entre chaque magasin et un **point de référence** défini par l’utilisateur :

@@ -21,6 +21,13 @@ def login():
     return jsonify({"ok": True, "login": login}), 200
 
 
+@bp.get("/me")
+def me():
+    """Retourne le login actuellement stocké en session (si présent)."""
+    login = session.get("proxy_login")
+    return jsonify({"login": login}), 200
+
+
 def ensure_article_photos(code_article: str) -> None:
     pattern_local = os.path.join(path_photos_local, f"*{code_article}*.webp")
     if glob.glob(pattern_local):
@@ -41,6 +48,26 @@ def list_article_photos(code_article):
     pattern_local = os.path.join(path_photos_local, f"*{code_article}*.webp")
     files = [os.path.basename(p) for p in glob.glob(pattern_local)]
     return jsonify({"code_article": code_article, "files": files})
+
+
+@bp.get("/photos/stats")
+def photos_stats():
+    pattern_network = os.path.join(path_photos_network, "*.webp")
+    pattern_local = os.path.join(path_photos_local, "*.webp")
+
+    network_files = glob.glob(pattern_network)
+    local_files = glob.glob(pattern_local)
+
+    set_network = {os.path.basename(p) for p in network_files}
+    set_local = {os.path.basename(p) for p in local_files}
+
+    local_matching_network = len(set_network & set_local)
+
+    return jsonify({
+        "total_network_files": len(network_files),
+        "total_local_files": len(local_files),
+        "local_matching_network": local_matching_network,
+    }), 200
 
 
 @bp.get("/photos/raw/<filename>")

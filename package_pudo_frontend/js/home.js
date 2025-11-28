@@ -5,6 +5,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const photosStatus = document.getElementById("photos-update-status");
   const btnUpdatePhotos = document.getElementById("btn-update-photos");
 
+  async function refreshPhotosStats() {
+    if (!photosStatus) return;
+    try {
+      const res = await fetch("http://127.0.0.1:5001/api/auth/photos/stats");
+      if (!res.ok) {
+        return;
+      }
+      const data = await res.json();
+      const totalNetwork = data.total_network_files ?? 0;
+      const totalLocal = data.total_local_files ?? 0;
+      const localMatching = data.local_matching_network ?? 0;
+
+      photosStatus.textContent = `Photos : ${totalNetwork} fichier(s) sur le répertoire réseau, ${totalLocal} fichier(s) sur cet ordinateur dont ${localMatching} correspondant(s) à un fichier réseau.`;
+    } catch (e) {
+    }
+  }
+
   async function refreshStatus() {
     if (!statusDiv || !detailsDiv) return;
     statusDiv.textContent = "Vérification des mises à jour en cours...";
@@ -70,6 +87,7 @@ document.addEventListener("DOMContentLoaded", () => {
             photosStatus.textContent = `Mise à jour des photos terminée : ${copied} fichier(s) copié(s), ${already} déjà présent(s) sur ${total} fichier(s) réseau.`;
           }
           alert("Mise à jour des photos terminée.");
+          await refreshPhotosStats();
         }
       } catch (e) {
         alert("Erreur de communication avec l'API pour la mise à jour des photos.");
@@ -107,4 +125,5 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   refreshStatus();
+  refreshPhotosStats();
 });
