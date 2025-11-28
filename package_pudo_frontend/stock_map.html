@@ -17,7 +17,7 @@
     crossorigin=""
     defer
   ></script>
-  <script src="js/stock_map.js" defer></script>
+  <script src="js/stock_map.js?v=2" defer></script>
 </head>
 <body>
   <div id="scapp-header"></div>
@@ -27,8 +27,8 @@
       <h2 style="margin:0 0 8px; color:var(--muted)">Localisation du stock par article</h2>
       <form id="form-stock-map" class="section" onsubmit="return false;" style="display:flex; flex-direction:column; gap:0.75rem;">
         <div style="display:flex; flex-direction:column; gap:0.35rem;">
-          <label class="muted" for="code_article">Code article</label>
-          <input type="text" id="code_article" placeholder="Saisir un code article" required />
+          <label class="muted" for="code_article">Code article (un ou plusieurs, séparés par des ";")</label>
+          <input type="text" id="code_article" placeholder="Ex : TDF158545;TDF158548" required />
         </div>
 
         <div class="section" style="font-size:0.85rem; padding-top:0.5rem; display:flex; flex-direction:column; gap:0.75rem;">

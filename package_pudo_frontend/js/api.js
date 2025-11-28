@@ -80,6 +80,7 @@ function scappRenderHeader() {
         <a href="stock_map.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">LOCALISATION STOCK</a>
         <a href="items.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">CONSULTATION ARTICLE</a>
         <a href="helios.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">PARC HELIOS</a>
+        <a href="ol_mode_degrade.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">OL MODE DÉGRADÉ</a>
         <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
           <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">
             CONSULTATION PR ET MAGASIN ▾

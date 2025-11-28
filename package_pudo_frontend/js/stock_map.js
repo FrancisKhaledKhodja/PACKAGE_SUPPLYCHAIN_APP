@@ -81,10 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   form.addEventListener("submit", async () => {
-    const code = (codeInput.value || "").trim();
+    const rawCode = (codeInput.value || "").trim();
     const codeIg = (codeIgInput ? codeIgInput.value : "").trim();
     const address = (addressInput ? addressInput.value : "").trim();
-    if (!code) {
+    if (!rawCode) {
       statusDiv.textContent = "Merci de saisir un code article.";
       return;
     }
@@ -105,42 +105,90 @@ document.addEventListener("DOMContentLoaded", () => {
       const flagStockValues = Array.from(document.querySelectorAll("input[name='flag_stock_d_m']:checked")).map(cb => cb.value);
       const horsTransitOnly = horsTransitInput ? !!horsTransitInput.checked : false;
 
-      const resp = await fetch(API("/stores/stock-map"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          code_article: code,
-          code_ig: codeIg || undefined,
-          address: address || undefined,
-          type_de_depot: typeDepotValues,
-          code_qualite: codeQualiteValues,
-          flag_stock_d_m: flagStockValues,
-          hors_transit_only: horsTransitOnly,
-        }),
-      });
+      // Gestion de plusieurs codes article séparés par des ";"
+      const codes = rawCode
+        .split(";")
+        .map((c) => (c || "").trim().toUpperCase())
+        .filter((c) => !!c);
 
-      if (!resp.ok) {
-        statusDiv.textContent = `Erreur API (${resp.status})`;
+      if (!codes.length) {
+        statusDiv.textContent = "Merci de saisir au moins un code article valide.";
         return;
       }
 
-      const data = await resp.json();
-      const rows = data.rows || [];
+      let allRows = [];
+      let firstApiData = null;
+
+      for (let i = 0; i < codes.length; i += 1) {
+        const code = codes[i];
+        const resp = await fetch(API("/stores/stock-map"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            code_article: code,
+            code_ig: codeIg || undefined,
+            address: address || undefined,
+            type_de_depot: typeDepotValues,
+            code_qualite: codeQualiteValues,
+            flag_stock_d_m: flagStockValues,
+            hors_transit_only: horsTransitOnly,
+          }),
+        });
+
+        if (!resp.ok) {
+          statusDiv.textContent = `Erreur API (${resp.status}) pour le code article ${code}`;
+          return;
+        }
+
+        const dataPart = await resp.json();
+        const rowsPart = dataPart.rows || [];
+
+        // S'assurer que chaque ligne porte bien le code article concerné
+        rowsPart.forEach((r) => {
+          if (!r.code_article) {
+            r.code_article = code;
+          }
+        });
+
+        if (!firstApiData) {
+          firstApiData = { data: dataPart, code };
+        }
+
+        allRows = allRows.concat(rowsPart);
+      }
+
+      const data = firstApiData ? firstApiData.data : { rows: allRows };
+      const rows = allRows;
       currentRows = rows;
 
       if (!rows.length) {
-        statusDiv.textContent = "Aucun magasin avec ce code article en stock (selon les filtres qualité/stock/type de dépôt).";
+        statusDiv.textContent = "Aucun magasin avec ces codes article en stock (selon les filtres qualité/stock/type de dépôt).";
         countDiv.textContent = "0 magasin";
         return;
       }
 
+      // Tri des résultats par distance croissante (lignes sans distance en dernier)
+      rows.sort((a, b) => {
+        const da = typeof a.distance_km === "number" ? a.distance_km : null;
+        const db = typeof b.distance_km === "number" ? b.distance_km : null;
+        if (da == null && db == null) return 0;
+        if (da == null) return 1;
+        if (db == null) return -1;
+        return da - db;
+      });
+
       const first = rows[0];
-      const codeArticle = first.code_article || code.toUpperCase();
-      const libelle = first.libelle_court_article || "";
-      articleInfoDiv.textContent = libelle
-        ? `${codeArticle} - ${libelle}`
-        : codeArticle;
+      if (codes.length === 1) {
+        const codeArticle = first.code_article || codes[0];
+        const libelle = first.libelle_court_article || "";
+        articleInfoDiv.textContent = libelle
+          ? `${codeArticle} - ${libelle}`
+          : codeArticle;
+      } else {
+        // Afficher simplement la liste des codes saisis
+        articleInfoDiv.textContent = codes.join(" ; ");
+      }
 
       countDiv.textContent = `${rows.length} magasin(s) avec du stock`;
 
@@ -155,7 +203,9 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
+      // Colonnes affichées dans le tableau, en commençant par le code article et la quantité totale en stock
       const columns = [
+        "code_article",
         "code_magasin",
         "libelle_magasin",
         "type_de_depot",
@@ -234,6 +284,9 @@ document.addEventListener("DOMContentLoaded", () => {
             icon: L.icon({
               iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
               shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              shadowSize: [41, 41],
             }),
           });
           const label = `${r.code_magasin || ""} - ${r.libelle_magasin || ""}`;

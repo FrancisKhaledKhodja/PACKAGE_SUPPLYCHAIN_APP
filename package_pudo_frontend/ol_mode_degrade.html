@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>OL MODE DÉGRADÉ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=1" defer></script>
+  <script src="js/ol_mode_degrade.js?v=1" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout" style="font-size:1rem;">
+    <aside class="card">
+      <h2 style="margin-top:0;">Informations OL</h2>
+      <div class="section">
+        <div class="row" style="align-items:flex-end;">
+          <div style="flex:1;">
+            <label for="omd-bt" class="muted">Numéro de BT</label>
+            <input type="text" id="omd-bt" style="width:100%;" />
+          </div>
+          <div style="width:220px;">
+            <label for="omd-type-commande" class="muted">Type de commande</label>
+            <select id="omd-type-commande" style="width:100%;">
+              <option value="STANDARD">STANDARD</option>
+              <option value="URGENT">URGENT</option>
+              <option value="MAD">MAD</option>
+            </select>
+          </div>
+        </div>
+        <div class="section" style="margin-top:0.5rem;">
+          <label for="omd-date-besoin" class="muted">Date et heure de besoin</label>
+          <input type="datetime-local" id="omd-date-besoin" style="width:100%;" />
+        </div>
+        <div class="section" style="margin-top:0.5rem;">
+          <label for="omd-commentaire" class="muted">Commentaire libre</label>
+          <textarea id="omd-commentaire" rows="2" style="width:100%;"></textarea>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 style="margin-top:0; font-size:0.95rem;">Technicien</h3>
+        <label for="omd-tech-select" class="muted">Contact technicien</label>
+        <select id="omd-tech-select" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#ffffff; color:#111827;"></select>
+      </div>
+
+      <div class="section">
+        <h3 style="margin-top:0; font-size:0.95rem;">Détails du technicien</h3>
+        <table>
+          <tbody>
+            <tr><th style="text-align:left; width:200px;">Code magasin</th><td id="omd-code-magasin"></td></tr>
+            <tr><th style="text-align:left;">Libellé magasin</th><td id="omd-libelle-magasin"></td></tr>
+            <tr><th style="text-align:left;">Code tiers Daher</th><td id="omd-code-tiers"></td></tr>
+            <tr><th style="text-align:left;">Téléphone</th><td id="omd-telephone"></td></tr>
+            <tr><th style="text-align:left;">Email</th><td id="omd-email"></td></tr>
+            <tr><th style="text-align:left;">Adresse</th><td id="omd-adresse"></td></tr>
+          </tbody>
+        </table>
+
+        <div style="margin-top:0.75rem; font-size:0.9rem; border:1px solid #2563eb; border-radius:8px; padding:0.75rem; background:#eff6ff;">
+          <div class="muted" style="margin-bottom:0.25rem; font-weight:600; text-transform:uppercase; color:#111827;">Lieu de livraison</div>
+          <label style="display:block; margin-bottom:0.15rem; color:#111827;">
+            <input type="radio" name="omd-destination-type" value="code_ig" checked>
+            Code IG
+          </label>
+          <label style="display:block; margin-bottom:0.15rem; color:#111827;">
+            <input type="radio" name="omd-destination-type" value="point_relais">
+            Point relais
+          </label>
+          <label style="display:block; color:#111827;">
+            <input type="radio" name="omd-destination-type" value="adresse_libre">
+            Adresse libre
+          </label>
+        
+          <div id="omd-dest-code-ig" style="margin-top:0.75rem;">
+            <label for="omd-code-ig" class="muted" style="color:#111827;">Code IG</label>
+            <input list="omd-code-ig-list" id="omd-code-ig" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#ffffff; color:#111827;" />
+            <datalist id="omd-code-ig-list"></datalist>
+            <div id="omd-code-ig-address" class="muted" style="margin-top:0.25rem; font-size:0.8rem; color:#111827;"></div>
+          </div>
+
+          <div id="omd-dest-pr" style="margin-top:0.75rem; display:none;">
+            <div class="muted" style="margin-bottom:0.25rem; color:#111827;">Point relais</div>
+            <label style="display:block; margin-bottom:0.15rem; color:#111827;">
+              <input type="radio" name="omd-pr-choice" value="principal" checked>
+              Utiliser le point relais principal
+            </label>
+            <label style="display:block; color:#111827;">
+              <input type="radio" name="omd-pr-choice" value="hors_normes">
+              Utiliser le point relais hors normes
+            </label>
+            <div id="omd-dest-pr-address" class="muted" style="margin-top:0.5rem; font-size:0.85rem; color:#111827;"></div>
+          </div>
+
+          <div id="omd-dest-free" style="margin-top:0.75rem; display:none;">
+            <div class="muted" style="margin-bottom:0.25rem; color:#111827;">Adresse libre</div>
+            <div class="section" style="margin-top:0;">
+              <label for="omd-free-raison" class="muted" style="color:#111827;">Raison sociale</label>
+              <input type="text" id="omd-free-raison" style="width:100%;" />
+            </div>
+            <div class="section" style="margin-top:0.5rem;">
+              <label for="omd-free-l1" class="muted" style="color:#111827;">Adresse (ligne 1)</label>
+              <input type="text" id="omd-free-l1" style="width:100%;" />
+            </div>
+            <div class="section" style="margin-top:0.5rem;">
+              <label for="omd-free-l2" class="muted" style="color:#111827;">Adresse (ligne 2)</label>
+              <input type="text" id="omd-free-l2" style="width:100%;" />
+            </div>
+            <div class="section" style="margin-top:0.5rem; display:flex; gap:0.5rem;">
+              <div style="width:40%;">
+                <label for="omd-free-cp" class="muted" style="color:#111827;">Code postal</label>
+                <input type="text" id="omd-free-cp" style="width:100%;" />
+              </div>
+              <div style="flex:1;">
+                <label for="omd-free-ville" class="muted" style="color:#111827;">Ville</label>
+                <input type="text" id="omd-free-ville" style="width:100%;" />
+              </div>
+            </div>
+          </div>
+
+          <div id="omd-mad-note" class="muted" style="margin-top:0.5rem; font-size:0.85rem; display:none; color:#111827;"></div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="card">
+      <h2 style="margin-top:0;">OL en mode dégradé</h2>
+
+      <div class="section">
+        <h3 style="margin-top:0; font-size:0.95rem;">Lignes de commande</h3>
+        <div style="overflow:auto; max-height:55vh;">
+          <table id="omd-lines-table">
+            <thead>
+              <tr>
+                <th style="width:22%;">Code article</th>
+                <th style="width:28%;">Libellé</th>
+                <th style="width:12%;">Quantité</th>
+                <th style="width:23%;">Code magasin expéditeur</th>
+                <th style="width:10%;"></th>
+              </tr>
+            </thead>
+            <tbody id="omd-lines-body"></tbody>
+          </table>
+        </div>
+        <button id="omd-add-line" type="button" style="margin-top:0.75rem;">Ajouter une ligne</button>
+      </div>
+
+      <!-- Liste des magasins (NATIONAL / LOCAL) pour la saisie du code magasin -->
+      <datalist id="omd-store-list"></datalist>
+
+      <div class="section" style="display:flex; justify-content:flex-end; gap:0.75rem; align-items:center;">
+        <div id="omd-status" class="muted" style="flex:1;"></div>
+        <button id="omd-validate" type="button">Valider l'ordre de livraison</button>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

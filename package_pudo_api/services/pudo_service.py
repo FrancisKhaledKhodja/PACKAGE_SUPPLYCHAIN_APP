@@ -68,6 +68,9 @@ except FileNotFoundError:
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
 dico_helios = {row["code_ig"]: row for row in helios.iter_rows(named=True)} if 'helios' in locals() else {}
 
+# Cache en mémoire pour certaines listes calculées une fois
+_ol_igs_cache: list[dict] | None = None
+
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 6371.0
@@ -270,6 +273,249 @@ def get_store_types() -> list[str]:
             if v is not None:
                 s.add(str(v))
         return sorted(s)
+
+
+def get_ol_technicians() -> list[dict]:
+    """Retourne la liste des techniciens éligibles pour l'OL mode dégradé.
+
+    Source : stores.parquet
+    Filtre : type_de_depot ∈ {"REO", "EMBARQUE", "EXPERT"}
+    """
+    results: list[dict] = []
+    if "stores" not in globals() and "stores" not in locals():
+        return results
+
+    allowed_types = {"reo", "embarque", "expert"}
+
+    # On agrège par code_magasin pour avoir une entrée par technicien
+    seen: dict[str, dict] = {}
+    for row in stores.iter_rows(named=True):
+        ttype = str(row.get("type_de_depot") or "").strip().lower()
+        if ttype not in allowed_types:
+            continue
+
+        code_magasin = row.get("code_magasin")
+        if not code_magasin:
+            continue
+
+        contact = row.get("contact") or row.get("nom_contact") or row.get("personne_contact")
+        tel = row.get("tel_contact")
+        email = row.get("email_contact")
+        libelle_magasin = row.get("libelle_magasin")
+        equipe = row.get("equipe")
+
+        adr1 = row.get("adresse1") or ""
+        cp = row.get("code_postal") or ""
+        ville = row.get("ville") or ""
+        adresse = " ".join([str(adr1), str(cp), str(ville)]).strip()
+
+        code_ig = row.get("code_ig_du_tiers_emplacement")
+        pr_principal = row.get("pr_principal")
+        pr_backup = row.get("pr_backup")
+        pr_hn = row.get("pr_hors_normes") if "pr_hors_normes" in row else row.get("pr_hors_norme")
+
+        # Code tiers Daher du technicien (si colonne disponible dans le parquet)
+        code_tiers = row.get("code_tiers_daher") or row.get("code_tiers") or None
+
+        key = str(code_magasin)
+        if key not in seen:
+            seen[key] = {
+                "code_magasin": code_magasin,
+                "libelle_magasin": libelle_magasin,
+                "type_de_depot": row.get("type_de_depot"),
+                "contact": contact,
+                "telephone": tel,
+                "email": email,
+                "adresse": adresse,
+                "equipe": equipe,
+                "code_ig": code_ig,
+                "pr_principal": pr_principal,
+                "pr_backup": pr_backup,
+                "pr_hors_normes": pr_hn,
+                "code_tiers_daher": code_tiers,
+            }
+
+    results = list(seen.values())
+    try:
+        results.sort(key=lambda r: (str(r.get("contact") or "") + " " + str(r.get("code_magasin") or "")).casefold())
+    except Exception:
+        pass
+    return results
+
+
+def get_pudo_postal_address(code_point_relais: str) -> dict | None:
+    """Retourne l'adresse postale d'un point relais identifié par son code.
+
+    La réponse contient au minimum : code_point_relais, enseigne, adresse_postale.
+    """
+    if not code_point_relais:
+        return None
+    if "pudos" not in globals() and "pudos" not in locals():
+        return None
+    try:
+        df = pudos
+        match = df.filter(pl.col("code_point_relais") == code_point_relais)
+        if match.height == 0:
+            return None
+        row = match.row(0, named=True)
+
+        def pick(keys: list[str]):
+            for k in keys:
+                if k in row:
+                    v = row.get(k)
+                    if v is not None and v != "":
+                        return v
+            return None
+
+        adr1 = pick(["adresse_postale", "adresse_1", "adresse1"]) or ""
+        cp = pick(["code_postal"]) or ""
+        ville = pick(["ville"]) or ""
+        adresse_postale = " ".join([str(adr1), str(cp), str(ville)]).strip()
+
+        return {
+            "code_point_relais": pick(["code_point_relais"]),
+            "enseigne": pick(["enseigne", "nom_point_relais"]),
+            "adresse_postale": adresse_postale,
+        }
+    except Exception:
+        return None
+
+
+def get_ol_igs() -> list[dict]:
+    """Retourne la liste des codes IG utilisables pour l'OL mode dégradé.
+
+    Source : helios.parquet (via la variable globale helios / dico_helios).
+    """
+    global _ol_igs_cache
+
+    # Si déjà calculé, on renvoie directement le cache
+    if _ol_igs_cache is not None:
+        return _ol_igs_cache
+
+    results: list[dict] = []
+    if "helios" not in globals() and "helios" not in locals():
+        return results
+    try:
+        df = helios
+    except Exception:
+        return results
+
+    try:
+        for row in df.iter_rows(named=True):
+            code_ig = row.get("code_ig") or row.get("code_ig_du_tiers_emplacement")
+            if not code_ig:
+                continue
+            libelle = row.get("libelle_long_ig") or row.get("libelle_ig") or ""
+            adr = row.get("adresse") or ""
+            cp = row.get("code_postal") or ""
+            com = row.get("commune") or row.get("ville") or ""
+            adresse_postale = " ".join([str(adr), str(cp), str(com)]).strip()
+            results.append({
+                "code_ig": code_ig,
+                "libelle_long_ig": libelle,
+                "adresse_postale": adresse_postale,
+            })
+        try:
+            results.sort(key=lambda r: str(r.get("code_ig") or "").casefold())
+        except Exception:
+            pass
+        _ol_igs_cache = results
+        return results
+    except Exception:
+        return []
+
+
+def search_ol_igs(query: str | None = None, limit: int = 50) -> list[dict]:
+    """Recherche d'IG pour l'OL mode dégradé, avec filtrage texte et limite.
+
+    La recherche s'effectue sur le code IG et le libellé long, en insensible à la casse.
+    Les données de base proviennent de get_ol_igs() et donc du cache en mémoire.
+    """
+    rows = get_ol_igs() or []
+    try:
+        lim = int(limit)
+    except Exception:
+        lim = 50
+    if lim <= 0:
+        lim = 1
+    if lim > 500:
+        lim = 500
+
+    q = (query or "").strip().lower()
+    if not q:
+        return rows[:lim]
+
+    out: list[dict] = []
+    for r in rows:
+        code = str(r.get("code_ig") or "").lower()
+        lib = str(r.get("libelle_long_ig") or "").lower()
+        if q in code or q in lib:
+            out.append(r)
+            if len(out) >= lim:
+                break
+    return out
+
+
+def get_ol_stores() -> list[dict]:
+    """Retourne les magasins éligibles pour l'expédition OL (type NATIONAL ou LOCAL).
+
+    Chaque entrée contient au minimum : code_magasin, type_de_depot, adresse_postale.
+    """
+    results: list[dict] = []
+    if "stores" not in globals() and "stores" not in locals():
+      return results
+
+    allowed = {"national", "local"}
+    try:
+        for row in stores.iter_rows(named=True):
+            tdep = str(row.get("type_de_depot") or "").strip().lower()
+            if tdep not in allowed:
+                continue
+            code_magasin = row.get("code_magasin")
+            if not code_magasin:
+                continue
+
+            def pick(keys: list[str]):
+                for k in keys:
+                    if k in row:
+                        v = row.get(k)
+                        if v is not None and v != "":
+                            return v
+                return None
+
+            adr1 = pick(["adresse_postale", "adresse_1", "adresse1", "adresse"]) or ""
+            adr2 = pick(["adresse_2", "adresse2"]) or ""
+            cp = pick(["code_postal"]) or ""
+            ville = pick(["ville"]) or ""
+            adresse_postale = " ".join([str(adr1), str(cp), str(ville)]).strip()
+
+            # Code tiers Daher (si colonne disponible dans le parquet)
+            code_tiers = row.get("code_tiers_daher") or row.get("code_tiers") or None
+
+            results.append({
+                "code_magasin": code_magasin,
+                "libelle_magasin": row.get("libelle_magasin"),
+                "type_de_depot": row.get("type_de_depot"),
+                "adresse_postale": adresse_postale,
+                "adresse1": adr1,
+                "adresse2": adr2,
+                "code_postal": cp,
+                "ville": ville,
+                "statut": row.get("statut"),
+                "code_tiers_daher": code_tiers,
+            })
+        # dédoublonnage par code_magasin
+        uniq: dict[str, dict] = {}
+        for r in results:
+            uniq[str(r.get("code_magasin"))] = r
+        results = list(uniq.values())
+        try:
+            results.sort(key=lambda r: str(r.get("code_magasin") or "").casefold())
+        except Exception:
+            pass
+        return results
+    except Exception:
+        return []
 
 
 def get_manufacturers_for(code_article: str) -> list[dict]:

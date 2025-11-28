@@ -21,7 +21,7 @@ a:visited {
 
 .layout {
   display: grid;
-  grid-template-columns: 20vw minmax(0, 1fr);
+  grid-template-columns: 25vw minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2rem;
   box-sizing: border-box;
@@ -29,7 +29,7 @@ a:visited {
 
 @media (max-width: 960px) {
   .layout {
-    grid-template-columns: 20vw minmax(0, 1fr);
+    grid-template-columns: 25vw minmax(0, 1fr);
   }
 }
 

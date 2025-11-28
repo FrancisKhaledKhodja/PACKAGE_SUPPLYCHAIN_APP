@@ -8,6 +8,11 @@ from package_pudo_api.services.pudo_service import (
     list_technician_pudo_assignments,
     get_pr_overrides_for_store,
     save_pr_overrides_for_store,
+    get_ol_technicians,
+    get_pudo_postal_address,
+    get_ol_igs,
+    get_ol_stores,
+    search_ol_igs,
 )
 
 
@@ -127,3 +132,57 @@ def technician_pr_overrides_post(code: str):
     if "error" in data:
         return jsonify(data), 400
     return jsonify(data)
+
+
+@bp.get("/ol_technicians")
+def ol_technicians_list():
+    """Liste des techniciens éligibles pour l'OL mode dégradé.
+
+    Les données proviennent de stores.parquet, filtrées sur les
+    types de dépôt REO / EMBARQUE / EXPERT.
+    """
+    rows = get_ol_technicians() or []
+    return jsonify({"technicians": rows})
+
+
+@bp.get("/ol_pudo_address/<code_pr>")
+def ol_pudo_address(code_pr: str):
+    """Adresse postale du point relais choisi pour l'OL mode dégradé."""
+    code_pr = (code_pr or "").strip()
+    if not code_pr:
+        return jsonify({"error": "code_pr is required"}), 400
+    data = get_pudo_postal_address(code_pr)
+    if not data:
+        return jsonify({"error": "not found"}), 404
+    return jsonify(data)
+
+
+@bp.get("/ol_igs")
+def ol_igs_list():
+    """Liste des codes IG disponibles pour l'OL mode dégradé."""
+    rows = get_ol_igs() or []
+    return jsonify({"igs": rows})
+
+
+@bp.get("/ol_igs_search")
+def ol_igs_search():
+    """Recherche filtrée de codes IG pour l'OL mode dégradé.
+
+    Query params :
+      - q : texte à rechercher dans le code IG ou le libellé long
+      - limit : nombre maximum de résultats (défaut 50, max 500)
+    """
+    q = (request.args.get("q") or "").strip()
+    try:
+        limit = int(request.args.get("limit") or "50")
+    except Exception:
+        limit = 50
+    rows = search_ol_igs(query=q, limit=limit) or []
+    return jsonify({"igs": rows})
+
+
+@bp.get("/ol_stores")
+def ol_stores_list():
+    """Liste des magasins NATIONAL / LOCAL utilisables pour l'expédition OL."""
+    rows = get_ol_stores() or []
+    return jsonify({"stores": rows})
