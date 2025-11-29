@@ -521,6 +521,23 @@ def get_store_contacts(max_items: int | None = None, query: str | None = None, d
     # Iterate rows but cap if requested
     count = 0
     for row in stores.iter_rows(named=True):
+        # Ne conserver que les magasins disposant d'au moins un point relais
+        pr_principal = row.get("pr_principal")
+        pr_backup = row.get("pr_backup")
+        pr_hn = row.get("pr_hors_normes") if "pr_hors_normes" in row else row.get("pr_hors_norme")
+        if not (pr_principal or pr_backup or pr_hn):
+            continue
+
+        # Ne conserver que les magasins dont le statut est 0
+        statut_val = row.get("statut")
+        if statut_val is not None:
+            try:
+                if int(str(statut_val).strip()) != 0:
+                    continue
+            except Exception:
+                if str(statut_val).strip() not in {"0", "0.0"}:
+                    continue
+
         # Filter by type if requested
         if types_set is not None:
             tval = str(row.get("type_de_depot", "")).lower()
@@ -809,6 +826,9 @@ def get_pudo_details(code_point_relais: str) -> dict | None:
         "statut": pick(["statut", "flag_actif"]),
         "latitude": float(pick(["latitude"])) if pick(["latitude"]) is not None else None,
         "longitude": float(pick(["longitude"])) if pick(["longitude"]) is not None else None,
+        # La colonne peut être orthographiée "periode_absence_a_utilser" dans le parquet.
+        # On essaie d'abord la version correcte, puis la version sans "i".
+        "periode_absence_a_utiliser": pick(["periode_absence_a_utiliser", "periode_absence_a_utilser"]),
     }
 
 
@@ -849,6 +869,7 @@ def list_technician_pudo_assignments() -> list[dict]:
                 "enseigne": p.get("enseigne"),
                 "adresse_postale": adresse_postale,
                 "statut": p.get("statut"),
+                "periode_absence_a_utiliser": p.get("periode_absence_a_utiliser"),
             })
 
         add_pr("principal", pr_principal)

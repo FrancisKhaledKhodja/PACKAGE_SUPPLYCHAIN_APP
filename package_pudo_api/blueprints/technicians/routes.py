@@ -60,6 +60,7 @@ def technician_details(code: str):
                         "statut": r.get("statut"),
                         "categorie": r.get("categorie"),
                         "prestataire": r.get("prestataire"),
+                        "periode_absence_a_utiliser": r.get("periode_absence_a_utiliser"),
                     }
                     break
     except Exception:

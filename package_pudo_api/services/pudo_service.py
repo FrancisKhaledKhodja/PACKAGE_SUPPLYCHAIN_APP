@@ -837,6 +837,7 @@ def list_technician_pudo_assignments() -> list[dict]:
                 "statut": p.get("statut"),
                 "categorie": p.get("categorie"),
                 "prestataire": p.get("prestataire"),
+                "periode_absence_a_utiliser": p.get("periode_absence_a_utiliser"),
             })
 
         def get_pudo_details(code_point_relais: str) -> dict | None:
@@ -866,6 +867,7 @@ def list_technician_pudo_assignments() -> list[dict]:
                 "statut": pick(["statut", "flag_actif"]),
                 "latitude": float(pick(["latitude"])) if pick(["latitude"]) is not None else None,
                 "longitude": float(pick(["longitude"])) if pick(["longitude"]) is not None else None,
+                "periode_absence_a_utiliser": pick(["periode_absence_a_utiliser"]),
             }
 
         add_pr("principal", pr_principal)

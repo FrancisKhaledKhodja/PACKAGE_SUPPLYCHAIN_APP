@@ -284,6 +284,67 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ---
 
+### 3.4. OL MODE DÉGRADÉ (`ol_mode_degrade.html`)
+
+Écran dédié à la création d’**ordres de livraison en mode dégradé** pour les techniciens.
+
+- Sélection d’un technicien, récupération automatique de son magasin, de ses coordonnées et de ses points relais.
+- Saisie des lignes de commande (code article, quantité, **code magasin expéditeur obligatoire** pour chaque ligne non vide).
+- Choix du type de commande : `STANDARD`, `URGENT`, `MAD`.
+- Choix de l’adresse de livraison :
+  - **Code IG**,
+  - **Point relais** (principal / hors normes),
+  - **Adresse libre** (adresse, CP, ville obligatoires).
+
+#### 3.4.1. Règles de validation principales
+
+- Numéro de BT obligatoire.
+- Au moins **une ligne** avec `code_article` renseigné.
+- Pour chaque ligne avec article, `code_magasin` expéditeur obligatoire.
+- Destination obligatoire :
+  - si `code_ig` → un code IG doit être saisi,
+  - si `adresse_libre` → adresse, code postal et ville obligatoires.
+
+#### 3.4.2. Logique d’envoi des e‑mails
+
+Les destinataires dépendent du **code magasin expéditeur** des lignes :
+
+- Si **toutes** les lignes ont `code_magasin = MPLC` → un seul mail vers **DAHER** :
+  - To : `ordotdf@daher.com; t.robas@daher.com`
+  - Cc : `logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr`
+- Si **aucune** ligne n’a `code_magasin = MPLC` → un seul mail vers **LM2S** :
+  - To : `sce-clients.pudo@lm2s.fr`
+  - Cc : mêmes adresses TDF.
+- Si **cas mixte** (au moins une ligne MPLC et au moins une ligne ≠ MPLC) :
+  - clic sur **Valider l’ordre de livraison** n’ouvre pas de mail automatiquement,
+  - deux boutons apparaissent :
+    - `Mail Daher (lignes MPLC)` → génère un mail vers DAHER avec uniquement les lignes MPLC,
+    - `Mail LM2S (autres lignes)` → génère un mail vers LM2S avec uniquement les lignes non‑MPLC.
+
+Chaque mail est créé via un lien `mailto:` avec **importance élevée** (`X-Priority=1 (Highest)`, `Importance=High`).
+
+#### 3.4.3. Objet et corps du mail
+
+- Objet du mail :
+
+  ```text
+  [MODE DEGRADE] - Commande OL dégradé - BT <BT> - <TYPE_COMMANDE> - <DAHER|LM2S>
+  ```
+
+- Corps (texte) structuré avec :
+  - un titre : `*** ORDRE DE LIVRAISON EN MODE DEGRADE ***`,
+  - un bloc **ENTETE ORDRE DE LIVRAISON** (date/heure, login, BT, type de commande),
+  - un bloc **COMMENTAIRE** (commentaire libre saisi),
+  - un bloc **CONTACT TECHNICIEN** (nom, téléphone, magasin, code tiers Daher),
+  - un bloc **ADRESSE D’EXPÉDITION** (récap des magasins expéditeurs distincts),
+  - un bloc **ADRESSE DE LIVRAISON** (selon code IG / PR / adresse libre / MAD),
+  - si destination en **code IG** ou **adresse libre** :
+    - une phrase : `Contacter le technicien 30 min avant votre arrivée <téléphone>`,
+  - un bloc **LIGNES DE COMMANDE** : détail de chaque ligne (article, libellé, quantité, code magasin, indicateur hors norme),
+  - en fin de mail, un bloc **LIEN GOOGLE MAP** contenant une URL vers Google Maps permettant de calculer la distance et la durée entre le magasin expéditeur principal et l’adresse de livraison.
+
+---
+
 ## 4. Remarques
 
 - Pour construire l'exécutable, utiliser l'environnement virtuel principal `.venv` (section 2) avec le projet et PyInstaller installés.

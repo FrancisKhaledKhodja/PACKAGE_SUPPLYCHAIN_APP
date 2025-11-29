@@ -14,7 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const linesBody = document.getElementById("omd-lines-body");
   const addLineBtn = document.getElementById("omd-add-line");
   const validateBtn = document.getElementById("omd-validate");
-  const sendMailBtn = document.getElementById("omd-send-mail");
+  const sendMailMplcBtn = document.getElementById("omd-mail-mplc");
+  const sendMailLm2sBtn = document.getElementById("omd-mail-lm2s");
   const statusDiv = document.getElementById("omd-status");
 
   const destTypeRadios = document.querySelectorAll("input[name='omd-destination-type']");
@@ -765,14 +766,30 @@ document.addEventListener("DOMContentLoaded", () => {
       statusDiv.textContent = "Merci de sélectionner un technicien.";
       return;
     }
-    const nonEmptyLines = lines.filter(l => l.code_article || l.quantite > 0 || l.code_magasin);
+    // On ne considère comme ligne candidate que celles avec un code article renseigné
+    const nonEmptyLines = lines.filter(l => (l.code_article || "").trim() !== "");
     if (nonEmptyLines.length === 0) {
-      statusDiv.textContent = "Merci de saisir au moins une ligne de commande.";
+      statusDiv.textContent = "Merci de saisir au moins une ligne de commande avec un code article.";
+      return;
+    }
+
+    // Règle métier : pour chaque ligne article, le code magasin expéditeur est obligatoire
+    const missingStore = nonEmptyLines.find(l => !(l.code_magasin || "").trim());
+    if (missingStore) {
+      statusDiv.textContent = "Merci de renseigner un code magasin expéditeur pour chaque ligne de code article.";
       return;
     }
 
     const destination = getDestination(t);
-    if (destination.type === "adresse_libre") {
+
+    // Règle métier : la destination doit être correctement renseignée
+    if (destination.type === "code_ig") {
+      const codeIg = (destination.code_ig || "").trim();
+      if (!codeIg) {
+        statusDiv.textContent = "Merci de renseigner un code IG pour l'adresse de livraison.";
+        return;
+      }
+    } else if (destination.type === "adresse_libre") {
       // Raison sociale et adresse ligne 2 facultatives, on impose seulement adresse, CP, ville
       if (!destination.adresse_ligne1 || !destination.code_postal || !destination.ville) {
         statusDiv.textContent = "Merci de compléter l'adresse libre (adresse, code postal, ville).";
@@ -892,6 +909,39 @@ document.addEventListener("DOMContentLoaded", () => {
       destText = expText || "(adresse de livraison = magasin(s) expéditeur(s))";
     }
 
+    // Construction d'un lien Google Maps (origine = premier magasin expéditeur, destination = adresse de livraison)
+    let googleMapsUrl = "";
+    if (lignes.length > 0) {
+      const firstWithStore = lignes.find(l => (l.code_magasin || "").trim());
+      if (firstWithStore) {
+        const codeMag = (firstWithStore.code_magasin || "").trim();
+        const store = codeMag ? storeMap[codeMag] : null;
+        const originAddr = store && store.adresse_postale ? String(store.adresse_postale).trim() : "";
+
+        let destAddr = "";
+        const typeCmd = (payload.type_commande || "").toUpperCase();
+
+        if (typeCmd === "MAD") {
+          destAddr = originAddr;
+        } else if (dest.type === "code_ig" || dest.type === "point_relais") {
+          destAddr = String(dest.adresse || "").trim();
+        } else if (dest.type === "adresse_libre") {
+          const l1 = dest.adresse_ligne1 || "";
+          const l2 = dest.adresse_ligne2 || "";
+          const cp = dest.code_postal || "";
+          const ville = dest.ville || "";
+          destAddr = [l1, l2, cp, ville].map(x => String(x || "").trim()).filter(Boolean).join(" ");
+        }
+
+        if (originAddr && destAddr) {
+          googleMapsUrl = "https://www.google.com/maps/dir/?api=1" +
+            "&origin=" + encodeURIComponent(originAddr) +
+            "&destination=" + encodeURIComponent(destAddr) +
+            "&travelmode=driving";
+        }
+      }
+    }
+
     // Compléter les infos magasin du technicien à partir de storeMap si besoin
     let techCodeMag = tech.code_magasin || "";
     // Si le technicien n'a pas de code magasin, on prend celui de la première ligne (magasin d'expédition principal)
@@ -910,36 +960,58 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const bodyLines = [
+      "*** ORDRE DE LIVRAISON EN MODE DEGRADE ***",
+      "",
+      "ENTETE ORDRE DE LIVRAISON",
       `Date/heure de la commande : ${dateStr}`,
       `Login utilisateur : ${login}`,
       `Numéro de BT : ${payload.bt || ""}`,
       `Date/heure de besoin : ${dateBesoinText || "(non renseignée)"}`,
       `Type de commande : ${payload.type_commande || ""}`,
       "",
-      "Commentaire :",
+      "COMMENTAIRE :",
       commentaireLibre || "(aucun)",
       "",
-      "Contact technicien :",
+      "CONTACT TECHNICIEN :",
       `Nom : ${tech.contact || tech.libelle_magasin || ""}`,
       `Téléphone : ${tech.telephone || ""}`,
       `Code magasin : ${techCodeMag}`,
       `Libellé magasin : ${techLibMag}`,
       `Code tiers Daher : ${techCodeTiers}`,
       "",
-      "Adresse d'expédition :",
+      "ADRESSE D'EXPÉDITION :",
       expText || "(non renseignée)",
       "",
-      "Adresse de livraison :",
+      "ADRESSE DE LIVRAISON :",
       destText,
       "",
-      "Lignes de commande :",
-      lignesText
     ];
+
+    // Ajout d'une consigne de contact pour les livraisons directes (code IG ou adresse libre)
+    const destType = dest.type || "";
+    if (destType === "code_ig" || destType === "adresse_libre") {
+      const tel = tech.telephone || "";
+      const telText = tel ? ` ${tel}` : "";
+      bodyLines.push(`Contacter le technicien 30 min avant votre arrivée${telText}`);
+      bodyLines.push("");
+    }
+
+    bodyLines.push(
+      "LIGNES DE COMMANDE :",
+      lignesText
+    );
+
+    // Ajout éventuel du lien Google Maps en fin de mail
+    if (googleMapsUrl) {
+      bodyLines.push("");
+      bodyLines.push("LIEN GOOGLE MAP :");
+      bodyLines.push(googleMapsUrl);
+    }
 
     return bodyLines.join("\n");
   }
 
-  function sendMail() {
+  function sendMail(mode) {
     const payload = validate();
     if (!payload) return;
 
@@ -947,11 +1019,102 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCodeIgAddress();
     loadPrAddressForCurrentSelection();
 
-    const subject = encodeURIComponent(`Commande OL dégradé - BT ${payload.bt || ""}`);
-    const body = encodeURIComponent(buildEmailBody(payload));
+    // Helper pour construire l'objet du mail avec préfixe, BT, type de commande et tag destinataire
+    function buildSubject(tag) {
+      const parts = ["[MODE DEGRADE]", "Commande OL dégradé"];
+      if (payload.bt) {
+        parts.push(`BT ${payload.bt}`);
+      }
+      const typeCmd = (payload.type_commande || "").toUpperCase();
+      if (typeCmd) {
+        parts.push(typeCmd);
+      }
+      if (tag) {
+        parts.push(tag);
+      }
+      return encodeURIComponent(parts.join(" - "));
+    }
 
-    const mailto = `mailto:?subject=${subject}&body=${body}`;
-    window.location.href = mailto;
+    // Réinitialisation de l'affichage des boutons spécifiques
+    if (sendMailMplcBtn) sendMailMplcBtn.style.display = "none";
+    if (sendMailLm2sBtn) sendMailLm2sBtn.style.display = "none";
+
+    // Détermination des destinataires en fonction des magasins expéditeurs
+    const lignes = payload.lignes || [];
+    const hasLines = lignes.length > 0;
+    const allMplc = hasLines && lignes.every(l => (l.code_magasin || "").trim().toUpperCase() === "MPLC");
+    const anyMplc = hasLines && lignes.some(l => (l.code_magasin || "").trim().toUpperCase() === "MPLC");
+
+    // Pré-calcul des sous-ensembles pour faciliter les modes dédiés
+    const lignesMplc = lignes.filter(l => (l.code_magasin || "").trim().toUpperCase() === "MPLC");
+    const lignesAutres = lignes.filter(l => (l.code_magasin || "").trim().toUpperCase() !== "MPLC");
+
+    // Helper local pour ouvrir un mail pour un sous-ensemble de lignes
+    function openMailForLines(linesSubset, mode) {
+      const subPayload = { ...payload, lignes: linesSubset };
+      const body = encodeURIComponent(buildEmailBody(subPayload));
+
+      const importance = "&X-Priority=1%20(Highest)&Importance=High";
+
+      if (mode === "mplc") {
+        const subject = buildSubject("DAHER");
+        const to = encodeURIComponent("ordotdf@daher.com; t.robas@daher.com");
+        const cc = encodeURIComponent("logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr");
+        const mailto = `mailto:${to}?cc=${cc}&subject=${subject}&body=${body}${importance}`;
+        window.location.href = mailto;
+      } else if (mode === "lm2s") {
+        const subject = buildSubject("LM2S");
+        const to = encodeURIComponent("sce-clients.pudo@lm2s.fr");
+        const cc = encodeURIComponent("logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr");
+        const mailto = `mailto:${to}?cc=${cc}&subject=${subject}&body=${body}${importance}`;
+        window.location.href = mailto;
+      } else {
+        const subject = buildSubject("");
+        const mailto = `mailto:?subject=${subject}&body=${body}${importance}`;
+        window.location.href = mailto;
+      }
+    }
+
+    if (!hasLines) {
+      // Ne devrait pas arriver car validate() l'empêche déjà, mais on garde un fallback sûr
+      const body = encodeURIComponent(buildEmailBody(payload));
+      const subject = buildSubject("");
+      const importance = "&X-Priority=1%20(Highest)&Importance=High";
+      const mailto = `mailto:?subject=${subject}&body=${body}${importance}`;
+      window.location.href = mailto;
+      return;
+    }
+    // Si un mode spécifique est demandé, on envoie uniquement le sous-ensemble correspondant
+    if (mode === "mplc") {
+      if (!lignesMplc.length) {
+        statusDiv.textContent = "Aucune ligne avec code magasin MPLC dans la commande.";
+        return;
+      }
+      openMailForLines(lignesMplc, "mplc");
+      return;
+    }
+    if (mode === "lm2s") {
+      if (!lignesAutres.length) {
+        statusDiv.textContent = "Aucune ligne avec code magasin différent de MPLC dans la commande.";
+        return;
+      }
+      openMailForLines(lignesAutres, "lm2s");
+      return;
+    }
+
+    // Mode automatique (clic sur "Valider l'ordre de livraison")
+    if (allMplc) {
+      // 1) Toutes les lignes ont MPLC comme magasin expéditeur -> un seul mail Daher
+      openMailForLines(lignes, "mplc");
+    } else if (hasLines && !anyMplc) {
+      // 2) Aucune ligne n'a MPLC -> un seul mail LM2S
+      openMailForLines(lignes, "lm2s");
+    } else {
+      // 3) Cas mixte : on ne déclenche pas d'envoi automatique, on affiche les deux boutons
+      statusDiv.textContent = "Cas mixte détecté : utilisez les boutons 'Mail Daher (lignes MPLC)' et 'Mail LM2S (autres lignes)'.";
+      if (sendMailMplcBtn) sendMailMplcBtn.style.display = "inline-block";
+      if (sendMailLm2sBtn) sendMailLm2sBtn.style.display = "inline-block";
+    }
   }
 
   async function loadCurrentUserLogin() {
@@ -984,9 +1147,14 @@ document.addEventListener("DOMContentLoaded", () => {
       sendMail();
     });
   }
-  if (sendMailBtn) {
-    sendMailBtn.addEventListener("click", () => {
-      sendMail();
+  if (sendMailMplcBtn) {
+    sendMailMplcBtn.addEventListener("click", () => {
+      sendMail("mplc");
+    });
+  }
+  if (sendMailLm2sBtn) {
+    sendMailLm2sBtn.addEventListener("click", () => {
+      sendMail("lm2s");
     });
   }
 

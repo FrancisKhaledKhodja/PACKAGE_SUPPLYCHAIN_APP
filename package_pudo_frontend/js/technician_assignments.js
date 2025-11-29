@@ -33,10 +33,25 @@ document.addEventListener("DOMContentLoaded", () => {
         "enseigne",
         "adresse_postale",
         "statut",
+        "periode_absence_a_utiliser",
       ];
       cols.forEach(col => {
         const td = document.createElement("td");
-        td.textContent = r[col] != null ? String(r[col]) : "";
+        if (col === "statut") {
+          const statut = r[col];
+          if (statut != null && statut !== "") {
+            const st = String(statut).toLowerCase();
+            const isOpen = st.includes("ouvert") || ["1", "true", "actif", "active", "open"].includes(st);
+            const isClosed = st.includes("ferme") || ["0", "false", "inactif", "inactive", "closed"].includes(st);
+            const bg = isOpen ? "#16a34a" : (isClosed ? "#dc2626" : "#6b7280");
+            const fg = "#ffffff";
+            td.innerHTML = `<span style="display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; font-weight:600; background:${bg}; color:${fg};">${statut}</span>`;
+          } else {
+            td.textContent = "";
+          }
+        } else {
+          td.textContent = r[col] != null ? String(r[col]) : "";
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -117,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
       "enseigne",
       "adresse_postale",
       "statut",
+      "periode_absence_a_utiliser",
     ];
     const escapeCell = (val) => {
       if (val == null) return "";

@@ -14,3 +14,4 @@ Entry points:
 - `helios.html` (parc installé)
 - `stores.html` (magasins & points relais)
 - `downloads.html` (téléchargements)
+- `ol_mode_degrade.html` (ordre de livraison en mode dégradé pour les techniciens, génération d'e-mails DAHER / LM2S)
