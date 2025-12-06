@@ -12,14 +12,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentRows = [];
 
+  function getFilteredRowsForDisplay(rows) {
+    const selectedTeam = teamSelect?.value || "";
+    return selectedTeam
+      ? rows.filter(r => (r.equipe || "") === selectedTeam)
+      : rows;
+  }
+
   function renderRows(rows) {
     if (!tbody) return;
     tbody.innerHTML = "";
-
-    const selectedTeam = teamSelect?.value || "";
-    const filtered = selectedTeam
-      ? rows.filter(r => (r.equipe || "") === selectedTeam)
-      : rows;
+    const filtered = getFilteredRowsForDisplay(rows);
 
     filtered.forEach(r => {
       const tr = document.createElement("tr");
@@ -118,7 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function exportCsv() {
-    if (!currentRows.length) {
+    const rowsToExport = getFilteredRowsForDisplay(currentRows);
+
+    if (!rowsToExport.length) {
       alert("Aucune donnée à exporter.");
       return;
     }
@@ -141,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const lines = [];
     lines.push(columns.map(escapeCell).join(";"));
-    currentRows.forEach(r => {
+    rowsToExport.forEach(r => {
       const line = columns.map(c => escapeCell(r[c])).join(";");
       lines.push(line);
     });

@@ -218,9 +218,19 @@ def get_store_contacts(max_items: int | None = None, query: str | None = None, d
             tval = str(row.get("type_de_depot", "")).lower()
             if tval not in types_set:
                 continue
+        # Ne conserver que les magasins avec statut == 0
+        statut = row.get("statut")
+        if statut is not None:
+            try:
+                if int(statut) != 0:
+                    continue
+            except (TypeError, ValueError):
+                # Si le statut n'est pas convertible en entier, on l'exclut par sécurité
+                continue
         code = row.get("code_magasin") or row.get("code") or row.get("id")
         if code is None:
             continue
+        libelle_magasin = row.get("libelle_magasin")
         contact_name = row.get("contact")
         equipe = row.get("equipe")
         responsable = row.get("nom_responsable")
@@ -232,16 +242,14 @@ def get_store_contacts(max_items: int | None = None, query: str | None = None, d
 
         if q:
             hay = " ".join([
-                str(code), str(contact_name or ''), str(ville or ''), str(phone or ''), str(email or ''), str(adr1 or '')
+                str(code), str(libelle_magasin or ''), str(contact_name or ''), str(ville or ''), str(phone or ''), str(email or ''), str(adr1 or '')
             ]).lower()
             if q not in hay:
                 continue
 
         parts = [str(code)]
-        if contact_name:
-            parts.append(str(contact_name))
-        if equipe:
-            parts.append(str(equipe))
+        if libelle_magasin:
+            parts.append(str(libelle_magasin))
 
         label = " - ".join(parts) if parts else str(code)
         results.append({"value": str(code), "label": label})
@@ -772,9 +780,10 @@ def get_store_details(code_magasin: str) -> dict | None:
     responsable_val = ", ".join([p for p in [resp_nom, resp_prenom] if p])
 
     adr1 = pick(["adresse1"]) or ""
+    adr2 = pick(["adresse2"]) or ""
     cp = pick(["code_postal"]) or ""
     ville = pick(["ville"]) or ""
-    adresse_val = " ".join([p for p in [adr1, cp, ville] if p]).strip()
+    adresse_val = " ".join([p for p in [adr1, adr2, cp, ville] if p]).strip()
 
     details = {
         "code_magasin": pick(["code_magasin"]),
@@ -810,6 +819,15 @@ def list_technician_pudo_assignments() -> list[dict]:
     if 'stores' not in globals():
         return rows
     for srow in stores.iter_rows(named=True):
+        # Ne conserver que les magasins avec statut == 0
+        statut = srow.get("statut")
+        if statut is not None:
+            try:
+                if int(statut) != 0:
+                    continue
+            except (TypeError, ValueError):
+                # Si le statut n'est pas convertible en entier, on l'exclut par sécurité
+                continue
         code_magasin = srow.get("code_magasin")
         type_de_depot = srow.get("type_de_depot")
         technicien = srow.get("contact") or srow.get("nom_contact") or srow.get("personne_contact")

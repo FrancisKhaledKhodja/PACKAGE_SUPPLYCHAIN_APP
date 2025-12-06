@@ -276,11 +276,44 @@ document.addEventListener("DOMContentLoaded", () => {
           refMarker.addTo(refLayer);
         }
 
+        // Regrouper par magasin (et coordonnées) pour avoir un seul marker par magasin
+        const groups = new Map();
         for (const r of withCoords) {
           const lat = r.latitude;
           const lon = r.longitude;
-          if (lat == null || lon == null || !storesLayer || !window.L) continue;
-          const marker = L.marker([lat, lon], {
+          if (lat == null || lon == null) continue;
+          const key = `${r.code_magasin || ""}||${lat}||${lon}`;
+          let g = groups.get(key);
+          if (!g) {
+            g = {
+              lat,
+              lon,
+              code_magasin: r.code_magasin || "",
+              libelle_magasin: r.libelle_magasin || "",
+              adresse1: r.adresse1 || "",
+              adresse2: r.adresse2 || "",
+              code_postal: r.code_postal || "",
+              ville: r.ville || "",
+              distance_km: typeof r.distance_km === "number" ? r.distance_km : null,
+              articles: [],
+            };
+            groups.set(key, g);
+          }
+          // Mettre à jour l adresse si une ligne suivante apporte plus d information
+          g.adresse1 = g.adresse1 || r.adresse1 || "";
+          g.adresse2 = g.adresse2 || r.adresse2 || "";
+          g.code_postal = g.code_postal || r.code_postal || "";
+          g.ville = g.ville || r.ville || "";
+
+          g.articles.push({
+            code_article: r.code_article || "",
+            qte_stock_total: r.qte_stock_total,
+          });
+        }
+
+        for (const g of groups.values()) {
+          if (!storesLayer || !window.L) continue;
+          const marker = L.marker([g.lat, g.lon], {
             icon: L.icon({
               iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
               shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
@@ -289,16 +322,43 @@ document.addEventListener("DOMContentLoaded", () => {
               shadowSize: [41, 41],
             }),
           });
-          const label = `${r.code_magasin || ""} - ${r.libelle_magasin || ""}`;
-          const stockTxt = typeof r.qte_stock_total === "number" ? r.qte_stock_total.toFixed(2) : r.qte_stock_total;
-          const addr = r.adresse || "";
-          const distTxt = typeof r.distance_km === "number" ? `${r.distance_km.toFixed(2)} km` : null;
-          marker.bindPopup([
-            label,
-            addr,
-            stockTxt != null ? `Stock : ${stockTxt}` : null,
-            distTxt,
-          ].filter(Boolean).join("<br>"));
+
+          const lines = [];
+          // 1) Première ligne : code + libellé magasin
+          const magasinLabel = `${g.code_magasin || ""} - ${g.libelle_magasin || ""}`.trim();
+          if (magasinLabel) {
+            lines.push(magasinLabel);
+          }
+
+          // 2) Deuxième ligne : adresse détaillée (adresse1, adresse2, code_postal, ville)
+          const addrParts = [];
+          if (g.adresse1) addrParts.push(String(g.adresse1));
+          if (g.adresse2) addrParts.push(String(g.adresse2));
+          if (g.code_postal) addrParts.push(String(g.code_postal));
+          if (g.ville) addrParts.push(String(g.ville));
+          if (addrParts.length) {
+            lines.push(addrParts.join(" "));
+          }
+
+          // 3) Troisième ligne : distance (si disponible)
+          if (g.distance_km != null) {
+            lines.push(`${g.distance_km.toFixed(2)} km`);
+          }
+
+          // 4) Puis une ligne par code article avec la quantité
+          g.articles.forEach(a => {
+            if (!a.code_article && a.qte_stock_total == null) return;
+            const stockTxt = typeof a.qte_stock_total === "number" ? a.qte_stock_total.toFixed(2) : a.qte_stock_total;
+            const articleLineParts = [];
+            if (a.code_article) articleLineParts.push(`Article : ${a.code_article}`);
+            if (stockTxt != null) articleLineParts.push(`Stock (selon filtres) : ${stockTxt}`);
+            const articleLine = articleLineParts.join(" – ");
+            if (articleLine) {
+              lines.push(articleLine);
+            }
+          });
+
+          marker.bindPopup(lines.join("<br>"));
           marker.addTo(storesLayer);
         }
 

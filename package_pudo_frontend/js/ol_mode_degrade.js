@@ -1064,7 +1064,7 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = mailto;
       } else if (mode === "lm2s") {
         const subject = buildSubject("LM2S");
-        const to = encodeURIComponent("sce-clients.pudo@lm2s.fr");
+        const to = encodeURIComponent("serviceclients@lm2s.fr");
         const cc = encodeURIComponent("logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr");
         const mailto = `mailto:${to}?cc=${cc}&subject=${subject}&body=${body}${importance}`;
         window.location.href = mailto;

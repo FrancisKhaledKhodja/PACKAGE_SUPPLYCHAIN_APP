@@ -3653,3 +3653,115 @@ Traceback (most recent call last):
                          └ <module 'os' (frozen)>
 
 FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-11-29 07:42:51.083 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-11-29 07:42:54.699 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-02 03:32:38.008 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-02 03:33:45.599 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-02 17:07:12.157 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-02 17:08:18.748 | ERROR    | package_pudo_api.blueprints.pudo.routes:pudo_update_api:76 - An error has been caught in function 'pudo_update_api', process 'MainProcess' (14776), thread 'Thread-70 (process_request_thread)' (12444):
+Traceback (most recent call last):
+
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\threading.py", line 1014, in _bootstrap
+    self._bootstrap_inner()
+    │    └ <function Thread._bootstrap_inner at 0x000001551332DB20>
+    └ <Thread(Thread-70 (process_request_thread), started daemon 12444)>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\threading.py", line 1043, in _bootstrap_inner
+    self.run()
+    │    └ <function Thread.run at 0x000001551332D8A0>
+    └ <Thread(Thread-70 (process_request_thread), started daemon 12444)>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\threading.py", line 994, in run
+    self._target(*self._args, **self._kwargs)
+    │    │        │    │        │    └ {}
+    │    │        │    │        └ <Thread(Thread-70 (process_request_thread), started daemon 12444)>
+    │    │        │    └ (<socket.socket fd=1520, family=2, type=1, proto=0, laddr=('127.0.0.1', 5001), raddr=('127.0.0.1', 63708)>, ('127.0.0.1', 637...
+    │    │        └ <Thread(Thread-70 (process_request_thread), started daemon 12444)>
+    │    └ <bound method ThreadingMixIn.process_request_thread of <werkzeug.serving.ThreadedWSGIServer object at 0x000001553ADA9A90>>
+    └ <Thread(Thread-70 (process_request_thread), started daemon 12444)>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\socketserver.py", line 697, in process_request_thread
+    self.finish_request(request, client_address)
+    │    │              │        └ ('127.0.0.1', 63708)
+    │    │              └ <socket.socket fd=1520, family=2, type=1, proto=0, laddr=('127.0.0.1', 5001), raddr=('127.0.0.1', 63708)>
+    │    └ <function BaseServer.finish_request at 0x0000015513827920>
+    └ <werkzeug.serving.ThreadedWSGIServer object at 0x000001553ADA9A90>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    │    │                   │        │               └ <werkzeug.serving.ThreadedWSGIServer object at 0x000001553ADA9A90>
+    │    │                   │        └ ('127.0.0.1', 63708)
+    │    │                   └ <socket.socket fd=1520, family=2, type=1, proto=0, laddr=('127.0.0.1', 5001), raddr=('127.0.0.1', 63708)>
+    │    └ <class 'werkzeug.serving.WSGIRequestHandler'>
+    └ <werkzeug.serving.ThreadedWSGIServer object at 0x000001553ADA9A90>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\socketserver.py", line 766, in __init__
+    self.handle()
+    │    └ <function WSGIRequestHandler.handle at 0x00000155158E9940>
+    └ <werkzeug.serving.WSGIRequestHandler object at 0x000001553ADB6F70>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\werkzeug\serving.py", line 398, in handle
+    super().handle()
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\http\server.py", line 436, in handle
+    self.handle_one_request()
+    │    └ <function BaseHTTPRequestHandler.handle_one_request at 0x0000015513A167A0>
+    └ <werkzeug.serving.WSGIRequestHandler object at 0x000001553ADB6F70>
+  File "C:\Users\Khaled-Khodja\AppData\Roaming\uv\python\cpython-3.13.9-windows-x86_64-none\Lib\http\server.py", line 424, in handle_one_request
+    method()
+    └ <bound method WSGIRequestHandler.run_wsgi of <werkzeug.serving.WSGIRequestHandler object at 0x000001553ADB6F70>>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\werkzeug\serving.py", line 370, in run_wsgi
+    execute(self.server.app)
+    │       │    │      └ <Flask 'package_pudo_api'>
+    │       │    └ <werkzeug.serving.ThreadedWSGIServer object at 0x000001553ADA9A90>
+    │       └ <werkzeug.serving.WSGIRequestHandler object at 0x000001553ADB6F70>
+    └ <function WSGIRequestHandler.run_wsgi.<locals>.execute at 0x000001553AE17BA0>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\werkzeug\serving.py", line 331, in execute
+    application_iter = app(environ, start_response)
+                       │   │        └ <function WSGIRequestHandler.run_wsgi.<locals>.start_response at 0x000001553AE17E20>
+                       │   └ {'wsgi.version': (1, 0), 'wsgi.url_scheme': 'http', 'wsgi.input': <_io.BufferedReader name=1520>, 'wsgi.errors': <_io.TextIOW...
+                       └ <Flask 'package_pudo_api'>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\flask\app.py", line 1536, in __call__
+    return self.wsgi_app(environ, start_response)
+           │    │        │        └ <function WSGIRequestHandler.run_wsgi.<locals>.start_response at 0x000001553AE17E20>
+           │    │        └ {'wsgi.version': (1, 0), 'wsgi.url_scheme': 'http', 'wsgi.input': <_io.BufferedReader name=1520>, 'wsgi.errors': <_io.TextIOW...
+           │    └ <function Flask.wsgi_app at 0x000001551653FC40>
+           └ <Flask 'package_pudo_api'>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\flask\app.py", line 1511, in wsgi_app
+    response = self.full_dispatch_request()
+               │    └ <function Flask.full_dispatch_request at 0x000001551653F380>
+               └ <Flask 'package_pudo_api'>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\flask\app.py", line 917, in full_dispatch_request
+    rv = self.dispatch_request()
+         │    └ <function Flask.dispatch_request at 0x000001551653F2E0>
+         └ <Flask 'package_pudo_api'>
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\.venv\Lib\site-packages\flask\app.py", line 902, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)  # type: ignore[no-any-return]
+           │    │           │    │              │    │            └ {}
+           │    │           │    │              │    └ 'pudo.pudo_update_api'
+           │    │           │    │              └ <Rule '/api/pudo/update' (OPTIONS, POST) -> pudo.pudo_update_api>
+           │    │           │    └ {'static': <function Flask.__init__.<locals>.<lambda> at 0x0000015529825BC0>, 'auth.login': <function login at 0x000001551654...
+           │    │           └ <Flask 'package_pudo_api'>
+           │    └ <function Flask.ensure_sync at 0x000001551653F560>
+           └ <Flask 'package_pudo_api'>
+
+> File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\blueprints\pudo\routes.py", line 76, in pudo_update_api
+    result = update_data()
+             └ <function update_data at 0x0000015516F3D760>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 181, in update_data
+    status = get_update_status()
+             └ <function get_update_status at 0x0000015516F33CE0>
+
+  File "C:\Users\Khaled-Khodja\OneDrive - TDF SAS\SCRIPTS_PYTHON\PACKAGE_SUPPLYCHAIN_APP\package_pudo_api\data\pudo_etl.py", line 33, in get_update_status
+    last_file_annuaire = os.listdir(annuaire_dir)[-1]
+                         │  │       └ 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+                         │  └ <built-in function listdir>
+                         └ <module 'os' (frozen)>
+
+FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\\24-DPR\\11-Applications\\04-Gestion_Des_Points_Relais\\Data\\GESTION_PR\\ANNUAIRE_PR'
+2025-12-03 02:21:03.130 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 02:21:08.099 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-03 03:47:00.674 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 03:47:14.068 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-03 09:59:17.160 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 09:59:25.459 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-03 10:26:02.060 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 10:26:04.837 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-03 11:04:25.229 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 11:04:28.222 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-03 13:14:33.655 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-03 13:14:37.053 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully

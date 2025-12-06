@@ -1,6 +1,6 @@
-# SupplyChainApp – Spécification des usages et besoins métiers (version 1.3.0)
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.4.0)
 
-> Cette version de la spécification correspond à l’application **SupplyChainApp 1.3.0**.
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.4.0**.
 
 ## 1. Contexte et objectifs
 
@@ -30,6 +30,16 @@ L’objectif métier est de **faciliter la décision opérationnelle** (gestion 
 - **Mise à jour automatique des données**
   - Assure une vision plus fraîche des stocks, PUDO, magasins, stats de sorties, sans action manuelle.
   - Diminue le risque de décision prise sur des données obsolètes.
+
+### 1.2. Impacts métiers spécifiques à la version 1.4.0
+
+- **OL MODE DÉGRADÉ V2 (OL V2)**
+  - Simplifie la **préparation des ordres de livraison dégradés** pour les techniciens en réunissant sur un même écran : carte, tableau de stock, récapitulatif OL.
+  - Permet de **prioriser les magasins les plus pertinents** (tous les articles en stock, proximité du PR technicien) et de sécuriser les envois.
+  - Offre une meilleure **lisibilité des cas hors norme** (articles hors norme mis en évidence dans le récapitulatif).
+- **Intégration renforcée avec RECHERCHE_STOCK**
+  - Les codes article présents dans l’OL deviennent des **liens directs** vers l’onglet RECHERCHE_STOCK, pré-filtré sur l’article.
+  - Facilite les **allers-retours métier** entre vision OL et vision stock globale pour un article.
 
 ---
 
@@ -249,6 +259,123 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 - Identifier les **magasins les plus pertinents** pour servir un site client (proximité géographique, type de dépôt, qualité de stock).
 - Aider à la **planification logistique** (choix du dépôt d’expédition, mutualisation de stocks, optimisation des tournées).
 - Fournir une **vue géographique synthétique** permettant de raconter simplement la situation du stock à des interlocuteurs non experts (direction, métiers connexes).
+
+---
+
+### 2.9. OL MODE DÉGRADÉ V2 (`ol_mode_degrade_v2.html`)
+
+#### 2.9.1. Usages
+
+- Préparer un **ordre de livraison en mode dégradé** pour un technicien donné, en tenant compte :
+  - des stocks disponibles par magasin pour un ou plusieurs **codes article**,
+  - des **points relais** rattachés au technicien (PR principal / PR hors normes),
+  - du **type de commande** (STANDARD, URGENT, MAD) et de l’adresse de livraison.
+- Visualiser sur une **carte** les magasins potentiels et les PR du technicien, afin de choisir un scénario logistique cohérent.
+- Disposer d’un **tableau de synthèse** des magasins avec des indicateurs clés (tous les articles en stock, distances PR, type de dépôt, etc.).
+- Générer un **récapitulatif d’ordre de livraison** prêt à être intégré dans un mail (DAHER / LM2S).
+
+#### 2.9.2. Comportement fonctionnel
+
+- L’utilisateur sélectionne :
+  - un **technicien** (liste issue des affectations technicien ↔ PUDO / magasins),
+  - un **type de commande** : STANDARD, URGENT ou MAD,
+  - un ou plusieurs **codes article** (saisie libre, séparés par `;`).
+- L’application interroge l’API pour récupérer, pour chaque article, les **magasins en stock** selon les filtres choisis (type de dépôt, qualité, type de stock, HORS TRANSIT).
+- Les résultats sont fusionnés dans :
+  - un **tableau** listant les magasins, et
+  - une **carte Leaflet** affichant un marker par magasin.
+- En STANDARD / URGENT :
+  - les **points relais du technicien** (PR principal / PR hors normes) sont affichés sur la carte avec leur **enseigne** et leur **adresse postale** dans les popups.
+
+#### 2.9.3. Tableau de résultats et règles de tri
+
+- Colonnes principales du tableau :
+  - `Code article`, `Code magasin`, `Libellé magasin`, `Type de dépôt`, `Code qualité`, `Type stock (M/D)`,
+  - `Qté stock totale`,
+  - `Tous les articles en stock` (Oui/Non),
+  - `Distance centre (km)`,
+  - en STANDARD / URGENT : `Dist. PR principal (km)`, `Dist. PR hors normes (km)`.
+- Colonne **Tous les articles en stock** :
+  - indique si le magasin détient **l’ensemble des articles saisis** (tous les codes article de la recherche).
+- Règles de tri :
+  - en **STANDARD** et **URGENT** :
+    1. magasins où **Tous les articles en stock = Oui**, puis ceux à `Non`,
+    2. puis ordre croissant de **distance au PR principal** (magasin le plus proche du PR technicien en premier),
+    3. puis `Code magasin` (ordre alphabétique) en cas d’égalité ;
+  - en **MAD** : tri par **Distance centre (km)** croissante.
+
+#### 2.9.4. Intégration avec RECHERCHE_STOCK
+
+- Dans le tableau et dans le **récapitulatif OL** :
+  - le **code article** est cliquable ;
+  - le clic ouvre l’onglet **RECHERCHE_STOCK** (`stock.html`) avec le paramètre `?code=<CODE_ARTICLE>` ;
+  - la page RECHERCHE_STOCK **pré-remplit et lance automatiquement** la recherche pour ce code et charge le stock détaillé.
+- Objectif métier :
+  - permettre aux utilisateurs de **creuser rapidement** le contexte stock d’un article (stocks agrégés, stats de sorties, parc Helios) directement depuis un travail OL.
+
+#### 2.9.5. Règles de validation et logique d’envoi (rappel synthétique)
+
+- **Règles de validation principales** (identiques à la V1, avec précisions V2) :
+  - **BT obligatoire** ;
+  - au moins **une ligne** avec `code_article` renseigné ;
+  - pour chaque ligne avec article, `code_magasin` expéditeur obligatoire ;
+  - destination obligatoire (Code IG, Point Relais ou Adresse libre avec adresse/CP/ville) ;
+  - en **mode MAD**, l’adresse de livraison de l’OL est définie comme **les magasins expéditeurs eux‑mêmes** (pas de saisie d’adresse spécifique).
+- **Adresse de livraison et Code IG** :
+  - en cas de destination par **Code IG**, l’écran affiche sous le champ la **chaîne d’adresse complète** issue de la table Helios (libellé long + adresse postale) ;
+  - cette même adresse est reprise dans le récapitulatif OL et dans le corps des e‑mails générés.
+- **Envoi des mails** :
+  - la logique métier DAHER / LM2S et le contenu des mails (objet, corps, destinataires) restent inchangés par rapport à la V1 ;
+  - OL V2 apporte une **meilleure préparation** de ces mails via la carte + tableau + récap enrichi (hors norme, distances, adresses, lien Google Maps, etc.).
+  - routage des mails selon les **codes magasins expéditeurs** des lignes OL :
+    - si **toutes** les lignes ont `code_magasin = MPLC` → un seul mail **DAHER** est généré ;
+    - si **aucune** ligne n’a `code_magasin = MPLC` → un seul mail **LM2S** est généré ;
+    - si cas **mixte** (au moins une ligne MPLC et au moins une ligne non MPLC) → deux mails sont générés :
+      - un mail DAHER pour les lignes `code_magasin = MPLC` ;
+      - un mail LM2S pour les lignes avec `code_magasin ≠ MPLC`.
+  - objet des mails :
+    - `[MODE DEGRADE] - Commande OL dégradé - BT <numéro> - <TYPE_COMMANDE> - DAHER` (lignes MPLC) ;
+    - `[MODE DEGRADE] - Commande OL dégradé - BT <numéro> - <TYPE_COMMANDE> - LM2S` (autres lignes) ;
+    - sans suffixe spécifique lorsque le routage ne distingue pas de transporteur ;
+  - principaux destinataires :
+    - DAHER : `ordotdf@daher.com; t.robas@daher.com` en **À**, copie à `logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr` ;
+    - LM2S : `serviceclients@lm2s.fr` en **À**, même copie qu’au-dessus ;
+  - les mails sont envoyés en **haute priorité** (X-Priority/Importance).
+
+#### 2.9.6. Workflow utilisateur (OL V2)
+
+1. **Ouverture de l’écran OL V2**
+   - L’utilisateur ouvre `ol_mode_degrade_v2.html` depuis le menu principal.
+
+2. **Sélection du technicien et du type de commande**
+   - Choix d’un **technicien** dans la liste (détermine PR principal / hors normes, périmètre PUDO/magasins).
+   - Choix du **type de commande** : STANDARD, URGENT ou MAD.
+
+3. **Saisie des articles et paramètres de recherche**
+   - Saisie d’un ou plusieurs **codes article** (séparés par `;`).
+   - Optionnel : ajustement des **filtres de stock** (type de dépôt, code qualité, type de stock, HORS TRANSIT).
+   - Lancement de la recherche.
+
+4. **Lecture de la carte et du tableau de résultats**
+   - La **carte** affiche :
+     - les **magasins en stock** pour les articles saisis,
+     - les **PR du technicien** (principal / hors normes) avec enseigne + adresse postale dans les popups.
+   - Le **tableau** liste les magasins avec :
+     - la colonne **Tous les articles en stock** (Oui/Non),
+     - les **distances** au centre et aux PR,
+     - les informations de dépôt / qualité / type de stock.
+   - En STANDARD / URGENT, l’ordre des lignes respecte le **tri métier** (tous les articles, distance PR principal, code magasin).
+
+5. **Construction de l’Ordre de Livraison dégradé**
+   - L’utilisateur sélectionne un ou plusieurs **magasins expéditeurs** pertinents.
+   - L’écran génère un **récapitulatif OL** :
+     - lignes article avec indication **hors norme** mise en évidence,
+     - informations d’expédition (magasin, PR, adresse de livraison, transporteur cible…).
+   - Les **codes article** du récap sont cliquables pour ouvrir RECHERCHE_STOCK au besoin.
+
+6. **Contrôle final et envoi du mail**
+   - Vérification des règles de validation (BT, au moins une ligne article, codes magasin expéditeurs, destination renseignée).
+   - L’utilisateur valide puis **envoie le mail OL** vers DAHER / LM2S depuis l’application (contenu identique à la V1, mais préparé grâce aux apports de la V2).
 
 #### 2.7.3. API associée
 
@@ -731,11 +858,16 @@ Accept: application/json
   - Mise en place d’un **processus de mise à jour automatique** des données toutes les 30 minutes, avec suivi via l’endpoint `/api/updates/status` et affichage dans l’interface.
   - Alignement avec le packaging technique : binaire `SUPPLYCHAIN_APP_v1.3.0.exe` distribué aux utilisateurs internes.
 
+- **Version 1.4.0**
+  - Introduction de **OL MODE DÉGRADÉ V2** avec carte intégrée, tableau de stock unifié et règles de tri métier (tous les articles en stock, distance PR technicien, code magasin).
+  - Meilleure intégration entre OL et les autres écrans (RECHERCHE_STOCK, Helios, statistiques de sorties) via des **liens contextuels sur les codes article**.
+  - Mise à jour de la documentation fonctionnelle et technique (README, SPEC METIER) et alignement avec le packaging `SUPPLYCHAIN_APP_v1.4.0.exe`.
+
 ---
 
 ## C. Diffusion et déploiement auprès des utilisateurs métiers
 
-- L’application est mise à disposition des utilisateurs sous forme d’un **exécutable Windows autonome** : `SUPPLYCHAIN_APP_v1.3.0.exe`.
+- L’application est mise à disposition des utilisateurs sous forme d’un **exécutable Windows autonome** : `SUPPLYCHAIN_APP_v1.4.0.exe`.
 - Les modalités techniques de livraison (répertoire cible, création de raccourcis, gestion des messages de sécurité Windows, etc.) sont décrites dans le `README.md` (section "Livraison / déploiement de l'exécutable").
 - Du point de vue métier, il est recommandé :
   - de diffuser l’outil via les canaux habituels (portail interne, partage réseau sécurisé, procédure d’installation bureautique),

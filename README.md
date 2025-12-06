@@ -87,7 +87,7 @@ Vue d'ensemble des principaux composants :
   - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
 - `package_pudo_api.data.pudo_etl` :
   - gère les **tâches d'ETL** (chargement/parquetisation, mise à jour périodique dans `path_datan/<folder_name_app>`).
-- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.3.0.exe`) :
+- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.4.0.exe`) :
   - embarque le même code Python et le dossier `package_pudo_frontend` ;
   - reproduit exactement le comportement de `python run_supplychainapp.py` sans dépendre de Python installé sur le poste utilisateur.
 
@@ -153,27 +153,27 @@ Une fois ces commandes exécutées, toutes les dépendances de l'application ain
 Depuis la racine du projet, avec `.venv` activé :
 
 ```powershell
-pyinstaller --clean SUPPLYCHAIN_APP_v1.3.0.spec
+pyinstaller --clean SUPPLYCHAIN_APP_v1.4.0.spec
 ```
 
-Cette commande utilise la configuration de build décrite dans `SUPPLYCHAIN_APP_v1.3.0.spec` (point d'entrée, données embarquées, options PyInstaller, etc.).
+Cette commande utilise la configuration de build décrite dans `SUPPLYCHAIN_APP_v1.4.0.spec` (point d'entrée, données embarquées, options PyInstaller, etc.).
 
 > Remarque :
 > - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` dans le fichier `.spec` ou en ligne de commande ;
-> - les fichiers `.spec` fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`, `SUPPLYCHAIN_APP_v1.3.0.spec`) permettent de rejouer des configurations de build existantes.
+> - les fichiers `.spec` fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`, `SUPPLYCHAIN_APP_v1.4.0.spec`) permettent de rejouer des configurations de build existantes.
 
 #### Alternative : commande directe sans `.spec`
 
 Il est également possible de construire l'exécutable sans utiliser le fichier `.spec` (utile pour un premier build rapide) :
 
 ```powershell
-pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.3.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
+pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.4.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
 ```
 
 Les options sont identiques à celles des versions précédentes :
 
 - `--onefile` : génère un seul fichier `.exe` autonome.
-- `--name SUPPLYCHAIN_APP_v1.3.0` : nom du binaire généré.
+- `--name SUPPLYCHAIN_APP_v1.4.0` : nom du binaire généré.
 - `--add-data "package_pudo_frontend;package_pudo_frontend"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
 - `run_supplychainapp.py` : point d'entrée qui démarre API + frontend.
 
@@ -184,7 +184,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.3.0.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.4.0.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -284,64 +284,65 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ---
 
-### 3.4. OL MODE DÉGRADÉ (`ol_mode_degrade.html`)
+### 3.4. OL MODE DÉGRADÉ V2 (`ol_mode_degrade_v2.html`)
 
-Écran dédié à la création d’**ordres de livraison en mode dégradé** pour les techniciens.
+Écran dédié à la création d’**ordres de livraison en mode dégradé** pour les techniciens, avec intégration d’une carte et d’un tableau de stock unifié.
 
-- Sélection d’un technicien, récupération automatique de son magasin, de ses coordonnées et de ses points relais.
-- Saisie des lignes de commande (code article, quantité, **code magasin expéditeur obligatoire** pour chaque ligne non vide).
+- Sélection d’un technicien, récupération automatique de son magasin, de ses coordonnées, de son **PR principal** et de son **PR hors normes**.
+- Saisie d’un ou plusieurs **codes article** (séparés par `;`), avec récupération des magasins ayant du stock selon les filtres choisis.
 - Choix du type de commande : `STANDARD`, `URGENT`, `MAD`.
-- Choix de l’adresse de livraison :
+- Choix de l’adresse de livraison (bloc "Lieu de livraison") :
   - **Code IG**,
   - **Point relais** (principal / hors normes),
   - **Adresse libre** (adresse, CP, ville obligatoires).
 
-#### 3.4.1. Règles de validation principales
+#### 3.4.1. Carte et visualisation des stocks
 
-- Numéro de BT obligatoire.
-- Au moins **une ligne** avec `code_article` renseigné.
-- Pour chaque ligne avec article, `code_magasin` expéditeur obligatoire.
-- Destination obligatoire :
-  - si `code_ig` → un code IG doit être saisi,
-  - si `adresse_libre` → adresse, code postal et ville obligatoires.
+- Carte Leaflet affichant :
+  - les **magasins avec stock** pour les articles saisis (un marker par magasin),
+  - le **point de référence** (centre) si défini,
+  - en STANDARD : les points relais **principal** et **hors normes** du technicien (avec enseigne + adresse dans le popup).
+- Chaque marker magasin affiche :
+  - code + libellé magasin,
+  - adresse postale,
+  - distance (km) par rapport au centre (si calculée),
+  - une ligne par article avec la quantité de stock.
+- Les magasins ayant **tous les articles demandés** sont mis en évidence par un marker de couleur différente.
 
-#### 3.4.2. Logique d’envoi des e‑mails
+#### 3.4.2. Tableau des résultats et règles de tri
 
-Les destinataires dépendent du **code magasin expéditeur** des lignes :
+- Tableau listant les magasins en stock avec, entre autres, les colonnes :
+  - `Code article`, `Code magasin`, `Libellé magasin`, `Type de dépôt`, `Code qualité`, `Type stock (M/D)`,
+  - `Qté stock totale`, `Tous les articles en stock`, `Distance centre (km)`,
+  - en STANDARD/URGENT : `Dist. PR principal (km)`, `Dist. PR hors normes (km)`.
+- Colonne **"Tous les articles en stock"** :
+  - affiche `Oui` / `Non` par magasin, en fonction de la présence de **tous les articles saisis**.
+- Règles de tri :
+  - en **STANDARD** et **URGENT** :
+    1. magasins ayant tous les articles en stock (`Oui`) avant les autres (`Non`),
+    2. puis distance au **PR principal** croissante (valeurs nulles à la fin),
+    3. puis `Code magasin` (ordre alphabétique) en cas d’égalité ;
+  - en **MAD** : tri par `Distance centre (km)` croissante.
 
-- Si **toutes** les lignes ont `code_magasin = MPLC` → un seul mail vers **DAHER** :
-  - To : `ordotdf@daher.com; t.robas@daher.com`
-  - Cc : `logistique_pilotage_operationnel@tdf.fr; sophie.khayat@tdf.fr; francis.khaled-khodja@tdf.fr`
-- Si **aucune** ligne n’a `code_magasin = MPLC` → un seul mail vers **LM2S** :
-  - To : `sce-clients.pudo@lm2s.fr`
-  - Cc : mêmes adresses TDF.
-- Si **cas mixte** (au moins une ligne MPLC et au moins une ligne ≠ MPLC) :
-  - clic sur **Valider l’ordre de livraison** n’ouvre pas de mail automatiquement,
-  - deux boutons apparaissent :
-    - `Mail Daher (lignes MPLC)` → génère un mail vers DAHER avec uniquement les lignes MPLC,
-    - `Mail LM2S (autres lignes)` → génère un mail vers LM2S avec uniquement les lignes non‑MPLC.
+#### 3.4.3. Indicateur hors norme et liens vers RECHERCHE STOCK
 
-Chaque mail est créé via un lien `mailto:` avec **importance élevée** (`X-Priority=1 (Highest)`, `Importance=High`).
+- Le récapitulatif **"ORDRE DE LIVRAISON DÉGRADÉ"** affiche pour chaque ligne OL :
+  - un indicateur **Hors norme** (`Oui` / `Non`),
+  - avec fond rouge pour les articles hors norme.
+- Dans le tableau et dans le récapitulatif OL :
+  - le **code article** est un lien vers l’onglet **RECHERCHE STOCK** (`stock.html`),
+  - le lien ouvre la page avec le paramètre `?code=<CODE>` et déclenche automatiquement la recherche et le chargement du stock pour cet article.
 
-#### 3.4.3. Objet et corps du mail
+#### 3.4.4. Règles de validation principales et envoi des e‑mails
 
-- Objet du mail :
-
-  ```text
-  [MODE DEGRADE] - Commande OL dégradé - BT <BT> - <TYPE_COMMANDE> - <DAHER|LM2S>
-  ```
-
-- Corps (texte) structuré avec :
-  - un titre : `*** ORDRE DE LIVRAISON EN MODE DEGRADE ***`,
-  - un bloc **ENTETE ORDRE DE LIVRAISON** (date/heure, login, BT, type de commande),
-  - un bloc **COMMENTAIRE** (commentaire libre saisi),
-  - un bloc **CONTACT TECHNICIEN** (nom, téléphone, magasin, code tiers Daher),
-  - un bloc **ADRESSE D’EXPÉDITION** (récap des magasins expéditeurs distincts),
-  - un bloc **ADRESSE DE LIVRAISON** (selon code IG / PR / adresse libre / MAD),
-  - si destination en **code IG** ou **adresse libre** :
-    - une phrase : `Contacter le technicien 30 min avant votre arrivée <téléphone>`,
-  - un bloc **LIGNES DE COMMANDE** : détail de chaque ligne (article, libellé, quantité, code magasin, indicateur hors norme),
-  - en fin de mail, un bloc **LIEN GOOGLE MAP** contenant une URL vers Google Maps permettant de calculer la distance et la durée entre le magasin expéditeur principal et l’adresse de livraison.
+- Règles de validation (inchangées par rapport à la V1) :
+  - Numéro de BT obligatoire.
+  - Au moins **une ligne** avec `code_article` renseigné.
+  - Pour chaque ligne avec article, `code_magasin` expéditeur obligatoire.
+  - Destination obligatoire :
+    - si `code_ig` → un code IG doit être saisi,
+    - si `adresse_libre` → adresse, code postal et ville obligatoires.
+- Logique d’envoi des e-mails (DAHER / LM2S) et format des messages : identiques à la V1 (voir documentation fonctionnelle interne pour le détail des destinataires et du format exact du mail).
 
 ---
 
@@ -360,7 +361,7 @@ Chaque mail est créé via un lien `mailto:` avec **importance élevée** (`X-Pr
 
 ## 5. Livraison / déploiement de l'exécutable
 
-- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.3.0.exe`.
+- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.4.0.exe`.
 - **Public cible** : postes Windows internes ne disposant pas forcément de Python.
 
 ### 5.1. Prérequis côté utilisateur
@@ -371,7 +372,7 @@ Chaque mail est créé via un lien `mailto:` avec **importance élevée** (`X-Pr
 
 ### 5.2. Mode opératoire recommandé
 
-1. Copier `SUPPLYCHAIN_APP_v1.3.0.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+1. Copier `SUPPLYCHAIN_APP_v1.4.0.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
 2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
 3. Double-cliquer sur l'exécutable :
    - une console s'ouvre avec les logs,
@@ -391,3 +392,13 @@ Chaque mail est créé via un lien `mailto:` avec **importance élevée** (`X-Pr
   - Amélioration de la recherche d'articles par **fournisseur** / **référence fabricant** (enrichissement du parquet `items.parquet` avec `manufacturers.parquet`).
   - Mise en place d'une **mise à jour automatique** des données toutes les 30 minutes (`update_data()` et endpoint `/api/updates/status`).
   - Nouvel exécutable packagé `SUPPLYCHAIN_APP_v1.3.0.exe` (PyInstaller, fichier `SUPPLYCHAIN_APP_v1.3.0.spec`).
+
+- **1.4.0**
+  - Ajout de l'écran **OL MODE DÉGRADÉ V2** (`ol_mode_degrade_v2.html`) avec carte Leaflet intégrée (visualisation des magasins en stock, distances, PR technicien, etc.).
+  - Nouveau tri des résultats OL (STANDARD / URGENT) : priorité aux magasins ayant tous les articles en stock, prise en compte de la distance au PR technicien, puis code magasin.
+  - Amélioration de l'UX OL :
+    - colonnes supplémentaires (distances PR, indicateur « Tous les articles en stock »),
+    - surbrillance des articles hors norme dans le récapitulatif,
+    - liens directs depuis les codes article OL vers l'onglet **RECHERCHE STOCK** pré-filtré sur l'article.
+  - Mise à jour de la navigation : le lien **OL MODE DÉGRADÉ** pointe désormais vers la V2.
+  - Nouvel exécutable packagé `SUPPLYCHAIN_APP_v1.4.0.exe` (PyInstaller, fichier `SUPPLYCHAIN_APP_v1.4.0.spec`).

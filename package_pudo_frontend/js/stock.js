@@ -262,7 +262,13 @@ document.addEventListener("DOMContentLoaded", () => {
           updatePhotosLink(code);
         }
       });
+
       tbodyItems.appendChild(tr);
+
+      // Si un code a été passé dans l'URL, sélectionner automatiquement la ligne correspondante
+      if (currentItemCode && r.code_article && String(r.code_article).trim().toUpperCase() === currentItemCode.trim().toUpperCase()) {
+        tr.click();
+      }
     });
   }
 
@@ -457,5 +463,18 @@ document.addEventListener("DOMContentLoaded", () => {
       ev.preventDefault();
       searchItems();
     });
+  }
+
+  // Si un code article est passé dans l'URL (?code=...), lancer automatiquement la recherche
+  try {
+    const params = new URLSearchParams(window.location.search || "");
+    const initialCode = (params.get("code") || "").trim();
+    if (initialCode && qInput) {
+      qInput.value = initialCode;
+      currentItemCode = initialCode;
+      searchItems();
+    }
+  } catch (e) {
+    // en cas de problème avec l'URL, on n'applique pas de pré-remplissage
   }
 });

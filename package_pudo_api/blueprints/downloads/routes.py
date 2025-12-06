@@ -86,7 +86,7 @@ def download_stock_final_csv_api():
     tmp.close()
 
     try:
-        df.write_csv(tmp_path)
+        df.write_csv(tmp_path, separator=";")
     except Exception:
         return jsonify({"error": "export_failed"}), 500
 

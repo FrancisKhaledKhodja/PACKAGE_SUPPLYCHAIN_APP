@@ -2,7 +2,7 @@ from flask import request, jsonify
 from . import bp
 from package_pudo_api.services.pudo_service import get_nearby_stores
 from package_pudo_api.services.geocoding import get_latitude_and_longitude
-from package_pudo_api.data.pudo_service import get_stock_map_for_item, get_coords_for_ig
+from package_pudo_api.data.pudo_service import get_stock_map_for_item, get_coords_for_ig, get_pudo_coords
 
 @bp.post("/nearby")
 def stores_nearby():
@@ -71,6 +71,9 @@ def stores_stock_map_with_ref():
     address = (body.get("address") or "").strip()
     code_ig = (body.get("code_ig") or "").strip()
 
+    pr_principal_code = (body.get("pr_principal") or "").strip() or None
+    pr_hn_code = (body.get("pr_hors_normes") or body.get("pr_hors_norme") or "").strip() or None
+
     # Filtres optionnels sur le stock
     type_de_depot_filters = body.get("type_de_depot") or body.get("type_de_depot_filters") or []
     code_qualite_filters = body.get("code_qualite") or body.get("code_qualite_filters") or []
@@ -109,14 +112,49 @@ def stores_stock_map_with_ref():
         code_article,
         ref_lat=ref_lat,
         ref_lon=ref_lon,
+        pr_principal_code=pr_principal_code,
+        pr_hn_code=pr_hn_code,
         type_de_depot_filters=type_de_depot_filters or None,
         code_qualite_filters=code_qualite_filters or None,
         flag_stock_d_m_filters=flag_stock_d_m_filters or None,
         hors_transit_only=hors_transit_only,
     )
+    pr_principal_lat = pr_principal_lon = None
+    pr_principal_label = None
+    pr_hn_lat = pr_hn_lon = None
+    pr_hn_label = None
+
+    if pr_principal_code:
+        info = get_pudo_coords(pr_principal_code)
+        if info:
+            pr_principal_lat = info.get("latitude")
+            pr_principal_lon = info.get("longitude")
+            enseigne = info.get("enseigne") or ""
+            adr = info.get("adresse_postale") or ""
+            parts = [p for p in [enseigne, adr] if p]
+            if parts:
+                pr_principal_label = " - ".join(parts)
+
+    if pr_hn_code:
+        info_hn = get_pudo_coords(pr_hn_code)
+        if info_hn:
+            pr_hn_lat = info_hn.get("latitude")
+            pr_hn_lon = info_hn.get("longitude")
+            enseigne_hn = info_hn.get("enseigne") or ""
+            adr_hn = info_hn.get("adresse_postale") or ""
+            parts_hn = [p for p in [enseigne_hn, adr_hn] if p]
+            if parts_hn:
+                pr_hn_label = " - ".join(parts_hn)
+
     return jsonify({
         "rows": rows,
         "center_lat": float(ref_lat) if ref_lat is not None else None,
         "center_lon": float(ref_lon) if ref_lon is not None else None,
         "center_label": center_label,
+        "pr_principal_lat": float(pr_principal_lat) if pr_principal_lat is not None else None,
+        "pr_principal_lon": float(pr_principal_lon) if pr_principal_lon is not None else None,
+        "pr_hn_lat": float(pr_hn_lat) if pr_hn_lat is not None else None,
+        "pr_hn_lon": float(pr_hn_lon) if pr_hn_lon is not None else None,
+        "pr_principal_label": pr_principal_label,
+        "pr_hn_label": pr_hn_label,
     }), 200

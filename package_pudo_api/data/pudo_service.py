@@ -64,6 +64,64 @@ except FileNotFoundError:
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
 dico_helios = {row["code_ig"]: row for row in helios.iter_rows(named=True)} if 'helios' in locals() else {}
 
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    R = 6371.0
+    lat1 = radians(lat1)
+    lon1 = radians(lon1)
+    lat2 = radians(lat2)
+    lon2 = radians(lon2)
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    return R * c
+
+
+def get_pudo_coords(code_pr: str) -> dict | None:
+    """Retourne les coordonnées latitude/longitude pour un code point relais.
+
+    Les données proviennent de pudo_directory.parquet chargé dans le DataFrame global `pudos`.
+    """
+    if not code_pr:
+        return None
+    if "pudos" not in globals() or pudos.is_empty():
+        return None
+    try:
+        df = pudos.filter(pl.col("code_point_relais") == code_pr)
+        if df.is_empty():
+            return None
+        row = df.row(0, named=True)
+
+        def pick(keys: list[str]):
+            for k in keys:
+                if k in row:
+                    v = row.get(k)
+                    if v is not None and v != "":
+                        return v
+            return None
+
+        lat = row.get("latitude")
+        lon = row.get("longitude")
+        if lat is None or lon is None:
+            return None
+
+        adr1 = pick(["adresse_postale", "adresse_1", "adresse1"]) or ""
+        cp = pick(["code_postal"]) or ""
+        ville = pick(["ville"]) or ""
+        adresse_postale = " ".join([str(adr1), str(cp), str(ville)]).strip()
+
+        enseigne = pick(["enseigne", "nom_point_relais"]) or ""
+
+        return {
+            "latitude": float(lat),
+            "longitude": float(lon),
+            "enseigne": enseigne,
+            "adresse_postale": adresse_postale,
+        }
+    except Exception:
+        return None
+
 def get_items_son_buildings_df() -> pl.DataFrame:
     """Retourne le DataFrame complet items_son_buildings ou un DF vide s'il est indisponible.
 
@@ -91,6 +149,8 @@ def get_stock_map_for_item(
     code_article: str,
     ref_lat: float | None = None,
     ref_lon: float | None = None,
+    pr_principal_code: str | None = None,
+    pr_hn_code: str | None = None,
     type_de_depot_filters: list[str] | None = None,
     code_qualite_filters: list[str] | None = None,
     flag_stock_d_m_filters: list[str] | None = None,
@@ -171,6 +231,8 @@ def get_stock_map_for_item(
             "type_de_depot",
             "adresse1",
             "adresse_1",
+            "adresse2",
+            "adresse_2",
             "code_postal",
             "ville",
             "latitude_right",
@@ -188,12 +250,28 @@ def get_stock_map_for_item(
                     return v
             return None
 
+        pr_principal_lat = pr_principal_lon = None
+        pr_hn_lat = pr_hn_lon = None
+
+        if pr_principal_code:
+            info = get_pudo_coords(str(pr_principal_code))
+            if info:
+                pr_principal_lat = info.get("latitude")
+                pr_principal_lon = info.get("longitude")
+
+        if pr_hn_code:
+            info_hn = get_pudo_coords(str(pr_hn_code))
+            if info_hn:
+                pr_hn_lat = info_hn.get("latitude")
+                pr_hn_lon = info_hn.get("longitude")
+
         out_rows: list[dict] = []
         for r in joined.iter_rows(named=True):
             adr1 = _pick(r, ["adresse_1", "adresse1"]) or ""
+            adr2 = _pick(r, ["adresse_2", "adresse2"]) or ""
             cp = r.get("code_postal") or ""
             ville = r.get("ville") or ""
-            adresse = " ".join([str(x) for x in [adr1, cp, ville] if x]).strip()
+            adresse = " ".join([str(x) for x in [adr1, adr2, cp, ville] if x]).strip()
 
             lat = r.get("latitude_right")
             lon = r.get("longitude_right")
@@ -207,6 +285,10 @@ def get_stock_map_for_item(
                 "code_article": r.get("code_article"),
                 "libelle_court_article": r.get("libelle_court_article"),
                 "qte_stock_total": float(r.get("qte_stock_total")) if r.get("qte_stock_total") is not None else 0.0,
+                "adresse1": adr1,
+                "adresse2": adr2,
+                "code_postal": cp,
+                "ville": ville,
                 "adresse": adresse,
                 "latitude": float(lat) if lat is not None else None,
                 "longitude": float(lon) if lon is not None else None,
@@ -218,6 +300,22 @@ def get_stock_map_for_item(
                     row_dict["distance_km"] = float(d)
                 except Exception:
                     row_dict["distance_km"] = None
+
+            # Distances magasin ↔ PR principal / hors normes si disponibles
+            if lat is not None and lon is not None:
+                try:
+                    if pr_principal_lat is not None and pr_principal_lon is not None:
+                        d_pr = haversine_distance(float(lat), float(lon), float(pr_principal_lat), float(pr_principal_lon))
+                        row_dict["distance_pr_principal_km"] = float(d_pr)
+                except Exception:
+                    row_dict["distance_pr_principal_km"] = None
+
+                try:
+                    if pr_hn_lat is not None and pr_hn_lon is not None:
+                        d_hn = haversine_distance(float(lat), float(lon), float(pr_hn_lat), float(pr_hn_lon))
+                        row_dict["distance_pr_hors_normes_km"] = float(d_hn)
+                except Exception:
+                    row_dict["distance_pr_hors_normes_km"] = None
 
             out_rows.append(row_dict)
 
