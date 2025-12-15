@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Recherche stock (items)</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/api.js?v=2" defer></script>
+  <script src="../js/items_v2.js?v=2" defer></script>
+</head>
+<body>
+  <div class="layout" style="font-size:1rem;">
+    <main class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Recherche stock (items)</h2>
+      <form id="form-search" class="row" onsubmit="return false;">
+        <input type="text" id="q" placeholder="Code article, libellé, famille, etc." style="flex:1" />
+        <button id="btn-search" type="submit">Rechercher</button>
+      </form>
+
+      <div class="section"></div>
+      <div id="results-meta" class="row" style="justify-content:space-between">
+        <div id="results-count" class="muted"></div>
+        <div></div>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <div style="overflow:auto; max-height:65vh;">
+          <table id="tbl-items">
+            <thead><tr id="thead-row"></tr></thead>
+            <tbody id="tbody-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Détail de l’article</h2>
+      <div id="details" class="card" style="max-height:78vh; overflow:auto;"></div>
+    </aside>
+  </div>
+</body>
+</html>

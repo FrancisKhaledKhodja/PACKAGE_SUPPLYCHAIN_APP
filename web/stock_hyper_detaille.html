@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>STOCK HYPER DÉTAILLÉ</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <script src="js/stock_hyper_detaille.js?v=1" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout" style="font-size:1rem;">
+    <main class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Recherche d'articles</h2>
+      <form id="form-search-stock-hyper" class="row" onsubmit="return false;">
+        <input type="text" id="q-stock-hyper" placeholder="Code article, libellé, famille, etc." style="flex:1" />
+        <button id="btn-search-stock-hyper" type="submit">Rechercher</button>
+      </form>
+
+      <div class="section"></div>
+      <div id="results-meta-stock-hyper" class="row" style="justify-content:space-between">
+        <div id="results-count-stock-hyper" class="muted"></div>
+        <div></div>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <div style="overflow:auto; max-height:65vh;">
+          <table id="tbl-items-stock-hyper">
+            <thead><tr id="thead-row-items-stock-hyper"></tr></thead>
+            <tbody id="tbody-rows-items-stock-hyper"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Stock hyper détaillé par ligne</h2>
+      <div class="muted" id="stock-hyper-meta" style="font-size:0.9rem; margin-bottom:6px;"></div>
+
+      <form id="form-filters-stock-hyper" class="row" style="flex-wrap:wrap; gap:6px; margin-bottom:8px; align-items:flex-end;" onsubmit="return false;">
+        <input type="text" id="filter-code-magasin-hyper" placeholder="Code magasin" style="flex:1; min-width:120px;" />
+        <input type="text" id="filter-type-depot-hyper" placeholder="Type de dépôt" style="flex:1; min-width:120px;" />
+        <input type="text" id="filter-qualite-hyper" placeholder="Qualité" style="flex:1; min-width:120px;" />
+        <input type="text" id="filter-flag-dm-hyper" placeholder="D/M" style="width:80px;" />
+        <button id="btn-export-stock-hyper-csv" type="button" style="margin-left:auto;">Exporter en CSV</button>
+      </form>
+
+      <div class="card" style="max-height:78vh; overflow:auto;">
+        <table id="tbl-stock-hyper">
+          <thead><tr id="thead-row-stock-hyper"></tr></thead>
+          <tbody id="tbody-rows-stock-hyper"></tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

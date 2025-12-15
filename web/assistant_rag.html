@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ASSISTANT (LLM + RAG)</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <script src="js/assistant_rag.js" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main class="scapp-p-2rem">
+    <section class="card">
+      <h2 class="scapp-mt-0">Assistant (LLM + RAG)</h2>
+      <p class="muted">Pose une question. Le backend récupère le contexte via le RAG (catalogue tables/joins), puis interroge le LLM.</p>
+
+      <div class="scapp-flex-col scapp-gap-05">
+        <div class="scapp-flex scapp-gap-05" style="align-items:center; flex-wrap:wrap;">
+          <label class="muted scapp-text-08rem" for="ollama-model">Modèle</label>
+          <input id="ollama-model" type="text" value="gemma3:4b" style="min-width:220px;" />
+          <label class="muted scapp-text-08rem" for="ollama-timeout">Timeout (s)</label>
+          <input id="ollama-timeout" type="number" value="180" min="5" step="5" style="width:110px;" />
+        </div>
+        <textarea id="rag-question" rows="3" placeholder="Ex: Comment relier minmax, stock_final, stores et items ?" style="width:100%; resize:vertical;"></textarea>
+        <div class="scapp-flex scapp-gap-05 scapp-justify-end">
+          <button id="btn-ask" type="button">Interroger</button>
+          <button id="btn-generate" type="button">Générer Polars</button>
+          <button id="btn-execute" type="button">Exécuter preview</button>
+        </div>
+        <p id="rag-status" class="muted scapp-text-08rem"></p>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="scapp-mt-0">Réponse</h2>
+      <pre id="rag-answer" style="white-space:pre-wrap;"></pre>
+    </section>
+
+    <section class="card">
+      <h2 class="scapp-mt-0">Code Polars</h2>
+      <pre id="polars-code" style="white-space:pre-wrap;"></pre>
+    </section>
+
+    <section class="card">
+      <h2 class="scapp-mt-0">Preview</h2>
+      <div id="preview-table" style="overflow:auto;"></div>
+    </section>
+
+    <section class="card">
+      <h2 class="scapp-mt-0">Contexte RAG (debug)</h2>
+      <pre id="rag-debug" style="white-space:pre-wrap;"></pre>
+    </section>
+  </main>
+</body>
+</html>

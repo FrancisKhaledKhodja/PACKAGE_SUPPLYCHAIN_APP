@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>RECHERCHE STOCK</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <script src="js/stock.js?v=3" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout" style="font-size:1rem;">
+    <main class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Recherche d'articles</h2>
+      <form id="form-search-stock" class="row" onsubmit="return false;">
+        <input type="text" id="q-stock" placeholder="Code article, libellé, famille, etc." style="flex:1" />
+        <button id="btn-search-stock" type="submit">Rechercher</button>
+      </form>
+
+      <div class="section"></div>
+      <div id="results-meta-stock" class="row" style="justify-content:space-between">
+        <div id="results-count-stock" class="muted"></div>
+        <div></div>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <div style="overflow:auto; max-height:65vh;">
+          <table id="tbl-items-stock">
+            <thead><tr id="thead-row-items-stock"></tr></thead>
+            <tbody id="tbody-rows-items-stock"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <aside class="card">
+      <h2 style="margin:0 0 8px; color:var(--muted)">Stock de l'article sélectionné</h2>
+
+      <div class="layout" style="display:flex; flex-wrap:wrap; gap:8px;">
+        <!-- Haut gauche : information sommaire code article -->
+        <div class="card" style="flex:1 1 calc(50% - 4px); min-width:0;">
+          <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--muted)">Information sommaire du code article</h3>
+          <div id="item-summary" class="muted" style="font-size:0.9rem;"></div>
+          <div id="item-link-wrapper" style="margin-top:6px; font-size:0.85rem;"></div>
+          <div id="photos-link-wrapper" style="margin-top:6px; font-size:0.85rem;"></div>
+        </div>
+
+        <!-- Haut droite : les stocks -->
+        <div class="card" style="flex:1 1 calc(50% - 4px); min-width:0; max-height:40vh; overflow:auto;">
+          <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--muted)">Stocks</h3>
+          <table id="tbl-stock">
+            <thead><tr id="thead-row-stock"></tr></thead>
+            <tbody id="tbody-rows-stock"></tbody>
+          </table>
+          <div id="stock-summary-link-wrapper" style="margin-top:6px; font-size:0.85rem;"></div>
+        </div>
+
+        <!-- Bas gauche : synthèse du parc Helios -->
+        <div class="card" style="flex:1 1 calc(50% - 4px); min-width:0;">
+          <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--muted)">Parc Helios (synthèse)</h3>
+          <div id="helios-summary" class="muted" style="font-size:0.9rem;"></div>
+          <div id="helios-link-wrapper" style="margin-top:6px; font-size:0.85rem;"></div>
+        </div>
+
+        <!-- Bas droite : statistiques de sorties -->
+        <div class="card" style="flex:1 1 calc(50% - 4px); min-width:0;">
+          <h3 style="margin:0 0 8px; font-size:0.95rem; color:var(--muted)">Statistiques de sorties</h3>
+          <div id="exit-filters" style="margin-bottom:4px; font-size:0.8rem;">
+            <label style="margin-right:8px;"><input type="checkbox" class="exit-motif" value="SORTIE INTERVENTION"> INTERVENTION</label>
+            <label style="margin-right:8px;"><input type="checkbox" class="exit-motif" value="SORTIE CONSOMMATION"> CONSOMMATION</label>
+            <label><input type="checkbox" class="exit-motif" value="SORTIE PRODUCTION"> PRODUCTION</label>
+          </div>
+          <div id="exit-stats-container" class="muted" style="font-size:0.9rem;"></div>
+          <div id="exit-stats-link-wrapper" style="margin-top:6px; font-size:0.85rem;"></div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</body>
+</html>

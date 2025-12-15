@@ -16,7 +16,7 @@ Ce document résume :
 
 - **Python 3.13+** (conforme au `pyproject.toml`)
 - Windows (tests et packaging ciblés sur cette plateforme)
-- Accès aux fichiers sources métiers (parquets, etc.) attendus par `package_pudo_api`.
+- Accès aux fichiers sources métiers (parquets, etc.) attendus par l'application.
 
 ### 0.2. Installation des dépendances avec `uv` (recommandé)
 
@@ -56,7 +56,7 @@ Vue d'ensemble des principaux composants :
                       v
         +-------------+-----------+
         |   Frontend statique     |
-        |  (package_pudo_frontend)|
+        |  (web/)                 |
         |  HTML / CSS / JS        |
         +-------------+-----------+
                       |
@@ -64,7 +64,7 @@ Vue d'ensemble des principaux composants :
                       v
         +-------------+-----------+
         |   API Flask             |
-        |  (package_pudo_api)     |
+        |  (src/supplychain_app)  |
         |  /api/items, /api/pudo, |
         |  /api/stores, /api/...  |
         +-------------+-----------+
@@ -78,18 +78,18 @@ Vue d'ensemble des principaux composants :
         +-------------------------+
 ```
 
-- `run_supplychainapp.py` :
+- `py -m supplychain_app.run` :
   - démarre **l'API Flask** sur `127.0.0.1:5001` ;
-  - démarre un **serveur HTTP simple** (module `http.server`) sur `127.0.0.1:8000` pour servir `package_pudo_frontend` ;
+  - démarre un **serveur HTTP simple** (module `http.server`) sur `127.0.0.1:8000` pour servir `web/` ;
   - ouvre automatiquement le navigateur sur `http://127.0.0.1:8000/`.
-- `package_pudo_api` :
+- `src/supplychain_app` :
   - organise l'API en **blueprints** (`items`, `pudo`, `stores`, `helios`, `technicians`, `downloads`, etc.) ;
   - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
-- `package_pudo_api.data.pudo_etl` :
+- `src/supplychain_app.data.pudo_etl` :
   - gère les **tâches d'ETL** (chargement/parquetisation, mise à jour périodique dans `path_datan/<folder_name_app>`).
-- Binaire PyInstaller (`SUPPLYCHAIN_APP_v1.4.0.exe`) :
-  - embarque le même code Python et le dossier `package_pudo_frontend` ;
-  - reproduit exactement le comportement de `python run_supplychainapp.py` sans dépendre de Python installé sur le poste utilisateur.
+- Binaire PyInstaller (`SupplyChainApp.exe`) :
+  - embarque le même code Python et le dossier `web/` ;
+  - reproduit exactement le comportement de `py -m supplychain_app.run` sans dépendre de Python installé sur le poste utilisateur.
 
 ---
 
@@ -115,16 +115,56 @@ Le prompt doit afficher quelque chose comme :
 Toujours depuis la racine du projet :
 
 ```powershell
-python run_supplychainapp.py
+py -m supplychain_app.run
 ```
 
 Ce script :
 
-- démarre l'API Flask (`package_pudo_api`) sur `http://127.0.0.1:5001`,
+- démarre l'API Flask sur `http://127.0.0.1:5001`,
 - démarre un petit serveur HTTP pour le frontend sur `http://127.0.0.1:8000`,
 - ouvre automatiquement le navigateur sur `http://127.0.0.1:8000/`.
 
 Pour arrêter : `Ctrl + C` dans le terminal.
+
+### 1.3. Assistant : modes de fonctionnement (règles vs Ollama)
+
+L'assistant de navigation (`POST /api/assistant/query`) peut fonctionner selon 3 modes, pilotés par variables d'environnement :
+
+- `ASSISTANT_MODE=rules` : routeur déterministe à règles (par défaut, fonctionne partout, ne dépend d'aucun LLM)
+- `ASSISTANT_MODE=ollama` : tente d'utiliser Ollama en local
+- `ASSISTANT_MODE=auto` : tente Ollama, puis bascule automatiquement vers les règles si Ollama est indisponible
+
+Variables Ollama :
+
+- `ASSISTANT_OLLAMA_URL` (défaut `http://127.0.0.1:11434`)
+- `ASSISTANT_OLLAMA_MODEL` (défaut `llama3.1`)
+- `ASSISTANT_OLLAMA_TIMEOUT_S` (défaut `15`)
+
+#### 1.3.1. Endpoints assistant
+
+- `POST /api/assistant/query` : point d'entrée principal (utilisé par l'input "Poser une question" de `home.html`).
+- `GET /api/assistant/capabilities` : expose la table des intents supportés par le routeur à règles (page cible, schéma des paramètres, exemples).
+
+#### 1.3.2. Navigation et paramètres d'URL (conventions)
+
+L'assistant ne “calcule” pas de données métier : il renvoie uniquement un JSON `{answer, intent, params, target_page}`.
+Le frontend ouvre ensuite la page cible avec des paramètres d'URL compatibles avec les pages existantes :
+
+- `stock.html?code=<CODE_ARTICLE>`
+- `items.html?code=<CODE_ARTICLE>`
+- `photos.html?code=<CODE_ARTICLE>`
+- `helios.html?code=<CODE_ARTICLE>`
+- `stock_map.html?code=<CODE_ARTICLE>&address=<ADRESSE>`
+- `stores.html?q=<ADRESSE_OU_VILLE>`
+- `technician.html?q=<CODE_MAGASIN_OU_RECHERCHE>`
+- `technician_assignments.html?store=<CODE>&pr=<CODE>&status=<ouvert|ferme>&roles=<role>&expand_store_roles=1`
+
+Exemples de questions typiques :
+
+- "Quel est le stock du code article TDF000629 ?" → `stock.html?code=TDF000629`
+- "Où localiser le stock de TDF000629 autour de Lyon ?" → `stock_map.html?code=TDF000629&address=Lyon`
+- "Quels sont les points relais proches de Bergerac ?" → `stores.html?q=Bergerac`
+- "Quelles sont les photos de TDF000629 ?" → `photos.html?code=TDF000629`
 
 ---
 
@@ -153,29 +193,37 @@ Une fois ces commandes exécutées, toutes les dépendances de l'application ain
 Depuis la racine du projet, avec `.venv` activé :
 
 ```powershell
-pyinstaller --clean SUPPLYCHAIN_APP_v1.4.0.spec
+pyinstaller --clean SupplyChainApp.spec
 ```
 
-Cette commande utilise la configuration de build décrite dans `SUPPLYCHAIN_APP_v1.4.0.spec` (point d'entrée, données embarquées, options PyInstaller, etc.).
+Cette commande utilise la configuration de build décrite dans `SupplyChainApp.spec` (point d'entrée, données embarquées, options PyInstaller, etc.).
 
 > Remarque :
 > - si un module n'est pas correctement détecté par PyInstaller, il est possible d'ajouter une option `--hidden-import nom_du_module` dans le fichier `.spec` ou en ligne de commande ;
-> - les fichiers `.spec` fournis (`SUPPLYCHAIN_APP_v1.1.0.spec`, `SUPPLYCHAIN_APP_v1.2.0.spec`, `SUPPLYCHAIN_APP_v1.4.0.spec`) permettent de rejouer des configurations de build existantes.
+> - les fichiers `.spec` fournis permettent de rejouer des configurations de build existantes.
 
 #### Alternative : commande directe sans `.spec`
 
 Il est également possible de construire l'exécutable sans utiliser le fichier `.spec` (utile pour un premier build rapide) :
 
 ```powershell
-pyinstaller --onefile --name SUPPLYCHAIN_APP_v1.4.0 --add-data "package_pudo_frontend;package_pudo_frontend" run_supplychainapp.py
+pyinstaller --noconfirm --clean --onefile --name SupplyChainApp --add-data "web;web" src\supplychain_app\run.py
 ```
 
 Les options sont identiques à celles des versions précédentes :
 
 - `--onefile` : génère un seul fichier `.exe` autonome.
-- `--name SUPPLYCHAIN_APP_v1.4.0` : nom du binaire généré.
-- `--add-data "package_pudo_frontend;package_pudo_frontend"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
-- `run_supplychainapp.py` : point d'entrée qui démarre API + frontend.
+- `--name SupplyChainApp` : nom du binaire généré.
+- `--add-data "web;web"` : embarque le dossier frontend dans l'exécutable (Windows utilise `;` comme séparateur source/destination).
+- `src\supplychain_app\run.py` : point d'entrée qui démarre API + frontend.
+
+#### Script de build recommandé
+
+Depuis la racine du projet, avec `.venv` activé :
+
+```powershell
+./scripts/build_exe.ps1
+```
 
 ### 2.3. Résultat
 
@@ -184,7 +232,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.4.0.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SupplyChainApp.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -195,7 +243,7 @@ Depuis un terminal :
 
 ```powershell
 cd .\dist\
-.\SUPPLYCHAIN_APP_v1.3.0.exe
+.\SupplyChainApp.exe
 ```
 
 L'exécutable :
@@ -208,7 +256,7 @@ L'exécutable :
 
 ## 3. Fonctionnalités principales
 
-L'application frontend (dossier `package_pudo_frontend`) propose plusieurs onglets principaux accessibles depuis le header :
+L'application frontend (dossier `web/`) propose plusieurs onglets principaux accessibles depuis le header :
 
 - **Accueil** : page d'entrée de l'application.
 - **info_article (`items.html`)** :
@@ -228,9 +276,13 @@ L'application frontend (dossier `package_pudo_frontend`) propose plusieurs ongle
 - **Stock ultra détaillé** :
   - vue API/exports permettant d’analyser le stock `lot / série / projet / colis` avec date de stock pour un article donné (cf. endpoint `/api/auth/stock/<code_article>/ultra-details`).
 - **Localisation du stock (`stock_map.html`)** :
-  - carte (Leaflet) montrant les magasins/dépôts qui détiennent du stock pour un article,
-  - filtres sur type de dépôt, qualité, type de stock, HORS TRANSIT,
-  - calcul optionnel de la distance par rapport à un point de référence (code IG ou adresse).
+  - carte (Leaflet) montrant les magasins/dépôts :
+    - soit ayant du stock pour un ou plusieurs **codes article** saisis ;
+    - soit, si aucun code article n’est saisi, les **magasins actifs** (statut magasin = 0) correspondant au **type de dépôt** choisi, avec ou sans stock ;
+  - filtres sur type de dépôt (avec case « tout cocher/décocher »), qualité, type de stock, option **HORS TRANSIT** ;
+  - markers colorés par **type de dépôt** (NATIONAL, LOCAL, REO, LABORATOIRE, etc.) avec une légende sous la carte ;
+  - calcul optionnel de la distance par rapport à un point de référence (code IG ou adresse) ;
+  - bouton d’**export Excel** permettant de récupérer un fichier CSV (`localisation_stock.csv`) basé sur `stock_final.parquet`, respectant les filtres courants, uniquement si des résultats existent.
 - **Téléchargements (`downloads.html`)** :
   - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
 - **Écrans techniciens / affectations technicien ↔️ PUDO** :
@@ -349,9 +401,9 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 ## 4. Remarques
 
 - Pour construire l'exécutable, utiliser l'environnement virtuel principal `.venv` (section 2) avec le projet et PyInstaller installés.
-- Il est possible de rejouer une configuration de build existante via les fichiers `.spec` fournis, par exemple : `pyinstaller --clean SUPPLYCHAIN_APP_v1.3.0.spec`.
+- Il est possible de rejouer une configuration de build existante via les fichiers `.spec` fournis, par exemple : `pyinstaller --clean SupplyChainApp.spec`.
 - Si, au lancement de l'exécutable, une erreur `ModuleNotFoundError` apparaît pour un paquet supplémentaire, installer ce paquet dans `.venv` puis relancer la commande PyInstaller.
-- En cas de modification importante de la structure du frontend (`package_pudo_frontend`), il suffit de reconstruire l'exécutable avec la même commande PyInstaller (ou via le `.spec`).
+- En cas de modification importante de la structure du frontend (`web/`), il suffit de reconstruire l'exécutable avec la même commande PyInstaller (ou via le `.spec`).
 - Sous Windows + OneDrive, l'option `--clean` peut parfois échouer avec une erreur de type `PermissionError [WinError 5]` lors de la suppression du dossier `build/` (fichiers verrouillés par OneDrive ou un antivirus). Dans ce cas :
   - fermer les fenêtres/terminaux qui pointent sur `build/` ou `dist/`,
   - mettre en pause temporairement la synchronisation OneDrive ou déplacer le projet hors OneDrive,
@@ -361,7 +413,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ## 5. Livraison / déploiement de l'exécutable
 
-- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.4.0.exe`.
+- **Fichier à livrer** : `dist/SupplyChainApp.exe`.
 - **Public cible** : postes Windows internes ne disposant pas forcément de Python.
 
 ### 5.1. Prérequis côté utilisateur
@@ -372,7 +424,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ### 5.2. Mode opératoire recommandé
 
-1. Copier `SUPPLYCHAIN_APP_v1.4.0.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+1. Copier `SupplyChainApp.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
 2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
 3. Double-cliquer sur l'exécutable :
    - une console s'ouvre avec les logs,
@@ -386,6 +438,11 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 ---
 
 ## 6. Changelog (extrait)
+
+- **Technique (refactor)**
+  - Passage à une structure professionnelle `src/` + `web/`.
+  - Nouveau point d'entrée : `py -m supplychain_app.run`.
+  - Build exécutable via `SupplyChainApp.spec` ou `scripts/build_exe.ps1`.
 
 - **1.3.0**
   - Ajout de l'information **categorie_sans_sortie** sur les articles (backend + affichage dans `info_article` et `RECHERCHE_STOCK`).
@@ -402,3 +459,10 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
     - liens directs depuis les codes article OL vers l'onglet **RECHERCHE STOCK** pré-filtré sur l'article.
   - Mise à jour de la navigation : le lien **OL MODE DÉGRADÉ** pointe désormais vers la V2.
   - Nouvel exécutable packagé `SUPPLYCHAIN_APP_v1.4.0.exe` (PyInstaller, fichier `SUPPLYCHAIN_APP_v1.4.0.spec`).
+
+- **1.5.0** *(brouillon métier)*
+  - Évolutions de l’onglet **Localisation du stock** :
+    - possibilité de lancer la carte **sans code article** pour visualiser les magasins actifs (statut = 0) par type de dépôt ;
+    - filtres améliorés (case globale « tout cocher/décocher » pour les filtres stock) ;
+    - markers colorés par type de dépôt avec légende ;
+    - ajout d’un bouton d’**export Excel** (`localisation_stock.csv`) basé sur `stock_final.parquet` et respectant les filtres saisis.

@@ -217,6 +217,63 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 ---
 
+### 2.6.3. Assistant de navigation (questions en langage naturel)
+
+#### 2.6.3.1. Objectif
+
+- Permettre à l’utilisateur de poser une question en français (ex : « quels sont les points relais proches de Bordeaux ? »).
+- L’application détermine l’**écran à ouvrir** et les **paramètres** à appliquer.
+
+#### 2.6.3.2. Règles de routage (mode règles-only)
+
+Dans la version actuelle, l’assistant est un **routeur déterministe** basé sur des règles (mots-clés + extraction simple de paramètres).
+
+Objectif : transformer une question en **action de navigation**.
+L’assistant ne calcule pas les valeurs de stock, ne fait pas d’analyse métier et ne remplace pas les écrans : il renvoie seulement :
+
+- une page cible (`target_page`) ;
+- des paramètres (`params`) ;
+- un message court (`answer`).
+
+Routages principaux couverts :
+
+- Stock par article → `stock.html?code=<CODE_ARTICLE>`
+- Carte stock / localisation → `stock_map.html?code=<CODE_ARTICLE>&address=<ADRESSE>`
+- Magasins & points relais autour d’une adresse → `stores.html?q=<ADRESSE_OU_VILLE>`
+- Détail article (info_article) → `items.html?code=<CODE_ARTICLE>`
+- Photos article → `photos.html?code=<CODE_ARTICLE>`
+- Parc Helios → `helios.html?code=<CODE_ARTICLE>`
+- Écran magasin / technicien → `technician.html?q=<CODE_MAGASIN_OU_RECHERCHE>`
+- Affectations techniciens ↔ PR → `technician_assignments.html?store=<CODE>&pr=<CODE>&status=<ouvert|ferme>&roles=<role>&expand_store_roles=1`
+- Graphe / réseau article → `article_network.html?code=<CODE_ARTICLE>`
+- Statistiques sorties → `statistiques_sorties.html?code=<CODE_ARTICLE>`
+
+#### 2.6.3.3. Modes de fonctionnement (règles vs Ollama)
+
+L'assistant peut être configuré pour tester une variante basée sur Ollama :
+
+- `ASSISTANT_MODE=rules` : routeur à règles (défaut)
+- `ASSISTANT_MODE=ollama` : utilisation d'Ollama local (si disponible)
+- `ASSISTANT_MODE=auto` : tente Ollama puis bascule vers règles si indisponible
+
+Variables associées :
+
+- `ASSISTANT_OLLAMA_URL` (par défaut `http://127.0.0.1:11434`)
+- `ASSISTANT_OLLAMA_MODEL` (par défaut `llama3.1`)
+- `ASSISTANT_OLLAMA_TIMEOUT_S` (par défaut `15`)
+
+Endpoint complémentaire (documentation / debug) :
+
+- `GET /api/assistant/capabilities` → expose les intents supportés par le routeur à règles (page cible, schéma des paramètres, exemples).
+
+Notes d’UX :
+
+- L’URL `stores.html?q=<ville>` pré-remplit le champ d’adresse et lance automatiquement la recherche.
+- L’URL `stock_map.html?code=<CODE>&address=<VILLE>` pré-remplit les champs et déclenche automatiquement une recherche.
+- L’URL `technician_assignments.html?...` pré-remplit les filtres (q, magasin, PR, statut, rôles, expansion) et charge automatiquement les résultats.
+
+---
+
 ### 2.7. Écrans techniciens / affectations PUDO
 
 #### 2.7.1. Usages
@@ -239,26 +296,49 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 #### 2.8.1. Usages
 
-- Visualiser sur une **carte** (Leaflet) les **magasins / dépôts** qui détiennent du stock pour un **code article** donné.
+- Visualiser sur une **carte** (Leaflet) les **magasins / dépôts** selon deux modes :
+  - **Mode par article** : pour un ou plusieurs **codes article** saisis, afficher les magasins qui détiennent du stock pour ces articles, en appliquant les filtres stock (type de dépôt, qualité, type de stock, HORS TRANSIT).
+  - **Mode sans article** : si aucun code article n’est saisi, afficher les **magasins actifs** (statut magasin = 0) correspondant au **type de dépôt** sélectionné, qu’ils aient du stock ou non (quantité affichée à 0 si aucune ligne de stock).
 - Permettre de **centrer la carte** et de calculer la **distance à vol d’oiseau** entre chaque magasin et un **point de référence** défini par l’utilisateur :
   - soit via un **code IG** (site client),
   - soit via une **adresse postale** libre.
 - Filtrer les magasins affichés sur la carte et dans le tableau associé à l’aide de critères :
-  - **type de dépôt** (NATIONAL, LOCAL, REO, PIED DE SITE, EMBARQUE, LABORATOIRE, DIVERS, END, FOURNISSEURS, SOUS TRAITANTS, DTOM, EXPERT DTE, EXPERT DPR, REPARATEUR INTERNE, REPARATEUR EXTERNE, RESERVE, FILIALE, DATACENTER, etc.),
-  - **code qualité** (GOOD, BLOQG, BAD, BLOQB, …),
-  - **type de stock** (`flag_stock_d_m` : M, D),
-  - option **HORS TRANSIT** pour exclure les emplacements se terminant par `-T`.
+  - **type de dépôt** (NATIONAL, LOCAL, REO, PIED DE SITE, EMBARQUE, LABORATOIRE, DIVERS, END, FOURNISSEURS, SOUS TRAITANTS, DTOM, EXPERT DTE, EXPERT DPR, REPARATEUR INTERNE, REPARATEUR EXTERNE, RESERVE, FILIALE, DATACENTER, etc.), avec une **case globale** « tout cocher / tout décocher » pour simplifier l’usage ;
+  - **code qualité** (GOOD, BLOQG, BAD, BLOQB, …) *(mode par article uniquement)* ;
+  - **type de stock** (`flag_stock_d_m` : M, D) *(mode par article uniquement)* ;
+  - option **HORS TRANSIT** pour exclure les emplacements se terminant par `-T` *(mode par article uniquement)*.
 - Afficher, en complément de la carte :
-  - un **récapitulatif article** (code, libellé, informations clés),
-  - les **informations sur le centre choisi** (code IG ou adresse, éventuellement coordonnées géographiques),
-  - un **tableau détaillé** listant les magasins retenus avec leurs attributs (magasin, type de dépôt, code qualité, quantités, distances estimées…).
+  - un **récapitulatif article** (code, libellé) lorsque des codes article sont saisis ;
+  - les **informations sur le centre choisi** (code IG ou adresse, éventuellement coordonnées géographiques) ;
+  - un **tableau détaillé** listant les magasins retenus avec leurs attributs (magasin, type de dépôt, quantités agrégées, distances estimées…).
+- Représenter visuellement le **type de dépôt** :
+  - chaque magasin est affiché sous forme de **rond coloré** (Leaflet `circleMarker`) dont la couleur dépend du type de dépôt (ex. NATIONAL = bleu, LOCAL = vert, REO = rouge, LABORATOIRE = rose, etc.) ;
+  - une **légende** sous la carte rappelle le code couleur utilisé.
+- Permettre un **export Excel** (CSV) du résultat affiché, via un bouton dédié, basé sur `stock_final.parquet` et respectant les filtres saisis (export possible uniquement si des résultats existent).
 
 #### 2.7.2. Besoins métiers
 
 - **Préparer des décisions de déstockage / transfert** en visualisant rapidement où se trouve physiquement le stock d’un article.
 - Identifier les **magasins les plus pertinents** pour servir un site client (proximité géographique, type de dépôt, qualité de stock).
+- En mode sans article, disposer d’une **vue par maillage de magasins actifs** (par type de dépôt), même en l’absence de stock, pour préparer des scénarios de déploiement logistique.
 - Aider à la **planification logistique** (choix du dépôt d’expédition, mutualisation de stocks, optimisation des tournées).
 - Fournir une **vue géographique synthétique** permettant de raconter simplement la situation du stock à des interlocuteurs non experts (direction, métiers connexes).
+
+#### 2.8.3. Exemples d’usage
+
+- **Exemple 1 – Recherche par article avec filtres stock**
+  - Le gestionnaire saisit `TDF158545;TDF158548` dans le champ *Code article*.
+  - Il coche uniquement les types de dépôt `NATIONAL` et `LOCAL`, laisse `GOOD` et `M` cochés, et conserve l’option **HORS TRANSIT**.
+  - Il renseigne un **code IG** client pour centrer la carte.
+  - La carte affiche les magasins qui détiennent du stock pour ces articles, colorés par type de dépôt, avec les distances au site client.
+  - Le tableau récapitule pour chaque magasin : type de dépôt, quantités agrégées, distances. Le gestionnaire exporte ensuite le résultat en CSV via le bouton d’export.
+
+- **Exemple 2 – Vue réseau par type de dépôt sans article**
+  - Le responsable logistique laisse le champ *Code article* vide.
+  - Il sélectionne uniquement les types de dépôt `NATIONAL` et `DATACENTER`.
+  - Il saisit une **adresse postale** (zone géographique cible) pour centrer la carte.
+  - L’application affiche alors les **magasins actifs** (statut magasin = 0) de type NATIONAL ou DATACENTER, qu’ils aient du stock ou non (quantité 0 affichée si aucun stock renseigné).
+  - Cette vue permet de discuter du maillage des dépôts et des scénarios d’implantation ou de mutualisation sans se limiter à un article.
 
 ---
 
@@ -502,6 +582,18 @@ Principales familles de fichiers :
 - Garantir que les **données consultées** (stock, articles, PUDO, Helios) sont **récemment rafraîchies**.
 - Informer l’utilisateur en temps réel lorsqu’une **nouvelle mouture** des données est disponible (éviter de travailler sur des données obsolètes sans le savoir).
 
+## 5. Projets d'évolution
+### 5.1. Intégration d'un LLM et d'un RAG
+  Affranchir l'utilisateur de maitriser l'application en lui appotant une assistance dans ces questions ou problèmatiques
+  
+  - Exemples:
+	  - demander "où est mon colis du BT?"
+	  - demander "Quels sont les points relais les plus proches de code ig ou de mon domicile?"
+	  - demander "Je ne parviens pas à installer tel type de matériel?" 
+	  - Demander "je souhaite retourner mon colis BT?" --> fourni la procédure où les contacts
+	  - Un chef de projets a besoin de stock "J'ai besoin pour mon projet "PEXXXXX"?
+	  - Demande d'une d'intervention --> Catégorisation -> estimation de la charge, des ressources, des compétences nécessaire, des spécificité du site ou du travail
+
 ---
 
 ## Annexe – Référence API (vue métier / technique)
@@ -527,6 +619,17 @@ Principales familles de fichiers :
 ```json
 { "has_changes": true, "timestamp": 1732621200 }
 ```
+
+#### A.2.3. `POST /api/assistant/query`
+
+- **Description** : routeur de navigation “questions en langage naturel”.
+- **Entrée** (body JSON) :
+  - `question` *(string, obligatoire)* : texte libre.
+- **Sortie** (body JSON) :
+  - `answer` *(string)* : message court affiché à l’utilisateur.
+  - `intent` *(string)* : action à lancer (ex : `view_stock_article`, `view_stock_map`, `view_nearest_pudo`, `photos`, `helios`, `technicians`, `none`).
+  - `params` *(object)* : paramètres de l’action.
+  - `target_page` *(string|null)* : page à ouvrir (`stock.html`, `stock_map.html`, `stores.html`, `photos.html`, `helios.html`, `technician.html`, ou `null`).
 
 ---
 
@@ -708,18 +811,26 @@ Accept: application/json
 
 #### A.4.2. `POST /api/stores/stock-map`
 
-- **Description** : retourne les magasins/dépôts avec stock pour un article, avec coordonnées et distance à un point de référence (vue `stock_map.html`).
+- **Description** : retourne les magasins/dépôts et leurs informations géographiques pour l’onglet `stock_map.html`.
 - **Body JSON** :
-  - `code_article` *(string, obligatoire)* ;
-  - `code_ig` *(string, optionnel)* ;
-  - `address` *(string, optionnel)* ;
-  - `type_de_depot` *(array[string])* : types de dépôts inclus ;
-  - `code_qualite` *(array[string])* : codes qualité ;
-  - `flag_stock_d_m` *(array[string])* : types de stock (`M`, `D`) ;
-  - `hors_transit_only` *(bool)* : exclut les emplacements finissant par `-T`.
+  - `code_article` *(string, optionnel)* :
+    - si renseigné → mode « par article » (retourne uniquement les magasins ayant du stock pour cet article, en appliquant les filtres stock) ;
+    - si vide ou non fourni → mode « sans article » (retourne les magasins actifs, filtrés par type de dépôt, avec quantité éventuelle agrégée si disponible).
+  - `code_ig` *(string, optionnel)* : code IG du point de référence.
+  - `address` *(string, optionnel)* : adresse postale libre du point de référence.
+  - `type_de_depot` *(array[string])* : types de dépôts inclus.
+  - `code_qualite` *(array[string])* : codes qualité (utilisés uniquement en mode « par article »).
+  - `flag_stock_d_m` *(array[string])* : types de stock (`M`, `D`) (utilisés uniquement en mode « par article »).
+  - `hors_transit_only` *(bool)* : si `true`, exclut les emplacements finissant par `-T` (utilisé uniquement en mode « par article »).
 - **Réponse** :
-  - `rows[]` : `code_magasin`, `libelle_magasin`, `type_de_depot`, `code_qualite`, `flag_stock_d_m`, `qte_stock_total`, `latitude`, `longitude`, `distance_km`, `adresse`, … ;
-  - `center_label` : libellé du point de référence ;
+  - `rows[]` : une ligne par magasin/dépôt retenu, avec notamment :
+    - `code_magasin`, `libelle_magasin`, `type_de_depot`,
+    - `qte_stock_total` (quantité agrégée, 0 si aucune info de stock n’est disponible en mode sans article),
+    - `latitude`, `longitude`,
+    - `distance_km` (distance à vol d’oiseau par rapport au point de référence, si calculée),
+    - `adresse` (adresse textuelle du magasin/dépôt),
+    - autres attributs logistiques utilisés pour l’affichage détaillé.
+  - `center_label` : libellé du point de référence.
   - `center_lat`, `center_lon` : coordonnées du point de référence.
 
 - **Exemple de requête** :
@@ -809,6 +920,18 @@ Accept: application/json
 
 - **Objet** : exposer l’annuaire des **points relais (PUDO)** et leurs caractéristiques pour les écrans d’affectation.
 
+#### A.5.1.1. `POST /api/pudo/nearby-address`
+
+- **Description** : recherche des points relais autour d’une adresse (géocodée).
+- **Entrée** (body JSON) :
+  - `address` *(string, obligatoire)*
+  - `radius_km` *(number, optionnel, défaut 10)*
+  - `enseignes` *(array[string], optionnel)*
+- **Sortie** (body JSON) :
+  - `rows` *(array[object])* : liste des points relais.
+  - `geocoded_address` *(string|null)* : adresse normalisée issue du géocodage.
+  - `center_lat`, `center_lon` *(number)* : coordonnées du centre (adresse géocodée).
+
 #### A.5.2. Endpoints `/api/technicians/...`
 
 - **Objet** : exposer les **techniciens** et leurs affectations (magasins, PUDO principal/backup/hors normes).
@@ -867,8 +990,16 @@ Accept: application/json
 
 ## C. Diffusion et déploiement auprès des utilisateurs métiers
 
-- L’application est mise à disposition des utilisateurs sous forme d’un **exécutable Windows autonome** : `SUPPLYCHAIN_APP_v1.4.0.exe`.
+- L’application est mise à disposition des utilisateurs sous forme d’un **exécutable Windows autonome** : `SupplyChainApp.exe`.
 - Les modalités techniques de livraison (répertoire cible, création de raccourcis, gestion des messages de sécurité Windows, etc.) sont décrites dans le `README.md` (section "Livraison / déploiement de l'exécutable").
+- Références techniques (pour l'équipe de maintenance) :
+  - code Python sous `src/supplychain_app/` (structure `src/`),
+  - frontend statique sous `web/`,
+  - lancement en mode dev : `py -m supplychain_app.run` (API `127.0.0.1:5001` + frontend `127.0.0.1:8000`),
+  - construction de l'exécutable : `scripts/build_exe.ps1` (PyInstaller) ou `SupplyChainApp.spec`.
 - Du point de vue métier, il est recommandé :
   - de diffuser l’outil via les canaux habituels (portail interne, partage réseau sécurisé, procédure d’installation bureautique),
   - d’accompagner la diffusion par une courte **note d’usage** rappelant les principaux cas d’usage (consultation stock, identification articles dormants, recherche fournisseur, etc.).
+
+
+

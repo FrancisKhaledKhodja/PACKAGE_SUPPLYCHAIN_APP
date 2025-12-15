@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ADMINISTRATION PR</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <script src="js/technician_admin.js?v=1" defer></script>
+</head>
+
+<body>
+  <div id="scapp-header"></div>
+
+  <!-- Bloc de protection ADMIN PR -->
+  <div id="admin-pr-login" class="card" style="max-width:400px; margin:2rem auto; padding:1.5rem;">
+    <h2 style="margin-top:0;">Accès ADMINISTRATION PR</h2>
+    <p class="muted">Veuillez saisir le mot de passe pour accéder à cette page.</p>
+    <input type="password" id="admin-pr-password" placeholder="Mot de passe" style="width:100%; margin-bottom:0.75rem;" />
+    <button id="admin-pr-login-btn" type="button">Valider</button>
+    <div id="admin-pr-login-msg" class="muted" style="margin-top:0.5rem; color:#dc2626;"></div>
+  </div>
+
+  <!-- Contenu réel, masqué tant que le mot de passe n'est pas correct -->
+  <main id="admin-pr-content" class="layout" style="font-size:1rem; display:none;">
+    <!-- ICI on remet tout ton ancien contenu de <main> -->
+    <aside class="card">
+      <h2 style="margin-top:0;">Filtres</h2>
+      <div class="section">
+        <label for="tech-search" class="muted">Recherche</label>
+        <input type="text" id="tech-search" placeholder="Code, contact, ville, téléphone, email" />
+      </div>
+      <div class="section">
+        <div class="muted" style="margin-bottom:0.25rem;">Type de dépôt</div>
+        <div id="tech-types" class="row" style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1rem; align-items:flex-start;"></div>
+      </div>
+      <button id="btn-tech-apply" type="button">Appliquer</button>
+
+      <div class="section"></div>
+      <h2 style="margin-top:0;">Contacts</h2>
+      <select id="tech-contacts" style="width:100%; padding:10px 12px; border-radius:8px; border:1px solid #d1d5db; background:#ffffff; color:#111827;">
+      </select>
+      <div class="muted" style="margin-top:0.5rem;">Liste construite à partir de la table magasins.</div>
+      <button id="btn-tech-show" type="button" style="margin-top:0.75rem;">Afficher</button>
+    </aside>
+
+    <!-- le reste de ton HTML existant (section technicien + cartes PR) -->
+    <section class="card" id="tech-details">
+      <h2 style="margin-top:0;">Administration PR pour le technicien</h2>
+      <p id="tech-details-empty" class="muted">Sélectionnez un contact puis cliquez sur « Afficher ».</p>
+      <div id="tech-details-content" style="display:none;">
+        <div class="section">
+          <table>
+            <tbody>
+              <tr><th style="text-align:left; width:220px;">Code magasin</th><td id="tech-code-magasin"></td></tr>
+              <tr><th style="text-align:left;">Libellé magasin</th><td id="tech-libelle-magasin"></td></tr>
+              <tr><th style="text-align:left;">Équipe</th><td id="tech-equipe"></td></tr>
+              <tr><th style="text-align:left;">Responsable</th><td id="tech-responsable"></td></tr>
+              <tr><th style="text-align:left;">Contact</th><td id="tech-contact"></td></tr>
+              <tr><th style="text-align:left;">Téléphone</th><td id="tech-telephone"></td></tr>
+              <tr><th style="text-align:left;">Email</th><td id="tech-email"></td></tr>
+              <tr><th style="text-align:left;">Adresse</th><td id="tech-adresse"></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="section">
+          <h3>Code IG / site</h3>
+          <div id="tech-code-ig" style="font-size:1.1rem; font-weight:600;"></div>
+          <div id="tech-libelle-long-ig" class="muted" style="margin-top:0.15rem;"></div>
+          <div id="tech-adresse-ig" class="muted" style="margin-top:0.25rem;"></div>
+        </div>
+
+        <div class="section">
+          <h3>Points relais associés</h3>
+          <div class="row" style="gap:12px; flex-wrap:wrap; align-items:stretch;">
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais principal</div>
+              <div id="pr-principal-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-principal-code-store" class="muted" style="margin-top:0.15rem;"></div>
+              <div id="pr-principal-enseigne" style="margin-bottom:4px;"></div>
+              <div id="pr-principal-adresse"></div>
+              <div id="pr-principal-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-principal-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-principal-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-principal-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-principal-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
+            </div>
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais backup</div>
+              <div id="pr-backup-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-backup-code-store" class="muted" style="margin-top:0.15rem;"></div>
+              <div id="pr-backup-enseigne" style="margin-bottom:4px;"></div>
+              <div id="pr-backup-adresse"></div>
+              <div id="pr-backup-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-backup-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-backup-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-backup-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-backup-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
+            </div>
+            <div class="card" style="flex:1 1 260px; min-width:260px;">
+              <div class="muted" style="font-weight:600; margin-bottom:6px;">Point relais hors normes</div>
+              <div id="pr-hn-code" style="font-size:1.1rem; font-weight:600;"></div>
+              <div id="pr-hn-code-store" class="muted" style="margin-top:0.15rem;"></div>
+              <div id="pr-hn-enseigne" style="margin-bottom:4px;"></div>
+              <div id="pr-hn-adresse"></div>
+              <div id="pr-hn-meta" class="muted" style="margin-top:4px;"></div>
+              <div id="pr-hn-statut" style="margin-top:4px;"></div>
+
+              <div class="section" style="margin-top:0.75rem;">
+                <div class="muted" style="font-weight:600;">Choix administrateur</div>
+                <select id="pr-hn-admin-select" style="width:100%; margin-top:0.25rem;"></select>
+                <textarea id="pr-hn-admin-comment" rows="2" placeholder="Commentaire administrateur" style="width:100%; margin-top:0.35rem;"></textarea>
+                <div id="pr-hn-admin-info" class="muted" style="margin-top:0.25rem;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section" style="margin-top:1rem; text-align:right;">
+            <button id="btn-pr-admin-save" type="button">Sauvegarder les choix PR administrateur</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+
+
+
+</html>

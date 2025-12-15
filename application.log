@@ -3765,3 +3765,21 @@ FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\
 2025-12-03 11:04:28.222 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
 2025-12-03 13:14:33.655 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
 2025-12-03 13:14:37.053 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-06 23:06:43.686 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-06 23:06:47.879 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-11 06:35:22.649 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-11 06:35:28.596 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-11 10:25:46.720 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-11 10:26:06.411 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-11 11:20:39.148 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-11 11:20:50.111 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-11 15:11:58.257 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-11 15:12:05.482 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-12 09:55:32.526 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-12 10:04:02.920 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-12 14:17:20.190 | INFO     | package_pudo_api.data.pudo_etl:update_data:177 - Update data
+2025-12-12 14:17:34.962 | INFO     | package_pudo_api.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-14 18:59:07.422 | INFO     | supplychain_app.data.pudo_etl:update_data:177 - Update data
+2025-12-14 18:59:32.239 | INFO     | supplychain_app.data.pudo_etl:update_data:263 - Data updated successfully
+2025-12-15 08:46:25.199 | INFO     | supplychain_app.data.pudo_etl:update_data:177 - Update data
+2025-12-15 08:46:47.100 | INFO     | supplychain_app.data.pudo_etl:update_data:263 - Data updated successfully

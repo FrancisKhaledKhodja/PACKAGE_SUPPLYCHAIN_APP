@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PHOTOS ARTICLE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <script src="js/photos.js?v=2" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout" style="font-size:1rem; grid-template-columns: minmax(0, 1fr);">
+    <main class="card" style="max-width:100%;">
+      <h2 id="photos-title" style="margin:0 0 8px; color:var(--muted)">Photos de l'article</h2>
+      <div id="photos-container" class="card" style="max-height:85vh; overflow:auto; display:block;"></div>
+      <div id="photos-message" class="muted" style="margin-top:8px; font-size:0.9rem;"></div>
+    </main>
+  </div>
+</body>
+</html>
