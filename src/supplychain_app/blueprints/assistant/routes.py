@@ -3,12 +3,13 @@ import os
 import re
 from pathlib import Path
 
-from flask import request, jsonify
+from flask import Blueprint, request, jsonify
 import requests
 
 from supplychain_app.core.paths import get_project_root_dir
 
-from . import bp
+
+bp = Blueprint("assistant", __name__)
 
 
 CAPABILITIES = {
@@ -116,8 +117,9 @@ CAPABILITIES = {
 
 def _rag_available() -> bool:
     try:
-        import chromadb  # noqa: F401
-        return True
+        import importlib.util
+
+        return importlib.util.find_spec("chromadb") is not None
     except Exception:
         return False
 
@@ -295,6 +297,146 @@ def _extract_pr_code(question: str) -> str | None:
     return m.group(1).upper() if m else None
 
 
+def _extract_quality(question: str) -> str | None:
+    q = (question or "").strip()
+    if not q:
+        return None
+    m = re.search(r"\bqualit(?:e|é)\s+([A-Za-z0-9_\-]+)\b", q, re.IGNORECASE)
+    if m:
+        return m.group(1).upper()
+    # fallback simple: si l'utilisateur dit juste "good" / "bad" (fréquent)
+    lower_q = q.lower()
+    if " good" in lower_q or lower_q.endswith("good"):
+        return "GOOD"
+    if " bloqb" in lower_q or lower_q.endswith("bloqb"):
+        return "BLOQB"
+    if " bad" in lower_q or lower_q.endswith("bad"):
+        return "BAD"
+    return None
+
+
+def _quality_values(quality: str | None) -> list[str]:
+    if not quality:
+        return []
+    q = quality.strip().upper()
+    if not q:
+        return []
+    # Règle métier: "stock bad" => BAD + BLOQB
+    if q == "BAD":
+        return ["BAD", "BLOQB"]
+    return [q]
+
+
+def _wants_deployment_stock(question: str) -> bool:
+    q = (question or "").lower()
+    return "déploiement" in q or "deploiement" in q or "deployement" in q
+
+
+def _extract_stock_dm_flag(question: str) -> str | None:
+    q = (question or "").lower()
+    if "déploiement" in q or "deploiement" in q or "deployement" in q:
+        return "D"
+    if "maintenance" in q:
+        return "M"
+    return None
+
+
+def _extract_project_code(question: str) -> str | None:
+    m = re.search(r"\b(PJ\d{6,})\b", question or "", re.IGNORECASE)
+    return m.group(1).upper() if m else None
+
+
+def _extract_requested_qty(question: str) -> int | None:
+    q = question or ""
+    if not q.strip():
+        return None
+
+    # Éviter de capter la quantité dans le code article (ex: TDF159698) ou le code projet (PJ00000564)
+    q2 = re.sub(r"\bTDF\d{3,}\b", " ", q, flags=re.IGNORECASE)
+    q2 = re.sub(r"\bPJ\d{6,}\b", " ", q2, flags=re.IGNORECASE)
+
+    patterns = [
+        # "besoin de 5"
+        r"\bbesoin\s+(?:urgent\s+)?de\s+(\d{1,6})\b",
+        # "j'ai besoin de 5" / "j'aurais besoin de 5"
+        r"\bj['’]?ai\s+besoin\s+de\s+(\d{1,6})\b",
+        r"\bj['’]?aurais\s+besoin\s+de\s+(\d{1,6})\b",
+        # "fournir 5" / "communiquer 5" / "merci de ... 5"
+        r"\bfournir\s+(\d{1,6})\b",
+        r"\bcommuniquer\s+(\d{1,6})\b",
+        r"\bmerci\s+de\s+me\s+communiquer\s+(\d{1,6})\b",
+        # "requis : 5"
+        r"\brequis\s*[:\-]?\s*(\d{1,6})\b",
+        # "5 unités" / "5 exemplaires" / "5 codes" / "5 pièces"
+        r"\b(\d{1,6})\s*(?:unit(?:e|é)s?|exemplaires?|codes?|pi(?:e|è)ces?)\b",
+    ]
+
+    for pat in patterns:
+        m = re.search(pat, q2, re.IGNORECASE)
+        if not m:
+            continue
+        try:
+            return int(m.group(1))
+        except Exception:
+            return None
+
+    return None
+
+
+def _find_first_existing_col(schema: dict, candidates: tuple[str, ...]) -> str | None:
+    for c in candidates:
+        if c in schema:
+            return c
+    return None
+
+
+def _category_sort_key(label: str) -> tuple[int, int, str]:
+    """Heuristique pour trier les catégories d'ancienneté (plus ancien en premier).
+
+    On essaie d'extraire un nombre (jours/mois) et on trie en décroissant.
+    En cas d'échec, fallback alphabetique.
+    """
+    s = (label or "").strip().lower()
+    if not s:
+        return (0, 0, "")
+    # extraire le plus grand nombre présent dans la string
+    nums = [int(x) for x in re.findall(r"\d+", s) if x.isdigit()]
+    if nums:
+        return (1, max(nums), s)
+    # certains labels type "A", "B"... on renvoie 0
+    return (0, 0, s)
+
+
+def _wants_all_articles(question: str) -> bool:
+    q = (question or "").lower()
+    return (
+        "tous les articles" in q
+        or "toutes les articles" in q
+        or "tous articles" in q
+        or "toutes articles" in q
+        or "tous les codes" in q
+        or "tous les codes article" in q
+    )
+
+
+def _wants_global_stock(question: str) -> bool:
+    q = (question or "").lower()
+    if "stock" not in q and "quantité" not in q and "quantite" not in q:
+        return False
+    # Si l'utilisateur parle explicitement de "tous les articles", c'est global.
+    if _wants_all_articles(question):
+        return True
+    # Sinon, si aucun code article n'est mentionné mais qu'il y a un filtre (qualité / D/M),
+    # c'est très probablement une demande globale.
+    if _extract_code_article(question):
+        return False
+    if _extract_quality(question):
+        return True
+    if _extract_stock_dm_flag(question):
+        return True
+    return False
+
+
 def _extract_address(question: str) -> str:
     q = question or ""
     lower_q = q.lower()
@@ -431,7 +573,7 @@ def _rules_route(question: str) -> dict:
             params["pr"] = pr_code
         if roles:
             params["roles"] = roles
-        if "ferme" in lower_q or "fermé" in lower_q or "ferm e" in lower_q:
+        if "ferme" in lower_q or "fermé" in lower_q or "fermée" in lower_q:
             params["status"] = "ferme"
         elif "ouvert" in lower_q:
             params["status"] = "ouvert"
@@ -829,6 +971,421 @@ def assistant_llm_rag():
     plan = build_plan_from_rag(question=question, rag_hits=hits_payload, preview_rows=preview_rows)
     polars_code = compile_plan_to_polars_code(plan=plan, data_dir=data_dir)
 
+    deterministic_answer = None
+    polars_code_override = None
+    # Analyse stock (stock_final.parquet) pour les demandes type "besoin de X" dans un contexte projet.
+    # Exemple: "dans le cadre d'un projet, besoin de 5 code article TDF159698 ?"
+    if deterministic_answer is None:
+        try:
+            import polars as pl
+
+            lower_q = (question or "").lower()
+            asked = _extract_code_article(question)
+            requested_qty = _extract_requested_qty(question)
+            project_code = _extract_project_code(question)
+
+            if asked and requested_qty and ("projet" in lower_q or project_code or " pj" in lower_q):
+                stock_path = str(data_dir / "stock_final.parquet")
+                lf = pl.scan_parquet(stock_path).filter(pl.col("code_article") == asked)
+
+                schema = lf.schema
+                qte_col = "qte_stock" if "qte_stock" in schema else None
+                if not qte_col:
+                    raise ValueError("missing_qte_stock")
+
+                quality_col = _find_first_existing_col(schema, ("code_qualite", "code_aqualite", "qualite"))
+                dm_col = _find_first_existing_col(schema, ("flag_stock_d_m",))
+                project_col = _find_first_existing_col(schema, ("code_projet", "projet", "codeprojet"))
+                anciennete_col = _find_first_existing_col(schema, (
+                    "categorie_anciennete_stock",
+                    "categorie_anciennete",
+                    "categorie_anciennete_jours",
+                    "categorie_anciennete_article",
+                ))
+
+                def _filter_quality(lf_in: pl.LazyFrame, quality: str):
+                    vals = _quality_values(quality)
+                    if not vals or not quality_col:
+                        return lf_in
+                    return lf_in.filter(
+                        pl.col(quality_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        .is_in(vals)
+                    )
+
+                def _filter_dm(lf_in: pl.LazyFrame, dm_flag: str):
+                    if not dm_flag or not dm_col:
+                        return lf_in
+                    return lf_in.filter(
+                        pl.col(dm_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        == dm_flag
+                    )
+
+                def _filter_project(lf_in: pl.LazyFrame, proj: str):
+                    if not proj or not project_col:
+                        return lf_in
+                    return lf_in.filter(
+                        pl.col(project_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        == proj
+                    )
+
+                def _sum_qty(lf_in: pl.LazyFrame) -> float:
+                    df_sum = lf_in.select(pl.col(qte_col).sum().alias("_sum")).collect()
+                    if df_sum.height == 0:
+                        return 0.0
+                    v = df_sum[0, "_sum"]
+                    if v is None:
+                        return 0.0
+                    try:
+                        return float(v)
+                    except Exception:
+                        return 0.0
+
+                MAIN_PROJECT = "PJ00000564"
+
+                # (1) Stock GOOD sur PJ00000564
+                lf_good = _filter_quality(lf, "GOOD")
+                good_main = _sum_qty(_filter_project(lf_good, MAIN_PROJECT))
+
+                # (2) Stock GOOD sur autres PJ* (≠ PJ00000564), groupé par catégorie d'ancienneté
+                other_pj_groups: list[tuple[str, float]] = []
+                other_pj_total = 0.0
+                if project_col:
+                    lf_other_pj = lf_good.filter(
+                        pl.col(project_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        .str.starts_with("PJ")
+                    ).filter(
+                        pl.col(project_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        != MAIN_PROJECT
+                    )
+
+                    if anciennete_col:
+                        df_grp = (
+                            lf_other_pj
+                            .group_by(pl.col(anciennete_col).cast(pl.Utf8).fill_null("(inconnu)").alias("categorie"))
+                            .agg(pl.col(qte_col).sum().alias("qte"))
+                            .collect()
+                        )
+                        if df_grp.height:
+                            other_pj_groups = [
+                                (str(r["categorie"]), float(r["qte"] or 0))
+                                for r in df_grp.to_dicts()
+                            ]
+                            other_pj_groups.sort(key=lambda t: _category_sort_key(t[0]), reverse=True)
+                            other_pj_total = sum(q for _, q in other_pj_groups)
+                    else:
+                        other_pj_total = _sum_qty(lf_other_pj)
+
+                # (3) Stock GOOD en maintenance
+                good_maintenance = _sum_qty(_filter_dm(lf_good, "M"))
+
+                # (4) Stock BAD (prioriser réparations)
+                lf_bad = _filter_quality(lf, "BAD")
+                bad_total = _sum_qty(lf_bad)
+
+                # Fournir un script Polars cohérent avec cette analyse (utile côté UI "Générer Polars").
+                polars_code_override = "\n".join([
+                    "import polars as pl",
+                    f"data_dir = r\"{str(data_dir)}\"",
+                    "stock_final = pl.scan_parquet(f\"{data_dir}\\\\stock_final.parquet\")",
+                    f"asked = \"{asked}\"",
+                    f"MAIN_PROJECT = \"{MAIN_PROJECT}\"",
+                    "lf = stock_final.filter(pl.col('code_article') == asked)",
+                    "schema = lf.schema",
+                    "qte_col = 'qte_stock' if 'qte_stock' in schema else None",
+                    "quality_col = next((c for c in ('code_qualite','code_aqualite','qualite') if c in schema), None)",
+                    "dm_col = 'flag_stock_d_m' if 'flag_stock_d_m' in schema else None",
+                    "project_col = next((c for c in ('code_projet','projet','codeprojet') if c in schema), None)",
+                    "anciennete_col = next((c for c in ('categorie_anciennete_stock','categorie_anciennete','categorie_anciennete_jours','categorie_anciennete_article') if c in schema), None)",
+                    "",
+                    "def norm_col(c):",
+                    "    return pl.col(c).cast(pl.Utf8).str.strip_chars().str.to_uppercase()",
+                    "",
+                    "def filter_quality(lf_in, values):",
+                    "    if not values or not quality_col:",
+                    "        return lf_in",
+                    "    return lf_in.filter(norm_col(quality_col).is_in(values))",
+                    "",
+                    "def sum_qty(lf_in):",
+                    "    if not qte_col:",
+                    "        return None",
+                    "    df = lf_in.select(pl.col(qte_col).sum().alias('qte')).collect()",
+                    "    return df[0,'qte'] if df.height else None",
+                    "",
+                    "lf_good = filter_quality(lf, ['GOOD'])",
+                    "good_main = sum_qty(lf_good.filter(norm_col(project_col) == MAIN_PROJECT) if project_col else lf_good)",
+                    "",
+                    "other_pj = None",
+                    "if project_col:",
+                    "    other_pj = lf_good.filter(norm_col(project_col).str.starts_with('PJ')).filter(norm_col(project_col) != MAIN_PROJECT)",
+                    "",
+                    "other_pj_by_age = None",
+                    "if other_pj is not None and anciennete_col:",
+                    "    other_pj_by_age = (",
+                    "        other_pj",
+                    "        .group_by(pl.col(anciennete_col).cast(pl.Utf8).fill_null('(inconnu)').alias('categorie_anciennete_stock'))",
+                    "        .agg(pl.col(qte_col).sum().alias('qte_good'))",
+                    "    )",
+                    "",
+                    "good_maintenance = None",
+                    "if dm_col:",
+                    "    good_maintenance = sum_qty(lf_good.filter(norm_col(dm_col) == 'M'))",
+                    "",
+                    "lf_bad = filter_quality(lf, ['BAD','BLOQB'])",
+                    "bad_total = sum_qty(lf_bad)",
+                    "",
+                    "print({'good_main_PJ00000564': good_main, 'good_maintenance': good_maintenance, 'bad_total': bad_total})",
+                    "if other_pj_by_age is not None:",
+                    "    print(other_pj_by_age.collect())",
+                ])
+
+                # Synthèse + proposition d'actions
+                deficit = max(0.0, float(requested_qty) - float(good_main))
+
+                lines: list[str] = []
+                lines.append(f"Demande: {requested_qty} unité(s) de {asked} (contexte projet).")
+                lines.append("")
+                lines.append("Synthèse stock (source: stock_final.parquet) :")
+                lines.append(f"1) GOOD sur projet {MAIN_PROJECT} : {int(good_main) if good_main.is_integer() else good_main}")
+                if project_col:
+                    if anciennete_col and other_pj_groups:
+                        lines.append(f"2) GOOD sur autres projets PJ* (≠ {MAIN_PROJECT}) : {int(other_pj_total) if other_pj_total.is_integer() else other_pj_total}")
+                        lines.append("   Détail par ancienneté (plus ancien prioritaire) :")
+                        for cat, q in other_pj_groups[:8]:
+                            q_str = int(q) if float(q).is_integer() else q
+                            lines.append(f"   - {cat} : {q_str}")
+                        if len(other_pj_groups) > 8:
+                            lines.append(f"   - ... (+{len(other_pj_groups) - 8} catégorie(s))")
+                    else:
+                        lines.append(f"2) GOOD sur autres projets PJ* (≠ {MAIN_PROJECT}) : {int(other_pj_total) if other_pj_total.is_integer() else other_pj_total}")
+                else:
+                    lines.append("2) GOOD sur autres projets PJ*: indisponible (colonne projet absente).")
+                if dm_col:
+                    lines.append(f"3) GOOD en stock maintenance : {int(good_maintenance) if good_maintenance.is_integer() else good_maintenance}")
+                else:
+                    lines.append("3) GOOD en stock maintenance: indisponible (colonne D/M absente).")
+                if quality_col:
+                    lines.append(f"4) BAD (BAD+BLOQB) : {int(bad_total) if bad_total.is_integer() else bad_total}")
+                else:
+                    lines.append("4) BAD : indisponible (colonne qualité absente).")
+
+                lines.append("")
+                lines.append("Proposition d'actions :")
+                if deficit <= 0:
+                    lines.append(f"- Le stock GOOD sur {MAIN_PROJECT} couvre la demande (OK).")
+                    lines.append(f"- Action: réserver/consommer {requested_qty} unité(s) sur {MAIN_PROJECT}.")
+                else:
+                    lines.append(f"- Il manque environ {int(deficit) if deficit.is_integer() else deficit} unité(s) en GOOD sur {MAIN_PROJECT}.")
+                    if other_pj_total > 0:
+                        lines.append("- Action prioritaire: transférer/affecter depuis d'autres projets PJ (en privilégiant les lots les plus anciens).")
+                    if good_maintenance > 0:
+                        lines.append("- Action complémentaire: basculer du stock maintenance (GOOD) si autorisé par le process.")
+                    if bad_total > 0:
+                        lines.append("- Action parallèle: lancer/prioriser des réparations sur ce code article (stock BAD disponible).")
+                    if other_pj_total <= 0 and good_maintenance <= 0 and bad_total <= 0:
+                        lines.append("- Aucun levier évident détecté (autres PJ/maintenance/BAD). Vérifier l'article, les filtres ou l'alimentation du stock_final.")
+
+                deterministic_answer = "\n".join(lines)
+        except Exception:
+            deterministic_answer = None
+
+    if plan.intent == "equivalent_article":
+        try:
+            from supplychain_app.polars_assistant import compile_plan_to_lazyframe
+
+            lf = compile_plan_to_lazyframe(plan=plan, data_dir=data_dir)
+            df = lf.limit(preview_rows).collect()
+            rows = df.to_dicts()
+
+            codes = []
+            for r in rows or []:
+                v = r.get("code_article_correspondant")
+                if isinstance(v, str) and v and v not in codes:
+                    codes.append(v)
+
+            asked = _extract_code_article(question) or ""
+            if codes:
+                deterministic_answer = (
+                    f"Substitution(s) trouvée(s) pour {asked}: "
+                    + ", ".join(codes)
+                    + "."
+                )
+            else:
+                deterministic_answer = f"Aucune substitution trouvée pour {asked}."
+        except Exception:
+            deterministic_answer = None
+
+    # Stock global (tous les articles) : somme(qte_stock) sur stock_554, avec filtres qualité / D/M.
+    if deterministic_answer is None and plan.intent in ("stock_by_store", "stock_article"):
+        try:
+            import polars as pl
+
+            asked = _extract_code_article(question)
+            if asked:
+                raise ValueError("not_global_stock")
+            if not _wants_global_stock(question):
+                raise ValueError("not_all_articles")
+
+            quality = _extract_quality(question)
+            stock_dm_flag = _extract_stock_dm_flag(question)
+
+            stock_path = str(data_dir / "stock_554.parquet")
+            lf = pl.scan_parquet(stock_path)
+
+            quality_col = None
+            quality_vals = _quality_values(quality)
+            if quality_vals:
+                schema = lf.schema
+                for c in ("code_qualite", "code_aqualite", "qualite"):
+                    if c in schema:
+                        quality_col = c
+                        break
+                if quality_col:
+                    lf = lf.filter(
+                        pl.col(quality_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        .is_in(quality_vals)
+                    )
+
+            dm_col = None
+            if stock_dm_flag:
+                schema = lf.schema
+                for c in ("flag_stock_d_m"):
+                    if c in schema:
+                        dm_col = c
+                        break
+                if dm_col:
+                    lf = lf.filter(
+                        pl.col(dm_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        == stock_dm_flag
+                    )
+
+            total_df = lf.select(pl.col("qte_stock").sum().alias("qte_stock_total")).collect()
+            total = total_df[0, "qte_stock_total"] if total_df.height else None
+            n_df = lf.select(pl.len().alias("n_rows")).collect()
+            n_rows = int(n_df[0, "n_rows"]) if n_df.height else 0
+
+            if total is None:
+                deterministic_answer = "Quantité de stock indisponible (colonne qte_stock manquante)."
+            else:
+                try:
+                    total_val = int(total)
+                except Exception:
+                    total_val = float(total)
+
+                suffix_parts = []
+                if quality_vals:
+                    suffix_parts.append(f"qualité {'/'.join(quality_vals)}")
+                if stock_dm_flag == "D":
+                    suffix_parts.append("déploiement")
+                elif stock_dm_flag == "M":
+                    suffix_parts.append("maintenance")
+                suffix = (" (" + ", ".join(suffix_parts) + ")") if suffix_parts else ""
+                if quality_vals and not quality_col:
+                    suffix += " [filtre qualité demandé mais colonne absente]"
+                if stock_dm_flag and not dm_col:
+                    suffix += " [filtre déploiement/maintenance demandé mais colonne absente]"
+
+                deterministic_answer = f"Quantité totale de stock{suffix}: {total_val} (somme de qte_stock sur {n_rows} ligne(s))."
+        except Exception:
+            deterministic_answer = None
+
+    if deterministic_answer is None and plan.intent == "stock_article":
+        try:
+            import polars as pl
+
+            asked = _extract_code_article(question) or ""
+
+            quality = _extract_quality(question)
+            stock_dm_flag = _extract_stock_dm_flag(question)
+            # Calculer directement depuis stock_554.parquet : c'est la table source du stock
+            # et elle contient les colonnes qte_stock / code_qualite (plus fiable que le LF final).
+            stock_path = str(data_dir / "stock_554.parquet")
+            lf = pl.scan_parquet(stock_path).filter(pl.col("code_article") == asked)
+
+            quality_col = None
+            quality_vals = _quality_values(quality)
+            if quality_vals:
+                schema = lf.schema
+                for c in ("code_qualite", "qualite"):
+                    if c in schema:
+                        quality_col = c
+                        break
+                if quality_col:
+                    lf = lf.filter(
+                        pl.col(quality_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        .is_in(quality_vals)
+                    )
+
+            deploy_col = None
+            if stock_dm_flag:
+                schema = lf.schema
+                for c in ("flag_stock_d_m"):
+                    if c in schema:
+                        deploy_col = c
+                        break
+                if deploy_col:
+                    lf = lf.filter(
+                        pl.col(deploy_col)
+                        .cast(pl.Utf8)
+                        .str.strip_chars()
+                        .str.to_uppercase()
+                        == stock_dm_flag
+                    )
+
+            # Calcul exact : pas de limit() ici.
+            total_df = lf.select(pl.col("qte_stock").sum().alias("qte_stock_total")).collect()
+            total = total_df[0, "qte_stock_total"] if total_df.height else None
+
+            # Petit contexte utile : nb de lignes contributing
+            n_df = lf.select(pl.len().alias("n_rows")).collect()
+            n_rows = int(n_df[0, "n_rows"]) if n_df.height else 0
+
+            if total is None:
+                deterministic_answer = f"Stock total indisponible pour {asked} (colonne qte_stock manquante)."
+            else:
+                try:
+                    total_val = int(total)
+                except Exception:
+                    total_val = float(total)
+                suffix_parts = []
+                if quality_vals:
+                    suffix_parts.append(f"qualité {'/'.join(quality_vals)}")
+                if stock_dm_flag == "D":
+                    suffix_parts.append("déploiement")
+                elif stock_dm_flag == "M":
+                    suffix_parts.append("maintenance")
+                suffix = (" (" + ", ".join(suffix_parts) + ")") if suffix_parts else ""
+                if quality_vals and not quality_col:
+                    suffix += " [filtre qualité demandé mais colonne absente]"
+                if stock_dm_flag and not deploy_col:
+                    suffix += " [filtre déploiement/maintenance demandé mais colonne absente]"
+                deterministic_answer = f"Stock total pour {asked}{suffix}: {total_val} (somme de qte_stock sur {n_rows} ligne(s))."
+        except Exception:
+            deterministic_answer = None
+
     ollama_model = body.get("ollama_model")
     ollama_timeout_s = body.get("ollama_timeout_s")
     try:
@@ -851,15 +1408,18 @@ def assistant_llm_rag():
 
     llm_error = None
     answer = ""
-    try:
-        answer = _ollama_text(
-            question=question,
-            system_prompt=system_prompt,
-            model=ollama_model,
-            timeout_s=ollama_timeout_s,
-        )
-    except Exception as e:
-        llm_error = str(e)
+    if deterministic_answer is None:
+        try:
+            answer = _ollama_text(
+                question=question,
+                system_prompt=system_prompt,
+                model=ollama_model,
+                timeout_s=ollama_timeout_s,
+            )
+        except Exception as e:
+            llm_error = str(e)
+    else:
+        answer = deterministic_answer
 
     if not answer:
         hint = _ollama_status_hint()
@@ -898,7 +1458,7 @@ def assistant_llm_rag():
             "selected_columns": plan.selected_columns,
             "preview_rows": plan.preview_rows,
         },
-        "polars_code": polars_code,
+        "polars_code": polars_code_override or polars_code,
     })
 
 

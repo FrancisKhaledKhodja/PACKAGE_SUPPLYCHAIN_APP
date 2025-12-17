@@ -1,6 +1,6 @@
-# SupplyChainApp – Spécification des usages et besoins métiers (version 1.4.0)
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.5.0)
 
-> Cette version de la spécification correspond à l’application **SupplyChainApp 1.4.0**.
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.5.0**.
 
 ## 1. Contexte et objectifs
 
@@ -262,6 +262,83 @@ Variables associées :
 - `ASSISTANT_OLLAMA_MODEL` (par défaut `llama3.1`)
 - `ASSISTANT_OLLAMA_TIMEOUT_S` (par défaut `15`)
 
+---
+
+### 2.6.4. Assistant "LLM+RAG" (analyse & génération de code Polars)
+
+#### 2.6.4.1. Objectif
+
+- Permettre à l'utilisateur de poser une question plus analytique (pas uniquement de navigation), avec un support "data".
+- Combiner :
+  - un contexte RAG (catalogue des tables/jointures),
+  - une proposition de code Polars,
+  - et, pour certains cas, une **réponse déterministe** basée directement sur les Parquets (pour fiabiliser les réponses métier).
+
+#### 2.6.4.2. Cas d'usage : besoin de stock dans un contexte projet
+
+Exemples de formulations (même résultat attendu) :
+
+- "Pour un projet en cours, pourriez-vous fournir 5 codes article TDF159698 ?"
+- "Dans le cadre d'un projet, j'aurais besoin de 5 exemplaires du code article TDF159698."
+- "Besoin urgent de 5 unités du code article TDF159698 pour un projet."
+- "Au sein d'un projet, requis : 5 codes article TDF159698."
+
+Règles d'analyse (source : `stock_final.parquet`) :
+
+1. Calculer le stock de **qualité GOOD** sur le projet **PJ00000564**.
+2. Calculer le stock de **qualité GOOD** sur les autres projets dont le code commence par `PJ` (≠ `PJ00000564`) et synthétiser par **categorie_anciennete_stock** (les plus anciens sont à privilégier).
+3. Calculer le stock de **qualité GOOD** en stock de **maintenance** (`flag_stock_d_m = M`) pour ce code article.
+4. Calculer le stock de **qualité BAD** (BAD + BLOQB) pour prioriser des **réparations** sur ce code article.
+
+Sortie attendue :
+
+- une synthèse chiffrée,
+- une proposition d'actions (réserver sur PJ00000564, basculer/affecter depuis autres PJ en priorisant l'ancienneté, basculer depuis maintenance si autorisé, lancer/prioriser réparations si BAD disponible).
+
+---
+
+### 2.10. Demande de modification article (`article_request.html`)
+
+#### 2.10.1. Objectif
+
+- Standardiser et accélérer la **création d'une demande de modification d'article** (actuellement : **changement de criticité**).
+- Réduire les manipulations manuelles (copier/coller Excel, consolidation du contenu, etc.).
+
+#### 2.10.2. Workflow utilisateur (modification de criticité)
+
+1. L'utilisateur sélectionne le type : **Modification d'une criticité**.
+2. Il saisit : **Prénom** + **Nom**.
+3. Il ajoute une ou plusieurs lignes contenant :
+   - `code_article`
+   - `nouvelle_criticite_article`
+   - `Cause(s) de la modification`
+   (le libellé et la criticité actuelle sont récupérés via l'API article).
+4. Au clic sur **Valider** :
+   - un fichier Excel est généré et sauvegardé automatiquement sur un partage réseau,
+   - puis un email est ouvert via `mailto:` avec un objet standard et un corps TSV.
+
+#### 2.10.3. Contenu standardisé du mail
+
+- Destinataire : `referentiel_logistique@tdf.fr`
+- Objet : `[DDE MODIF ARTICLE] - Changement de criticité - <prenom nom> - <date>`
+- Corps :
+  - en-tête (type de demande, prénom, nom, date),
+  - liste des articles au format TSV.
+
+Limitation : `mailto:` ne permet pas d'ajouter automatiquement une pièce jointe.
+
+#### 2.10.4. Fichier Excel de demande (sauvegarde automatique)
+
+- Répertoire cible :
+  - `\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES`
+- Nom du fichier :
+  - `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx`
+- Colonnes (au minimum) :
+  - `date_demande`, `demandeur`, `type_demande`,
+  - `code_article`, `libelle_article`, `criticite_article`, `nouvelle_criticite_article`, `causes`.
+
+---
+
 Endpoint complémentaire (documentation / debug) :
 
 - `GET /api/assistant/capabilities` → expose les intents supportés par le routeur à règles (page cible, schéma des paramètres, exemples).
@@ -283,6 +360,28 @@ Notes d’UX :
   - ses magasins de rattachement,
   - ses PUDO principal / backup / hors normes,
   - leurs coordonnées et adresses.
+
+#### 2.7.2. Règle métier : source du point relais affiché (CONSULTATION MAGASIN)
+
+Dans l’écran **CONSULTATION MAGASIN** (`technician.html`), le **code de point relais affiché** pour chaque rôle (principal / backup / hors normes) suit la règle :
+
+- **Source prioritaire (override)** : fichier de choix PR technicien (répertoire `R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\GESTION_PR\CHOIX_PR_TECH\`).
+  - Le fichier attendu par l’application est `choix_pr_tech.parquet`.
+  - Ce fichier contient, au minimum, les colonnes :
+    - `code_magasin` (code magasin / technicien)
+    - `pr_role` (`principal` | `backup` | `hors_normes`)
+    - `code_point_relais_override` (code PR à afficher)
+
+- **Source de secours** : si aucun override n’est défini pour le magasin/role, l’application utilise le code PR présent dans le référentiel magasins (`stores.parquet`) pour ce rôle.
+
+Les informations associées au PR (nom d’enseigne, adresse, statut, catégorie, prestataire, etc.) sont enrichies depuis :
+
+- `pudo_directory.parquet` (annuaire points relais), en joignant sur `code_point_relais`.
+
+Cette règle garantit que :
+
+- le PR affiché à l’utilisateur est **celui validé métier** via le référentiel CHOIX_PR_TECH,
+- tout en conservant des **informations d’annuaire cohérentes** via `pudo_directory.parquet`.
 
 #### 2.6.2. Besoins métiers
 

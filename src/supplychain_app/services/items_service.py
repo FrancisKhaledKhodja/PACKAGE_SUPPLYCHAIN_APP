@@ -2,6 +2,7 @@ import polars as pl
 from supplychain_app.services.pudo_service import (
     search_items_advanced,
     get_item_by_code,
+    get_item_by_code_strict,
     get_manufacturers_for,
     get_equivalents_for,
     stats_exit_items,
@@ -13,7 +14,7 @@ def search_items_df(q: str, filters: dict, limit: int) -> pl.DataFrame | None:
 
 def get_item_full(code: str) -> dict:
     return {
-        "item": get_item_by_code(code),
+        "item": get_item_by_code_strict(code),
         "manufacturers": get_manufacturers_for(code),
         "equivalents": get_equivalents_for(code),
     }

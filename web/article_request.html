@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>DEMANDE CREATION OU MODIFICATION ARTICLE</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=2" defer></script>
+  <style>
+    .scapp-excel-wrap {
+      overflow: auto;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      background: #fff;
+    }
+
+    .scapp-excel {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 0.9rem;
+    }
+
+    .scapp-excel th,
+    .scapp-excel td {
+      border: 1px solid #d1d5db;
+      padding: 0;
+      vertical-align: middle;
+    }
+
+    .scapp-excel thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #f3f4f6;
+      color: #111827;
+      font-weight: 600;
+      padding: 8px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .scapp-excel tbody tr:nth-child(even) {
+      background: #fafafa;
+    }
+
+    .scapp-excel tbody tr:hover {
+      background: #eef2ff;
+    }
+
+    .scapp-excel-input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+      padding: 8px;
+      background: transparent;
+      color: #111827;
+      outline: none;
+      box-shadow: none;
+    }
+
+    .scapp-excel-input[readonly] {
+      background: #f9fafb;
+      color: #374151;
+    }
+
+    .scapp-excel-input:focus {
+      background: #fff;
+      box-shadow: inset 0 0 0 2px #2563eb;
+    }
+
+    .scapp-excel-select {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      border-radius: 0;
+      padding: 8px;
+      background: transparent;
+      color: #111827;
+      outline: none;
+      box-shadow: none;
+      appearance: none;
+    }
+
+    .scapp-excel-select:focus {
+      background: #fff;
+      box-shadow: inset 0 0 0 2px #2563eb;
+    }
+
+    .scapp-excel-actions {
+      padding: 6px;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="card">
+    <h2 style="margin:0 0 8px; color:var(--muted)">Demande création ou modification article</h2>
+    <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap;">
+      <label for="request-type" class="muted" style="min-width:220px;">Type de demande</label>
+      <select id="request-type" name="request_type" style="min-width:420px; max-width:100%;">
+        <option value="" selected disabled>Choisir un type de demande...</option>
+        <option value="creation_articles">Création d'article(s)</option>
+        <option value="modification_criticite">Modification d'une criticité</option>
+        <option value="modification_achetable">Modifcation du statut achetable ou non achetable</option>
+        <option value="declaration_equivalence">Déclaration d'une équivalence</option>
+        <option value="passage_rebut">Demande de passage en REBUT</option>
+      </select>
+    </div>
+
+    <div id="requester-section" class="section" style="display:none; margin-top:1rem;">
+      <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap;">
+        <label for="requester-firstname" class="muted" style="min-width:220px;">Prénom</label>
+        <input id="requester-firstname" name="requester_firstname" type="text" placeholder="Saisir votre prénom" style="min-width:420px; max-width:100%;" />
+      </div>
+      <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.75rem;">
+        <label for="requester-lastname" class="muted" style="min-width:220px;">Nom</label>
+        <input id="requester-lastname" name="requester_lastname" type="text" placeholder="Saisir votre nom" style="min-width:420px; max-width:100%;" />
+      </div>
+    </div>
+
+    <div id="criticite-section" class="section" style="display:none; margin-top:1rem;">
+      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Modification d'une criticité</h3>
+      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+        <button id="criticite-add-row" type="button">Ajouter une ligne</button>
+        <button id="criticite-validate" type="button">Valider</button>
+      </div>
+      <div id="criticite-feedback" class="muted" style="margin-top:0.5rem;"></div>
+      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+        <table id="criticite-table" class="scapp-excel">
+          <colgroup>
+            <col style="width:120px;" />
+            <col style="width:520px;" />
+            <col style="width:110px;" />
+            <col style="width:150px;" />
+            <col style="width:340px;" />
+            <col style="width:110px;" />
+            <col style="width:110px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px;">code_article</th>
+              <th style="text-align:left; padding:8px;">libelle_article</th>
+              <th style="text-align:left; padding:8px;">criticité article</th>
+              <th style="text-align:left; padding:8px;">nouvelle criticite_article</th>
+              <th style="text-align:left; padding:8px;">Cause(s) de la modification</th>
+              <th style="text-align:left; padding:8px;">statut</th>
+              <th style="text-align:left; padding:8px;"></th>
+            </tr>
+          </thead>
+          <tbody id="criticite-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener("DOMContentLoaded", function () {
+      const select = document.getElementById("request-type");
+      const section = document.getElementById("requester-section");
+      const firstname = document.getElementById("requester-firstname");
+      const lastname = document.getElementById("requester-lastname");
+      const criticiteSection = document.getElementById("criticite-section");
+      const criticiteTbody = document.getElementById("criticite-tbody");
+      const criticiteAddRowBtn = document.getElementById("criticite-add-row");
+      const criticiteValidateBtn = document.getElementById("criticite-validate");
+      const criticiteFeedback = document.getElementById("criticite-feedback");
+
+      if (!select || !section || !firstname || !lastname) return;
+
+      function norm(s) {
+        return String(s || "").trim();
+      }
+
+      function hasRequester() {
+        return !!(norm(firstname.value) && norm(lastname.value));
+      }
+
+      function toIsoLocal(d) {
+        const pad = (n) => String(n).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        const mm = pad(d.getMonth() + 1);
+        const dd = pad(d.getDate());
+        const hh = pad(d.getHours());
+        const mi = pad(d.getMinutes());
+        return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      }
+
+      function createCriticiteRow() {
+        const tr = document.createElement("tr");
+
+        const tdCode = document.createElement("td");
+        tdCode.style.padding = "6px";
+        const inputCode = document.createElement("input");
+        inputCode.type = "text";
+        inputCode.placeholder = "Code article";
+        inputCode.setAttribute("data-required", "1");
+        inputCode.className = "scapp-excel-input";
+        tdCode.appendChild(inputCode);
+
+        const tdLib = document.createElement("td");
+        tdLib.style.padding = "6px";
+        const inputLib = document.createElement("input");
+        inputLib.type = "text";
+        inputLib.readOnly = true;
+        inputLib.className = "scapp-excel-input";
+        tdLib.appendChild(inputLib);
+
+        const tdCrit = document.createElement("td");
+        tdCrit.style.padding = "6px";
+        const inputCrit = document.createElement("input");
+        inputCrit.type = "text";
+        inputCrit.readOnly = true;
+        inputCrit.className = "scapp-excel-input";
+        tdCrit.appendChild(inputCrit);
+
+        const tdNewCrit = document.createElement("td");
+        tdNewCrit.style.padding = "6px";
+        const inputNewCrit = document.createElement("select");
+        inputNewCrit.setAttribute("data-required", "1");
+        inputNewCrit.className = "scapp-excel-select";
+        inputNewCrit.innerHTML = `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="0">0</option>
+          <option value="2">2</option>
+          <option value="10">10</option>
+        `;
+        tdNewCrit.appendChild(inputNewCrit);
+
+        const tdCause = document.createElement("td");
+        tdCause.style.padding = "6px";
+        const inputCause = document.createElement("input");
+        inputCause.type = "text";
+        inputCause.placeholder = "Cause(s)";
+        inputCause.setAttribute("data-required", "1");
+        inputCause.className = "scapp-excel-input";
+        tdCause.appendChild(inputCause);
+
+        const tdStatus = document.createElement("td");
+        tdStatus.style.padding = "6px";
+        const status = document.createElement("span");
+        status.className = "muted";
+        status.textContent = "";
+        tdStatus.appendChild(status);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "scapp-excel-actions";
+        const btnDel = document.createElement("button");
+        btnDel.type = "button";
+        btnDel.textContent = "Supprimer";
+        tdActions.appendChild(btnDel);
+
+        tr.appendChild(tdCode);
+        tr.appendChild(tdLib);
+        tr.appendChild(tdCrit);
+        tr.appendChild(tdNewCrit);
+        tr.appendChild(tdCause);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdActions);
+
+        async function fillFromCode() {
+          const code = norm(inputCode.value).toUpperCase();
+          inputCode.value = code;
+          inputLib.value = "";
+          inputCrit.value = "";
+          status.textContent = "";
+          status.style.color = "";
+
+          if (!code) return;
+          if (typeof API !== "function") {
+            status.textContent = "API indisponible";
+            status.style.color = "#f87171";
+            return;
+          }
+          try {
+            status.textContent = "Chargement...";
+            const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
+            if (!resp.ok) {
+              status.textContent = "Code inconnu / API";
+              status.style.color = "#f87171";
+              return;
+            }
+            const data = await resp.json().catch(() => null);
+            const item = data && typeof data === "object" ? data.item : null;
+            if (!item || typeof item !== "object") {
+              status.textContent = "Code inconnu";
+              status.style.color = "#f87171";
+              return;
+            }
+
+            const lib = item.libelle_court_article || item.libelle_article || item.libelle || "";
+            const crit = item.criticite_pim || item.criticite || item.criticite_article || "";
+            inputLib.value = lib ? String(lib) : "";
+            inputCrit.value = crit ? String(crit) : "";
+            status.textContent = "OK";
+            status.style.color = "#34d399";
+          } catch (e) {
+            status.textContent = "Erreur";
+            status.style.color = "#f87171";
+            return;
+          }
+        }
+
+        let debounceTimer = null;
+        function scheduleFillFromCode() {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          debounceTimer = setTimeout(() => {
+            debounceTimer = null;
+            fillFromCode();
+          }, 350);
+        }
+
+        inputCode.addEventListener("change", fillFromCode);
+        inputCode.addEventListener("blur", fillFromCode);
+        inputCode.addEventListener("input", scheduleFillFromCode);
+        inputCode.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            fillFromCode();
+          }
+        });
+
+        btnDel.addEventListener("click", () => {
+          tr.remove();
+        });
+
+        return {
+          tr,
+          inputCode,
+          inputLib,
+          inputCrit,
+          inputNewCrit,
+          inputCause,
+          status,
+        };
+      }
+
+      function ensureOneRow() {
+        if (!criticiteTbody) return;
+        if (criticiteTbody.querySelectorAll("tr").length > 0) return;
+        const row = createCriticiteRow();
+        criticiteTbody.appendChild(row.tr);
+      }
+
+      function updateVisibility() {
+        const hasSelection = !!(select.value && String(select.value).trim());
+        section.style.display = hasSelection ? "block" : "none";
+        firstname.required = hasSelection;
+        lastname.required = hasSelection;
+
+        const showCriticite = hasSelection && select.value === "modification_criticite" && hasRequester();
+        if (criticiteSection) {
+          criticiteSection.style.display = showCriticite ? "block" : "none";
+          if (showCriticite) ensureOneRow();
+        }
+
+        if (criticiteFeedback) {
+          if (hasSelection && select.value === "modification_criticite" && !hasRequester()) {
+            criticiteFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else {
+            criticiteFeedback.textContent = "";
+          }
+        }
+
+        if (criticiteTbody) {
+          criticiteTbody.querySelectorAll("tr").forEach((tr) => {
+            tr.querySelectorAll("input, select").forEach((inp) => {
+              if (!showCriticite) {
+                inp.required = false;
+                return;
+              }
+              if (inp.getAttribute("data-required") === "1") {
+                inp.required = true;
+              }
+            });
+          });
+        }
+      }
+
+      select.addEventListener("change", updateVisibility);
+      firstname.addEventListener("input", updateVisibility);
+      lastname.addEventListener("input", updateVisibility);
+
+      if (criticiteAddRowBtn && criticiteTbody) {
+        criticiteAddRowBtn.addEventListener("click", () => {
+          const row = createCriticiteRow();
+          criticiteTbody.appendChild(row.tr);
+        });
+      }
+
+      if (criticiteValidateBtn) {
+        criticiteValidateBtn.addEventListener("click", async () => {
+          const showCriticite = select.value === "modification_criticite" && hasRequester();
+          if (!showCriticite) {
+            if (criticiteFeedback) {
+              criticiteFeedback.textContent = "Veuillez sélectionner 'Modification d'une criticité' et renseigner prénom/nom.";
+            }
+            return;
+          }
+
+          const rows = [];
+          if (criticiteTbody) {
+            criticiteTbody.querySelectorAll("tr").forEach((tr) => {
+              const code = norm(tr.querySelector("td:nth-child(1) input")?.value || "");
+              const lib = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
+              const crit = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
+              const newCrit = norm(tr.querySelector("td:nth-child(4) select")?.value || "");
+              const cause = norm(tr.querySelector("td:nth-child(5) input")?.value || "");
+
+              if (!code && !newCrit && !cause) return;
+              rows.push({ code, lib, crit, newCrit, cause });
+            });
+          }
+
+          const missing = rows.some((r) => !r.code || !r.newCrit || !r.cause);
+          if (rows.length === 0 || missing) {
+            if (criticiteFeedback) {
+              criticiteFeedback.textContent = "Veuillez renseigner au moins une ligne complète (code_article, nouvelle criticité, cause).";
+            }
+            return;
+          }
+
+          const now = new Date();
+          const dateStr = toIsoLocal(now);
+          const requesterFirstname = norm(firstname.value);
+          const requesterLastname = norm(lastname.value);
+          const requester = `${requesterFirstname} ${requesterLastname}`.trim();
+          const typeDemandeLabel = "Modification d'une criticité";
+
+          const subject = `[DDE MODIF ARTICLE] - Changement de criticité - ${requester} - ${dateStr}`;
+
+          const safeText = (v) => String(v || "").replace(/\s+/g, " ").trim();
+          const to = "referentiel_logistique@tdf.fr";
+
+          const widths = {
+            code: 12,
+            lib: 70,
+            crit: 10,
+            newCrit: 12,
+            cause: 60,
+          };
+
+          const cut = (s, n) => {
+            const t = safeText(s);
+            if (t.length <= n) return t;
+            return t.slice(0, Math.max(0, n - 1)) + "…";
+          };
+          const pad = (s, n) => {
+            const t = String(s || "");
+            if (t.length >= n) return t;
+            return t + " ".repeat(n - t.length);
+          };
+
+          const lineSep = () => {
+            const parts = [
+              "-".repeat(widths.code),
+              "-".repeat(widths.lib),
+              "-".repeat(widths.crit),
+              "-".repeat(widths.newCrit),
+              "-".repeat(widths.cause),
+            ];
+            return `+${parts.join("+")}+`;
+          };
+
+          const headerRow = () => {
+            const parts = [
+              pad("code_article", widths.code),
+              pad("libelle_article", widths.lib),
+              pad("criticite", widths.crit),
+              pad("nouvelle", widths.newCrit),
+              pad("causes", widths.cause),
+            ];
+            return `|${parts.join("|")}|`;
+          };
+
+          const dataRows = rows.map((r) => {
+            const parts = [
+              pad(cut(r.code, widths.code), widths.code),
+              pad(cut(r.lib, widths.lib), widths.lib),
+              pad(cut(r.crit, widths.crit), widths.crit),
+              pad(cut(r.newCrit, widths.newCrit), widths.newCrit),
+              pad(cut(r.cause, widths.cause), widths.cause),
+            ];
+            return `|${parts.join("|")}|`;
+          });
+
+          const tsv = [
+            "code_article\tlibelle_article\tcriticite_article\tnouvelle_criticite_article\tcauses",
+            ...rows.map((r) => [safeText(r.code), safeText(r.lib), safeText(r.crit), safeText(r.newCrit), safeText(r.cause)].join("\t")),
+          ].join("\n");
+
+          const apiRows = rows.map((r) => ({
+            code_article: safeText(r.code),
+            libelle_article: safeText(r.lib),
+            criticite_article: safeText(r.crit),
+            nouvelle_criticite_article: safeText(r.newCrit),
+            causes: safeText(r.cause),
+          }));
+
+          let savedInfo = null;
+          if (typeof API === "function") {
+            try {
+              if (criticiteFeedback) {
+                criticiteFeedback.textContent = "Sauvegarde du fichier Excel sur le partage...";
+              }
+              const resp = await fetch(API("/downloads/demandes/modif_criticite_xlsx"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  date_demande: dateStr,
+                  demandeur: requester,
+                  type_demande: typeDemandeLabel,
+                  rows: apiRows,
+                }),
+              });
+              const data = await resp.json().catch(() => null);
+              if (resp.ok && data && data.ok) {
+                savedInfo = data;
+              } else {
+                savedInfo = null;
+              }
+            } catch (e) {
+              savedInfo = null;
+            }
+          }
+
+          const pieceJointeLine = savedInfo && savedInfo.filename
+            ? `Fichier Excel sauvegardé : ${savedInfo.filename}`
+            : "Fichier Excel non sauvegardé (vérifier accès au partage \\\\apps\\... ).";
+
+          const bodyText = [
+            `Type de demande : ${typeDemandeLabel}`,
+            `Prénom : ${requesterFirstname}`,
+            `Nom : ${requesterLastname}`,
+            `Date de la demande : ${dateStr}`,
+            pieceJointeLine,
+            "",
+            tsv,
+            "",
+          ].join("\n");
+
+          const mailtoWithBody = () => {
+            const mailto = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+            window.location.href = mailto;
+          };
+
+          // Vérifier une limite conservative d'URL mailto (varie selon Windows/Outlook/navigateur).
+          // Si l'URL est trop longue, on n'essaie PAS de créer un second email.
+          const MAILTO_URL_LIMIT = 1800;
+          const fullUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+          if (fullUrl.length > MAILTO_URL_LIMIT) {
+            if (criticiteFeedback) {
+              criticiteFeedback.textContent = "Le contenu est trop long pour être envoyé via mailto. Réduisez le nombre de lignes ou la longueur des causes.";
+            }
+            return;
+          }
+
+          if (criticiteFeedback) {
+            criticiteFeedback.textContent = savedInfo && savedInfo.filename
+              ? `Fichier Excel sauvegardé sur le partage : ${savedInfo.filename}. Ouverture du mail...`
+              : "Impossible de sauvegarder le fichier Excel sur le partage. Ouverture du mail quand même.";
+          }
+
+          window.location.href = fullUrl;
+        });
+      }
+
+      updateVisibility();
+    });
+  </script>
+</body>
+</html>

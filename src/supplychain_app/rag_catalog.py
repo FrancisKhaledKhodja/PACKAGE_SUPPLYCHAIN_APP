@@ -2,12 +2,10 @@ import json
 import os
 import re
 import hashlib
+import importlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
-import chromadb
-from chromadb.config import Settings
 
 
 @dataclass(frozen=True)
@@ -69,7 +67,7 @@ class _HashEmbeddingFunction:
 
 class _SentenceTransformerEmbeddingFunction:
     def __init__(self, model_name: str):
-        from sentence_transformers import SentenceTransformer
+        SentenceTransformer = importlib.import_module("sentence_transformers").SentenceTransformer
 
         self._model = SentenceTransformer(model_name)
         self._model_name = model_name
@@ -211,6 +209,8 @@ def build_or_update_index(
     catalog = _load_catalog(catalog_path)
 
     persist_dir.mkdir(parents=True, exist_ok=True)
+    chromadb = importlib.import_module("chromadb")
+    Settings = importlib.import_module("chromadb.config").Settings
     client = chromadb.PersistentClient(
         path=str(persist_dir),
         settings=Settings(anonymized_telemetry=False),
@@ -268,6 +268,8 @@ def query_index(
     persist_dir = persist_dir or _default_persist_dir()
     embedding_model = embedding_model or os.getenv("RAG_EMBEDDING_MODEL", "hash")
 
+    chromadb = importlib.import_module("chromadb")
+    Settings = importlib.import_module("chromadb.config").Settings
     client = chromadb.PersistentClient(
         path=str(persist_dir),
         settings=Settings(anonymized_telemetry=False),

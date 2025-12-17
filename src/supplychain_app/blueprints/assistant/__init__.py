@@ -1,5 +1,6 @@
 from flask import Blueprint
 
-bp = Blueprint("assistant", __name__)
-
-from . import routes  # noqa: E402,F401
+try:
+    from .routes import bp  # noqa: F401
+except Exception:
+    bp = Blueprint("assistant", __name__)

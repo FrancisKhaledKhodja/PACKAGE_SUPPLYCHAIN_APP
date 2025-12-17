@@ -135,6 +135,48 @@
       })
       .catch(()=>{ count.textContent='Erreur de recherche'; tbody.innerHTML=''; });
   });
+
+  (async ()=>{
+    try {
+      const url = new URL(window.location.href);
+      const codeParam = (url.searchParams.get('code') || '').trim();
+      if (!codeParam) return;
+
+      input.value = codeParam;
+
+      const body = { q: codeParam, filters: {}, limit: 300 };
+      const res = await fetch(API('/items/search'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      const cols = data.columns || [];
+      const rows = data.rows || [];
+      count.textContent = `${rows.length} résultat(s)`;
+      renderTable(cols, rows);
+
+      const normalize = (v) => (v == null ? '' : String(v)).trim().toUpperCase();
+      const target = normalize(codeParam);
+      const idx = lastRows.findIndex(r => normalize((r || {}).code_article || (r || {}).code || (r || {}).id_article) === target);
+
+      if (idx >= 0) {
+        const tr = tbody.querySelector(`tr[data-idx="${idx}"]`);
+        if (tr) {
+          tr.click();
+          return;
+        }
+      }
+
+      details.textContent = 'Chargement...';
+      fetch(API(`/items/${encodeURIComponent(codeParam)}/details`))
+        .then(r=>r.ok ? r.json() : Promise.reject(r.status))
+        .then(renderDetailsPayload)
+        .catch(()=>{ details.textContent = 'Aucun résultat pour ce code.'; });
+    } catch (e) {
+      // ignore
+    }
+  })();
 })();
 </script>
 {% endblock %}

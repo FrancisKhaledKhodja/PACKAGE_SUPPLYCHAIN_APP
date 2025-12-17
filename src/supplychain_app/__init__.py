@@ -21,9 +21,12 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     app.config.from_object(config_object)
 
     # Extensions
+    origins = app.config.get("CORS_ORIGINS", "*")
+    if isinstance(origins, str) and "," in origins:
+        origins = [o.strip() for o in origins.split(",") if o.strip()]
     cors.init_app(
         app,
-        resources={r"/api/*": {"origins": app.config.get("CORS_ORIGINS", "*")}},
+        resources={r"/api/*": {"origins": origins}},
         supports_credentials=True,
     )
 
@@ -48,9 +51,14 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     @app.get("/api/app/info")
     def app_info():
         is_frozen = bool(getattr(sys, "frozen", False))
+        force_show_llm_rag = os.environ.get("SCAPP_FORCE_SHOW_LLM_RAG", "0").lower() in ("1", "true", "yes")
+        hide_llm_rag_env = os.environ.get("SCAPP_HIDE_LLM_RAG", "0").lower() in ("1", "true", "yes")
+        hide_llm_rag = hide_llm_rag_env or (is_frozen and not force_show_llm_rag)
         return {
             "is_frozen": is_frozen,
-            "hide_llm_rag": is_frozen,
+            "hide_llm_rag": hide_llm_rag,
+            "force_show_llm_rag": force_show_llm_rag,
+            "hide_llm_rag_env": hide_llm_rag_env,
         }
 
     def _background_update_loop():

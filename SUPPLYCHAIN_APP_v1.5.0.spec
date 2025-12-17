@@ -1,16 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
+from PyInstaller.utils.hooks import collect_submodules
+
+hiddenimports = ['supplychain_app.blueprints.assistant.routes']
+hiddenimports += collect_submodules('supplychain_app.blueprints.assistant')
 
 
 a = Analysis(
-    ['src\\supplychain_app\\run.py'],
-    pathex=[],
+    ['src\\run_exe.py'],
+    pathex=['src'],
     binaries=[],
     datas=[('web', 'web')],
-    hiddenimports=[],
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['chromadb', 'chroma_hnswlib', 'sentence_transformers', 'transformers', 'torch', 'torchvision', 'torchaudio', 'onnxruntime', 'sklearn', 'pytorch_lightning', 'langchain', 'langchain_core', 'langchain_community', 'langchain_text_splitters'],
     noarchive=False,
     optimize=0,
 )

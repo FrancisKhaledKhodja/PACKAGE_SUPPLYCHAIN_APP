@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, session
+from flask import render_template, request, jsonify, session, redirect
 from . import bp
 
 @bp.get("/")
@@ -8,6 +8,10 @@ def home_page():
 @bp.get("/items")
 def items_page():
     return render_template("items.html")
+
+@bp.get("/items.html")
+def items_page_compat():
+    return redirect(f"/items?{request.query_string.decode('utf-8')}")
 
 @bp.get("/downloads")
 def downloads_page():

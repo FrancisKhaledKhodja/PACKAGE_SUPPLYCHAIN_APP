@@ -225,6 +225,20 @@ Depuis la racine du projet, avec `.venv` activé :
 ./scripts/build_exe.ps1
 ```
 
+#### Script de build EXE « NoLLM » (distribution interne)
+
+Depuis la racine du projet, avec `.venv` activé :
+
+```powershell
+./scripts/build_exe_no_llm.ps1
+```
+
+Ce script génère un exécutable nommé selon le modèle :
+
+```text
+dist\SUPPLYCHAIN_APP_v1.5.0.exe
+```
+
 ### 2.3. Résultat
 
 PyInstaller génère :
@@ -251,6 +265,22 @@ L'exécutable :
 - démarre l'API et le serveur frontend,
 - ouvre le navigateur sur `http://127.0.0.1:8000/`,
 - affiche les logs dans la console (si construit sans `--windowed`).
+
+### 2.5. Capturer les logs en cas de crash de l'EXE
+
+En cas de plantage très tôt au lancement (ex: erreur d'import), un fichier est créé à côté de l'EXE :
+
+```text
+early_boot_YYYYMMDD_HHMMSS.log
+```
+
+Une fois l'application démarrée (après `bootstrap()`), un log peut aussi être écrit dans le dossier `logs/` de l'application (ou à côté de l'EXE en fallback) :
+
+```text
+exe_crash_YYYYMMDD_HHMMSS.log
+```
+
+Ces fichiers permettent de diagnostiquer les erreurs rencontrées dans l'exécutable PyInstaller.
 
 ---
 
@@ -285,8 +315,58 @@ L'application frontend (dossier `web/`) propose plusieurs onglets principaux acc
   - bouton d’**export Excel** permettant de récupérer un fichier CSV (`localisation_stock.csv`) basé sur `stock_final.parquet`, respectant les filtres courants, uniquement si des résultats existent.
 - **Téléchargements (`downloads.html`)** :
   - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
+- **Demande création / modification article (`article_request.html`)** :
+  - saisie d'une demande (actuellement: **modification d'une criticité**) via un tableau multi-lignes,
+  - génération d'un email via `mailto:` vers `referentiel_logistique@tdf.fr` (objet standardisé + corps en TSV),
+  - génération serveur d'un fichier Excel de demande et **sauvegarde automatique sur un partage réseau**,
+  - limitation connue : `mailto:` ne permet pas d'attacher automatiquement un fichier (pièce jointe).
 - **Écrans techniciens / affectations technicien ↔️ PUDO** :
   - écrans dédiés au suivi des techniciens, de leurs magasins de rattachement et de leurs PUDO (principal / backup / hors normes).
+
+### 3.5. Demande de modification article (criticité)
+
+- Page frontend : `web/article_request.html`
+- Flux :
+  - l'utilisateur renseigne le **type de demande**, son **prénom/nom**, et une ou plusieurs lignes (code article / nouvelle criticité / cause),
+  - au clic sur **Valider** :
+    - un fichier Excel est généré côté serveur (openpyxl) et sauvegardé sur un partage réseau,
+    - un email `mailto:` est ouvert avec un sujet standard et un corps au format TSV.
+
+Endpoints backend :
+
+- `POST /api/downloads/demandes/modif_criticite_xlsx`
+  - sauvegarde un fichier `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx` dans :
+    - `\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES`
+
+Notes :
+
+- La sauvegarde sur partage nécessite que le process de l'API (ou l'EXE PyInstaller) ait les droits d'écriture sur le répertoire.
+- Le `mailto:` est soumis à une limite de longueur d'URL (limite conservative utilisée: ~1800 caractères). Si dépassement, un message est affiché.
+
+### 3.6. Assistant LLM+RAG (analyse & code Polars)
+
+Le projet expose un endpoint "LLM+RAG" qui combine :
+
+- un contexte RAG (index Chroma) pour identifier tables/jointures,
+- une génération de code Polars,
+- et, pour certains cas, une réponse **déterministe** basée sur les fichiers Parquet.
+
+Endpoints :
+
+- `POST /api/assistant/llm_rag` : répond à une question et renvoie :
+  - `answer` (texte),
+  - `polars_code` (script proposé),
+  - `plan` (tables/jointures/colonnes),
+  - `rag.hits` (contexte).
+
+Cas déterministe implémenté :
+
+- Demandes du type : "Pour un projet, besoin de 5 unités du code article TDF...".
+- Analyse sur `stock_final.parquet` :
+  - stock GOOD sur le projet `PJ00000564`,
+  - stock GOOD sur autres projets `PJ*` groupé par ancienneté (plus ancien prioritaire),
+  - stock GOOD en maintenance,
+  - stock BAD (BAD + BLOQB) pour suggérer des réparations.
 
 ### 3.1. Catégorie "sans sortie" (categorie_sans_sortie)
 
@@ -466,3 +546,10 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
     - filtres améliorés (case globale « tout cocher/décocher » pour les filtres stock) ;
     - markers colorés par type de dépôt avec légende ;
     - ajout d’un bouton d’**export Excel** (`localisation_stock.csv`) basé sur `stock_final.parquet` et respectant les filtres saisis.
+
+  - Évolutions de l’onglet **CONSULTATION MAGASIN** (`technician.html`) :
+    - le **point relais affiché** est issu du référentiel d’override **CHOIX_PR_TECH** (`R:\...\GESTION_PR\CHOIX_PR_TECH\choix_pr_tech.parquet`) ;
+    - les **informations PR** (enseigne, adresse, statut, etc.) sont enrichies depuis `pudo_directory.parquet`.
+
+  - Packaging :
+    - exécutable NoLLM livré sous la forme `SUPPLYCHAIN_APP_v1.5.0.exe` (script `scripts/build_exe_no_llm.ps1`).

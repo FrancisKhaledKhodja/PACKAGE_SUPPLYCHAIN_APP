@@ -1,27 +1,44 @@
 import os
+import sys
+import traceback
+from datetime import datetime
 import threading
 import time
 import webbrowser
 
 
 def run_frontend() -> None:
-    import http.server
-    import socketserver
+    try:
+        import http.server
+        import socketserver
 
-    from supplychain_app.core.paths import get_web_dir
+        from supplychain_app.core.paths import get_web_dir
 
-    web_dir = get_web_dir()
-    os.chdir(web_dir)
+        web_dir = get_web_dir()
+        os.chdir(web_dir)
 
-    handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("127.0.0.1", 8000), handler) as httpd:
-        httpd.serve_forever()
+        handler = http.server.SimpleHTTPRequestHandler
+        with socketserver.TCPServer(("127.0.0.1", 8000), handler) as httpd:
+            httpd.serve_forever()
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        try:
+            sys.stderr.flush()
+        except Exception:
+            pass
 
 
 def run_api() -> None:
-    from supplychain_app.app import app
+    try:
+        from supplychain_app.app import app
 
-    app.run(host="127.0.0.1", port=5001, debug=False, use_reloader=False)
+        app.run(host="127.0.0.1", port=5001, debug=False, use_reloader=False)
+    except Exception:
+        traceback.print_exc(file=sys.stderr)
+        try:
+            sys.stderr.flush()
+        except Exception:
+            pass
 
 
 def main() -> None:
@@ -49,5 +66,45 @@ def main() -> None:
         pass
 
 
+def bootstrap() -> None:
+    is_frozen = bool(getattr(sys, "frozen", False))
+    crash_path = None
+    if is_frozen:
+        try:
+            from supplychain_app.constants import path_supply_chain_app
+
+            log_dir = os.path.join(path_supply_chain_app, "logs")
+        except Exception:
+            log_dir = os.path.dirname(sys.executable)
+
+        try:
+            os.makedirs(log_dir, exist_ok=True)
+        except Exception:
+            log_dir = os.path.dirname(sys.executable)
+
+        ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+        crash_path = os.path.join(log_dir, f"exe_crash_{ts}.log")
+        try:
+            f = open(crash_path, "a", encoding="utf-8")
+            sys.stdout = f
+            sys.stderr = f
+            f.write(f"=== SupplyChainApp EXE start {datetime.now().isoformat()} ===\n")
+            f.flush()
+        except Exception:
+            crash_path = None
+
+    try:
+        main()
+    except Exception:
+        if is_frozen and crash_path:
+            try:
+                sys.stderr.write("\n=== Unhandled exception ===\n")
+                traceback.print_exc(file=sys.stderr)
+                sys.stderr.flush()
+            except Exception:
+                pass
+        raise
+
+
 if __name__ == "__main__":
-    main()
+    bootstrap()

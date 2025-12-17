@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "run.py", line 53, in <module>
+  File "run.py", line 28, in main
+  File "pyimod02_importers.py", line 457, in exec_module
+  File "supplychain_app\__init__.py", line 11, in <module>
+  File "pyimod02_importers.py", line 457, in exec_module
+  File "supplychain_app\blueprints\assistant\__init__.py", line 1, in <module>
+ModuleNotFoundError: No module named 'supplychain_app.blueprints.assistant.routes'
+[PYI-23884:ERROR] Failed to execute script 'run' due to unhandled exception!

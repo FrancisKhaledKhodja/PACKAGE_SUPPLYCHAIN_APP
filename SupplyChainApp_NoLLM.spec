@@ -6,7 +6,7 @@ hiddenimports += collect_submodules('supplychain_app.blueprints.assistant')
 
 
 a = Analysis(
-    ['src\\supplychain_app\\run.py'],
+    ['src\\run_exe.py'],
     pathex=['src'],
     binaries=[],
     datas=[('web', 'web')],
@@ -14,7 +14,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['chromadb', 'chroma_hnswlib', 'sentence_transformers', 'transformers', 'torch', 'torchvision', 'torchaudio', 'onnxruntime', 'sklearn', 'pytorch_lightning', 'langchain', 'langchain_core', 'langchain_community', 'langchain_text_splitters'],
     noarchive=False,
     optimize=0,
 )
@@ -26,7 +26,7 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='SupplyChainApp',
+    name='SupplyChainApp_NoLLM',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

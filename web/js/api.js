@@ -1,4 +1,12 @@
-const API_BASE_URL = "http://127.0.0.1:5001/api";
+const API_BASE_URL = (() => {
+  try {
+    const h = window.location.hostname || "127.0.0.1";
+    const proto = window.location.protocol || "http:";
+    return `${proto}//${h}:5001/api`;
+  } catch (e) {
+    return "http://127.0.0.1:5001/api";
+  }
+})();
 
 function API(path) {
   return `${API_BASE_URL}${path}`;
@@ -101,6 +109,7 @@ async function scappRenderHeader() {
         <a href="stock_map.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">LOCALISATION STOCK</a>
         ${llmRagLink}
         <a href="items.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">CONSULTATION ARTICLE</a>
+        <a href="article_request.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">DEMANDE CREATION OU MODIFICATION ARTICLE</a>
         <a href="helios.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">PARC HELIOS</a>
         <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">OL MODE DÉGRADÉ</a>
         <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">

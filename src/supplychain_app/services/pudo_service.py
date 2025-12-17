@@ -558,18 +558,72 @@ def get_manufacturers_for(code_article: str) -> list[dict]:
 def get_item_by_code(code_article: str) -> dict | None:
     if 'items' not in globals() or items.is_empty():
         return None
-    key_cols = [c for c in ["code_article", "code", "id_article"] if c in items.columns]
-    if not key_cols:
+    try:
+        norm = str(code_article).strip().upper()
+
+        if "code_article" in items.columns:
+            try:
+                df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip().str.to_uppercase() == norm)
+                if df.height > 0:
+                    row = df.row(0, named=True)
+                    row["__matched_by"] = "code_article"
+                    return row
+            except Exception:
+                pass
+
+        # 1) Tentative d'égalité stricte sur toutes les colonnes
+        for col in items.columns:
+            try:
+                if col == "code_article":
+                    continue
+                df = items.filter(
+                    pl.col(col).cast(pl.Utf8).str.strip().str.to_uppercase() == norm
+                )
+                if df.height > 0:
+                    row = df.row(0, named=True)
+                    row["__matched_by"] = col
+                    return row
+            except Exception:
+                continue
+
+        # 2) Fallback: recherche plein texte (contains) sur concat de toutes les colonnes
+        try:
+            df = items
+            exprs = [
+                pl.col(c).cast(pl.Utf8).fill_null("").str.to_uppercase()
+                for c in df.columns
+            ]
+            hay = pl.concat_str(exprs, separator=" ").alias("__haystack")
+            df2 = df.with_columns(hay).filter(pl.col("__haystack").str.contains(norm))
+            if df2.height > 0:
+                row = df2.drop("__haystack").row(0, named=True)
+                row["__matched_by"] = "__haystack_contains__"
+                return row
+        except Exception:
+            pass
+
+        return None
+    except Exception:
+        return None
+
+
+def get_item_by_code_strict(code_article: str) -> dict | None:
+    if 'items' not in globals() or items.is_empty():
         return None
     try:
         norm = str(code_article).strip().upper()
-        df = items.filter(pl.any_horizontal([
-            pl.col(c).cast(pl.Utf8).str.strip().str.to_uppercase() == norm
-            for c in key_cols
-        ]))
-        if df.height == 0:
+        if not norm:
             return None
-        return df.row(0, named=True)
+
+        if "code_article" not in items.columns:
+            return None
+
+        df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip().str.to_uppercase() == norm)
+        if df.height <= 0:
+            return None
+        row = df.row(0, named=True)
+        row["__matched_by"] = "code_article_strict"
+        return row
     except Exception:
         return None
 
@@ -828,6 +882,9 @@ def list_technician_pudo_assignments() -> list[dict]:
     rows: list[dict] = []
     if 'stores' not in globals():
         return rows
+
+    overrides_df = _load_pr_overrides_df()
+
     for srow in stores.iter_rows(named=True):
         # Ne conserver que les magasins avec statut == 0
         statut = srow.get("statut")
@@ -846,10 +903,28 @@ def list_technician_pudo_assignments() -> list[dict]:
         pr_backup = srow.get("pr_backup")
         pr_hn = srow.get("pr_hors_normes") if "pr_hors_normes" in srow else srow.get("pr_hors_norme")
 
+        override_map = {"principal": None, "backup": None, "hors_normes": None}
+        if not overrides_df.is_empty() and code_magasin:
+            try:
+                sub = overrides_df.filter(pl.col("code_magasin") == str(code_magasin))
+                for orow in sub.iter_rows(named=True):
+                    role = str(orow.get("pr_role") or "")
+                    if role not in override_map:
+                        continue
+                    code = (orow.get("code_point_relais_override") or "")
+                    code = str(code).strip() if code is not None else ""
+                    override_map[role] = code or None
+            except Exception:
+                override_map = {"principal": None, "backup": None, "hors_normes": None}
+
         def add_pr(role: str, code_pr: str | None):
             if not code_pr:
                 return
-            p = get_pudo_details(str(code_pr))
+ 
+            store_code_pr = str(code_pr)
+            effective_code = override_map.get(role) or store_code_pr
+ 
+            p = get_pudo_details(str(effective_code))
             adresse_postale = ""
             if p:
                 adresse_postale = " ".join([
@@ -863,8 +938,8 @@ def list_technician_pudo_assignments() -> list[dict]:
                 "technicien": technicien,
                 "type_de_depot": type_de_depot,
                 "pr_role": role,
-                "code_point_relais_store": str(code_pr),
-                "code_point_relais": (p.get("code_point_relais") if p else str(code_pr)),
+                "code_point_relais_store": store_code_pr,
+                "code_point_relais": (p.get("code_point_relais") if p else str(effective_code)),
                 "enseigne": (p.get("enseigne") if p else None),
                 "adresse_postale": (p.get("adresse_postale") if p and p.get("adresse_postale") else adresse_postale) or None,
                 "statut": (p.get("statut") if p else None),

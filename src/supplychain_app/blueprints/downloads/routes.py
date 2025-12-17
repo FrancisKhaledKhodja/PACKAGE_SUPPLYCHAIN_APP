@@ -1,8 +1,10 @@
 import os
 import tempfile
+from datetime import datetime
 
 import polars as pl
-from flask import jsonify, send_file
+from flask import jsonify, send_file, request
+from openpyxl import Workbook
 
 from . import bp
 from supplychain_app.constants import path_r, folder_gestion_pr, path_lmline, path_datan, folder_name_app
@@ -10,6 +12,9 @@ from supplychain_app.constants import path_r, folder_gestion_pr, path_lmline, pa
 
 CARNET_CHRONOPOST_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\GESTION_PR\CARNET_CHRONOPOST"
 CHRONO_FUSION_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\CHRONOPOST\2_C9_C13_EXCEL_FUSION"
+
+
+ARTICLE_REQUESTS_DEMANDES_DIR = r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES"
 
 
 def _latest_file_in_dir(directory: str, pattern_ext: tuple = (".xlsx", ".xls", ".csv")):
@@ -120,4 +125,72 @@ def download_carnet_chronopost_api():
     if not latest:
         return jsonify({"error": "not_found"}), 404
     return send_file(latest, as_attachment=True, download_name=os.path.basename(latest))
+
+
+@bp.post("/demandes/modif_criticite_xlsx")
+def save_demande_modif_criticite_xlsx():
+    body = request.get_json(silent=True) or {}
+
+    date_demande = (body.get("date_demande") or "").strip()
+    demandeur = (body.get("demandeur") or "").strip()
+    type_demande = (body.get("type_demande") or "").strip() or "Modification d'une criticité"
+    rows = body.get("rows") or []
+
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"error": "rows_required"}), 400
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    filename = f"dde_modif_art_criticite_{ts}.xlsx"
+
+    try:
+        os.makedirs(ARTICLE_REQUESTS_DEMANDES_DIR, exist_ok=True)
+    except Exception:
+        return jsonify({"error": "mkdir_failed", "dir": ARTICLE_REQUESTS_DEMANDES_DIR}), 500
+
+    out_path = os.path.join(ARTICLE_REQUESTS_DEMANDES_DIR, filename)
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "demandes"
+
+        headers = [
+            "date_demande",
+            "demandeur",
+            "type_demande",
+            "code_article",
+            "libelle_article",
+            "criticite_article",
+            "nouvelle_criticite_article",
+            "causes",
+        ]
+        ws.append(headers)
+
+        def _s(v):
+            return "" if v is None else str(v)
+
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            ws.append([
+                date_demande,
+                demandeur,
+                type_demande,
+                _s(r.get("code_article")),
+                _s(r.get("libelle_article")),
+                _s(r.get("criticite_article")),
+                _s(r.get("nouvelle_criticite_article")),
+                _s(r.get("causes")),
+            ])
+
+        wb.save(out_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return jsonify({
+        "ok": True,
+        "filename": filename,
+        "path": out_path,
+        "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
+    })
 
