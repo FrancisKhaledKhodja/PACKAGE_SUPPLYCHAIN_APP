@@ -96,34 +96,44 @@ async function scappRenderHeader() {
     <div style="display:flex; flex-direction:column; gap:0.35rem; align-items:flex-end;">
       <nav>
         <a href="home.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">ACCUEIL</a>
-        <a href="stock.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">RECHERCHE STOCK</a>
         <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">
-            STOCK ▾
-          </button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:220px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">STOCK ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:260px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="stock.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE STOCK</a>
             <a href="stock_detailed.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">STOCK DÉTAILLÉ</a>
             <a href="stock_hyper_detaille.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">STOCK HYPER DÉTAILLÉ</a>
+            <a href="stock_map.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">LOCALISATION STOCK</a>
           </div>
         </div>
-        <a href="stock_map.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">LOCALISATION STOCK</a>
-        ${llmRagLink}
-        <a href="items.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">CONSULTATION ARTICLE</a>
-        <a href="article_request.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">DEMANDE CREATION OU MODIFICATION ARTICLE</a>
-        <a href="helios.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">PARC HELIOS</a>
-        <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">OL MODE DÉGRADÉ</a>
+
         <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">
-            CONSULTATION PR ET MAGASIN ▾
-          </button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:260px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">RÉFÉRENTIEL ARTICLE ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:320px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="items.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION ARTICLE</a>
+            <a href="article_request.html?v=3" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">DEMANDE CRÉATION / MODIFICATION ARTICLE</a>
+          </div>
+        </div>
+
+        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">PR & MAGASINS ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:360px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
             <a href="technician.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION MAGASIN</a>
             <a href="stores.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE PR ET MAGASINS PROCHES D'UNE ADRESSE</a>
             <a href="technician_assignments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION PR TECHNICIEN</a>
             <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ADMINISTRATION PR</a>
           </div>
         </div>
-        <a href="downloads.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">TÉLÉCHARGEMENTS</a>
+
+        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">APPLICATIONS / OUTILS ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:280px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="helios.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">PARC HELIOS</a>
+            <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">OL MODE DÉGRADÉ</a>
+            <a href="downloads.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TÉLÉCHARGEMENTS</a>
+          </div>
+        </div>
+
+        ${llmRagLink}
       </nav>
       <div id="scapp-update-banner" style="font-size:0.75rem; color:#facc15;"></div>
       <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>

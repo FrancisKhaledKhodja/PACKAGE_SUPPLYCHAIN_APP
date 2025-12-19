@@ -1,5 +1,6 @@
 import os
 import datetime
+import re
 from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from supplychain_app.constants import (
@@ -231,7 +232,7 @@ def get_store_contacts(max_items: int | None = None, query: str | None = None, d
         if code is None:
             continue
         libelle_magasin = row.get("libelle_magasin")
-        contact_name = row.get("contact")
+        contact_name = row.get("contact") or row.get("nom_contact") or row.get("personne_contact")
         equipe = row.get("equipe")
         responsable = row.get("nom_responsable")
 
@@ -563,7 +564,7 @@ def get_item_by_code(code_article: str) -> dict | None:
 
         if "code_article" in items.columns:
             try:
-                df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip().str.to_uppercase() == norm)
+                df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip_chars().str.to_uppercase() == norm)
                 if df.height > 0:
                     row = df.row(0, named=True)
                     row["__matched_by"] = "code_article"
@@ -577,7 +578,7 @@ def get_item_by_code(code_article: str) -> dict | None:
                 if col == "code_article":
                     continue
                 df = items.filter(
-                    pl.col(col).cast(pl.Utf8).str.strip().str.to_uppercase() == norm
+                    pl.col(col).cast(pl.Utf8).str.strip_chars().str.to_uppercase() == norm
                 )
                 if df.height > 0:
                     row = df.row(0, named=True)
@@ -618,7 +619,7 @@ def get_item_by_code_strict(code_article: str) -> dict | None:
         if "code_article" not in items.columns:
             return None
 
-        df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip().str.to_uppercase() == norm)
+        df = items.filter(pl.col("code_article").cast(pl.Utf8).str.strip_chars().str.to_uppercase() == norm)
         if df.height <= 0:
             return None
         row = df.row(0, named=True)
@@ -862,18 +863,46 @@ def get_store_details(code_magasin: str) -> dict | None:
         "code_ig": pick(["code_ig_du_tiers_emplacement"]),
         "pr_principal": pick(["pr_principal"]),
         "pr_backup": pick(["pr_backup"]),
-        "pr_hors_normes": pick(["pr_hors_norme"]),
+        "pr_hors_normes": pick(["pr_hors_normes"]) if "pr_hors_normes" in row else pick(["pr_hors_norme"]),
     }
     code_ig_val = details.get("code_ig")
-    if code_ig_val and 'dico_helios' in globals():
-        hrow = dico_helios.get(code_ig_val)
-        if hrow:
-            adr = hrow.get("adresse") or ""
-            cp = hrow.get("code_postal") or ""
-            com = hrow.get("commune") or ""
-            details["adresse_ig"] = (f"{adr} {cp} {com}").strip()
-            # Exposer le libellé long IG pour l'affichage dans le frontend technicien
-            details["libelle_long_ig"] = hrow.get("libelle_long_ig")
+    if code_ig_val:
+        norm_code_ig = str(code_ig_val).strip().upper()
+        is_pudo_style = bool(re.fullmatch(r"S\d{4}", norm_code_ig))
+
+        if is_pudo_style and ("pudos" in globals() or "pudos" in locals()):
+            try:
+                match = pudos.filter(pl.col("code_point_relais") == norm_code_ig)
+                if match.height > 0:
+                    prow = match.row(0, named=True)
+                    def _pick_pr(keys: list[str]):
+                        for k in keys:
+                            v = prow.get(k)
+                            if v is not None and v != "":
+                                return v
+                        return None
+
+                    adr = _pick_pr(["adresse_postale", "adresse_1", "adresse1"]) or ""
+                    cp = _pick_pr(["code_postal"]) or ""
+                    ville = _pick_pr(["ville"]) or ""
+                    details["adresse_ig"] = " ".join([str(x) for x in [adr, cp, ville] if x]).strip()
+                    details["libelle_long_ig"] = _pick_pr(["enseigne", "raison_sociale", "nom_point_relais"]) or details.get("libelle_long_ig")
+            except Exception:
+                pass
+
+        if "adresse_ig" not in details and 'dico_helios' in globals():
+            hrow = dico_helios.get(norm_code_ig)
+            if hrow:
+                adr = hrow.get("adresse") or ""
+                cp = hrow.get("code_postal") or ""
+                com = hrow.get("commune") or ""
+                details["adresse_ig"] = (f"{adr} {cp} {com}").strip()
+                details["libelle_long_ig"] = hrow.get("libelle_long_ig")
+
+        if "adresse_ig" not in details:
+            details["adresse_ig"] = (
+                f"Aucune adresse trouvée pour le code IG {norm_code_ig} (ce code n'existe pas ou n'existe plus)."
+            )
 
     return details
 

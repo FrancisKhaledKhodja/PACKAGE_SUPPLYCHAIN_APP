@@ -286,7 +286,16 @@ Ces fichiers permettent de diagnostiquer les erreurs rencontrées dans l'exécut
 
 ## 3. Fonctionnalités principales
 
-L'application frontend (dossier `web/`) propose plusieurs onglets principaux accessibles depuis le header :
+L'application frontend (dossier `web/`) propose plusieurs onglets principaux accessibles depuis le header.
+
+Navigation (header) :
+
+- les liens sont regroupés en menus déroulants pour réduire la charge visuelle :
+  - **STOCK**
+  - **RÉFÉRENTIEL ARTICLE**
+  - **PR & MAGASINS**
+  - **APPLICATIONS / OUTILS**
+- le lien **ASSISTANT (LLM+RAG)** peut apparaître selon la configuration (`/api/app/info`).
 
 - **Accueil** : page d'entrée de l'application.
 - **info_article (`items.html`)** :
@@ -316,7 +325,12 @@ L'application frontend (dossier `web/`) propose plusieurs onglets principaux acc
 - **Téléchargements (`downloads.html`)** :
   - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
 - **Demande création / modification article (`article_request.html`)** :
-  - saisie d'une demande (actuellement: **modification d'une criticité**) via un tableau multi-lignes,
+  - saisie d'une demande via un tableau multi-lignes :
+    - **Modification d'une criticité**
+    - **Modification du statut achetable / non achetable**
+    - **Déclaration d'une équivalence**
+    - **Demande de passage en REBUT**
+  - auto-remplissage de champs article à partir du code article (appel API `/api/items/<code>/details`),
   - génération d'un email via `mailto:` vers `referentiel_logistique@tdf.fr` (objet standardisé + corps en TSV),
   - génération serveur d'un fichier Excel de demande et **sauvegarde automatique sur un partage réseau**,
   - limitation connue : `mailto:` ne permet pas d'attacher automatiquement un fichier (pièce jointe).
@@ -337,6 +351,15 @@ Endpoints backend :
 - `POST /api/downloads/demandes/modif_criticite_xlsx`
   - sauvegarde un fichier `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx` dans :
     - `\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES`
+
+- `POST /api/downloads/demandes/modif_achetable_xlsx`
+  - sauvegarde un fichier `dde_modif_art_achetable_YYYYMMDDTHHMMSS.xlsx` dans le même répertoire.
+
+- `POST /api/downloads/demandes/equivalence_xlsx`
+  - sauvegarde un fichier `dde_equivalence_YYYYMMDDTHHMMSS.xlsx` dans le même répertoire.
+
+- `POST /api/downloads/demandes/passage_rebut_xlsx`
+  - sauvegarde un fichier `dde_passage_rebut_YYYYMMDDTHHMMSS.xlsx` dans le même répertoire.
 
 Notes :
 

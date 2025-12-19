@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>DEMANDE CREATION OU MODIFICATION ARTICLE</title>
   <link rel="stylesheet" href="css/style.css">
-  <script src="js/api.js?v=2" defer></script>
+  <script src="js/api.js?v=3" defer></script>
   <style>
     .scapp-excel-wrap {
       overflow: auto;
@@ -121,17 +121,57 @@
       </div>
     </div>
 
+    <div id="achetable-section" class="section" style="display:none; margin-top:1rem;">
+      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Modification du statut achetable / non achetable</h3>
+      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+        <button id="achetable-add-row" type="button">Ajouter une ligne</button>
+        <button id="achetable-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+      </div>
+      <div id="achetable-feedback" class="muted" style="margin-top:0.5rem;"></div>
+      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+        <table id="achetable-table" class="scapp-excel">
+          <colgroup>
+            <col style="width:120px;" />
+            <col style="width:160px;" />
+            <col style="width:180px;" />
+            <col style="width:520px;" />
+            <col style="width:170px;" />
+            <col style="width:210px;" />
+            <col style="width:340px;" />
+            <col style="width:110px;" />
+            <col style="width:110px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px;">code_article</th>
+              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
+              <th style="text-align:left; padding:8px;">type_article</th>
+              <th style="text-align:left; padding:8px;">libelle_article</th>
+              <th style="text-align:left; padding:8px;">statut article</th>
+              <th style="text-align:left; padding:8px;">nouveau statut article</th>
+              <th style="text-align:left; padding:8px;">Cause(s) de la modification</th>
+              <th style="text-align:left; padding:8px;">statut</th>
+              <th style="text-align:left; padding:8px;"></th>
+            </tr>
+          </thead>
+          <tbody id="achetable-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
     <div id="criticite-section" class="section" style="display:none; margin-top:1rem;">
       <h3 style="margin:0 0 0.75rem; color:var(--muted)">Modification d'une criticité</h3>
       <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
         <button id="criticite-add-row" type="button">Ajouter une ligne</button>
-        <button id="criticite-validate" type="button">Valider</button>
+        <button id="criticite-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
       </div>
       <div id="criticite-feedback" class="muted" style="margin-top:0.5rem;"></div>
       <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
         <table id="criticite-table" class="scapp-excel">
           <colgroup>
             <col style="width:120px;" />
+            <col style="width:160px;" />
+            <col style="width:180px;" />
             <col style="width:520px;" />
             <col style="width:110px;" />
             <col style="width:150px;" />
@@ -142,6 +182,8 @@
           <thead>
             <tr>
               <th style="text-align:left; padding:8px;">code_article</th>
+              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
+              <th style="text-align:left; padding:8px;">type_article</th>
               <th style="text-align:left; padding:8px;">libelle_article</th>
               <th style="text-align:left; padding:8px;">criticité article</th>
               <th style="text-align:left; padding:8px;">nouvelle criticite_article</th>
@@ -151,6 +193,86 @@
             </tr>
           </thead>
           <tbody id="criticite-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="equivalence-section" class="section" style="display:none; margin-top:1rem;">
+      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Déclaration d'une équivalence</h3>
+      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+        <button id="equivalence-add-row" type="button">Ajouter une ligne</button>
+        <button id="equivalence-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+      </div>
+      <div id="equivalence-feedback" class="muted" style="margin-top:0.5rem;"></div>
+      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+        <table id="equivalence-table" class="scapp-excel">
+          <colgroup>
+            <col style="width:130px;" />
+            <col style="width:520px;" />
+            <col style="width:160px;" />
+            <col style="width:520px;" />
+            <col style="width:220px;" />
+            <col style="width:120px;" />
+            <col style="width:90px;" />
+            <col style="width:110px;" />
+            <col style="width:110px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px;">code_article</th>
+              <th style="text-align:left; padding:8px;">libelle_article</th>
+              <th style="text-align:left; padding:8px;">code_equivalent</th>
+              <th style="text-align:left; padding:8px;">libelle_article_equivalent</th>
+              <th style="text-align:left; padding:8px;">type_equivalence</th>
+              <th style="text-align:left; padding:8px;">reciprocite</th>
+              <th style="text-align:left; padding:8px;">rang</th>
+              <th style="text-align:left; padding:8px;">statut</th>
+              <th style="text-align:left; padding:8px;"></th>
+            </tr>
+          </thead>
+          <tbody id="equivalence-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="rebut-section" class="section" style="display:none; margin-top:1rem;">
+      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Demande de passage en REBUT</h3>
+      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+        <button id="rebut-add-row" type="button">Ajouter une ligne</button>
+        <button id="rebut-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+      </div>
+      <div id="rebut-feedback" class="muted" style="margin-top:0.5rem;"></div>
+      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+        <table id="rebut-table" class="scapp-excel">
+          <colgroup>
+            <col style="width:120px;" />
+            <col style="width:520px;" />
+            <col style="width:160px;" />
+            <col style="width:180px;" />
+            <col style="width:170px;" />
+            <col style="width:110px;" />
+            <col style="width:240px;" />
+            <col style="width:200px;" />
+            <col style="width:210px;" />
+            <col style="width:90px;" />
+            <col style="width:160px;" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th style="text-align:left; padding:8px;">code_article</th>
+              <th style="text-align:left; padding:8px;">libelle_article</th>
+              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
+              <th style="text-align:left; padding:8px;">type_article</th>
+              <th style="text-align:left; padding:8px;">statut_abrege_article</th>
+              <th style="text-align:left; padding:8px;">criticite</th>
+              <th style="text-align:left; padding:8px;">cycle_de_vie_de_production_pim</th>
+              <th style="text-align:left; padding:8px;">cycle_de_vie_achat</th>
+              <th style="text-align:left; padding:8px;">lieu_de_reparation_pim</th>
+              <th style="text-align:left; padding:8px;">rma</th>
+              <th style="text-align:left; padding:8px;">retour_production</th>
+            </tr>
+          </thead>
+          <tbody id="rebut-tbody"></tbody>
         </table>
       </div>
     </div>
@@ -167,6 +289,24 @@
       const criticiteAddRowBtn = document.getElementById("criticite-add-row");
       const criticiteValidateBtn = document.getElementById("criticite-validate");
       const criticiteFeedback = document.getElementById("criticite-feedback");
+
+      const achetableSection = document.getElementById("achetable-section");
+      const achetableTbody = document.getElementById("achetable-tbody");
+      const achetableAddRowBtn = document.getElementById("achetable-add-row");
+      const achetableValidateBtn = document.getElementById("achetable-validate");
+      const achetableFeedback = document.getElementById("achetable-feedback");
+
+      const equivalenceSection = document.getElementById("equivalence-section");
+      const equivalenceTbody = document.getElementById("equivalence-tbody");
+      const equivalenceAddRowBtn = document.getElementById("equivalence-add-row");
+      const equivalenceValidateBtn = document.getElementById("equivalence-validate");
+      const equivalenceFeedback = document.getElementById("equivalence-feedback");
+
+      const rebutSection = document.getElementById("rebut-section");
+      const rebutTbody = document.getElementById("rebut-tbody");
+      const rebutAddRowBtn = document.getElementById("rebut-add-row");
+      const rebutValidateBtn = document.getElementById("rebut-validate");
+      const rebutFeedback = document.getElementById("rebut-feedback");
 
       if (!select || !section || !firstname || !lastname) return;
 
@@ -199,6 +339,22 @@
         inputCode.setAttribute("data-required", "1");
         inputCode.className = "scapp-excel-input";
         tdCode.appendChild(inputCode);
+
+        const tdFeuille = document.createElement("td");
+        tdFeuille.style.padding = "6px";
+        const inputFeuille = document.createElement("input");
+        inputFeuille.type = "text";
+        inputFeuille.readOnly = true;
+        inputFeuille.className = "scapp-excel-input";
+        tdFeuille.appendChild(inputFeuille);
+
+        const tdType = document.createElement("td");
+        tdType.style.padding = "6px";
+        const inputType = document.createElement("input");
+        inputType.type = "text";
+        inputType.readOnly = true;
+        inputType.className = "scapp-excel-input";
+        tdType.appendChild(inputType);
 
         const tdLib = document.createElement("td");
         tdLib.style.padding = "6px";
@@ -253,6 +409,8 @@
         tdActions.appendChild(btnDel);
 
         tr.appendChild(tdCode);
+        tr.appendChild(tdFeuille);
+        tr.appendChild(tdType);
         tr.appendChild(tdLib);
         tr.appendChild(tdCrit);
         tr.appendChild(tdNewCrit);
@@ -263,6 +421,8 @@
         async function fillFromCode() {
           const code = norm(inputCode.value).toUpperCase();
           inputCode.value = code;
+          inputFeuille.value = "";
+          inputType.value = "";
           inputLib.value = "";
           inputCrit.value = "";
           status.textContent = "";
@@ -290,8 +450,12 @@
               return;
             }
 
+            const feuille = item.feuille_du_catalogue || item.feuille_de_catalogue || item.feuille_catalogue || "";
+            const typeArticle = item.type_article || item.type || "";
             const lib = item.libelle_court_article || item.libelle_article || item.libelle || "";
             const crit = item.criticite_pim || item.criticite || item.criticite_article || "";
+            inputFeuille.value = feuille ? String(feuille) : "";
+            inputType.value = typeArticle ? String(typeArticle) : "";
             inputLib.value = lib ? String(lib) : "";
             inputCrit.value = crit ? String(crit) : "";
             status.textContent = "OK";
@@ -331,6 +495,8 @@
         return {
           tr,
           inputCode,
+          inputFeuille,
+          inputType,
           inputLib,
           inputCrit,
           inputNewCrit,
@@ -346,6 +512,532 @@
         criticiteTbody.appendChild(row.tr);
       }
 
+      function createAchetableRow() {
+        const tr = document.createElement("tr");
+
+        const tdCode = document.createElement("td");
+        tdCode.style.padding = "6px";
+        const inputCode = document.createElement("input");
+        inputCode.type = "text";
+        inputCode.placeholder = "Code article";
+        inputCode.setAttribute("data-required", "1");
+        inputCode.className = "scapp-excel-input";
+        tdCode.appendChild(inputCode);
+
+        const tdFeuille = document.createElement("td");
+        tdFeuille.style.padding = "6px";
+        const inputFeuille = document.createElement("input");
+        inputFeuille.type = "text";
+        inputFeuille.readOnly = true;
+        inputFeuille.className = "scapp-excel-input";
+        tdFeuille.appendChild(inputFeuille);
+
+        const tdType = document.createElement("td");
+        tdType.style.padding = "6px";
+        const inputType = document.createElement("input");
+        inputType.type = "text";
+        inputType.readOnly = true;
+        inputType.className = "scapp-excel-input";
+        tdType.appendChild(inputType);
+
+        const tdLib = document.createElement("td");
+        tdLib.style.padding = "6px";
+        const inputLib = document.createElement("input");
+        inputLib.type = "text";
+        inputLib.readOnly = true;
+        inputLib.className = "scapp-excel-input";
+        tdLib.appendChild(inputLib);
+
+        const tdStatusArticle = document.createElement("td");
+        tdStatusArticle.style.padding = "6px";
+        const inputStatusArticle = document.createElement("input");
+        inputStatusArticle.type = "text";
+        inputStatusArticle.readOnly = true;
+        inputStatusArticle.className = "scapp-excel-input";
+        tdStatusArticle.appendChild(inputStatusArticle);
+
+        const tdNewStatus = document.createElement("td");
+        tdNewStatus.style.padding = "6px";
+        const inputNewStatus = document.createElement("select");
+        inputNewStatus.setAttribute("data-required", "1");
+        inputNewStatus.className = "scapp-excel-select";
+        inputNewStatus.innerHTML = `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="Stk. N.Ach">Stk. N.Ach</option>
+          <option value="Mort">Mort</option>
+          <option value="N.StkN.Ach">N.StkN.Ach</option>
+          <option value="Stk. Ach">Stk. Ach</option>
+          <option value="N.StkAch.">N.StkAch.</option>
+        `;
+        tdNewStatus.appendChild(inputNewStatus);
+
+        const tdCause = document.createElement("td");
+        tdCause.style.padding = "6px";
+        const inputCause = document.createElement("input");
+        inputCause.type = "text";
+        inputCause.placeholder = "Cause(s)";
+        inputCause.setAttribute("data-required", "1");
+        inputCause.className = "scapp-excel-input";
+        tdCause.appendChild(inputCause);
+
+        const tdStatus = document.createElement("td");
+        tdStatus.style.padding = "6px";
+        const status = document.createElement("span");
+        status.className = "muted";
+        status.textContent = "";
+        tdStatus.appendChild(status);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "scapp-excel-actions";
+        const btnDel = document.createElement("button");
+        btnDel.type = "button";
+        btnDel.textContent = "Supprimer";
+        tdActions.appendChild(btnDel);
+
+        tr.appendChild(tdCode);
+        tr.appendChild(tdFeuille);
+        tr.appendChild(tdType);
+        tr.appendChild(tdLib);
+        tr.appendChild(tdStatusArticle);
+        tr.appendChild(tdNewStatus);
+        tr.appendChild(tdCause);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdActions);
+
+        async function fillFromCode() {
+          const code = norm(inputCode.value).toUpperCase();
+          inputCode.value = code;
+          inputFeuille.value = "";
+          inputType.value = "";
+          inputLib.value = "";
+          inputStatusArticle.value = "";
+          status.textContent = "";
+          status.style.color = "";
+
+          if (!code) return;
+          if (typeof API !== "function") {
+            status.textContent = "API indisponible";
+            status.style.color = "#f87171";
+            return;
+          }
+          try {
+            status.textContent = "Chargement...";
+            const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
+            if (!resp.ok) {
+              status.textContent = "Code inconnu / API";
+              status.style.color = "#f87171";
+              return;
+            }
+            const data = await resp.json().catch(() => null);
+            const item = data && typeof data === "object" ? data.item : null;
+            if (!item || typeof item !== "object") {
+              status.textContent = "Code inconnu";
+              status.style.color = "#f87171";
+              return;
+            }
+
+            const feuille = item.feuille_du_catalogue || item.feuille_de_catalogue || item.feuille_catalogue || "";
+            const typeArticle = item.type_article || item.type || "";
+            const lib = item.libelle_court_article || item.libelle_article || item.libelle || "";
+            const statutAbrege = item.statut_abrege_article || item.statut || "";
+            inputFeuille.value = feuille ? String(feuille) : "";
+            inputType.value = typeArticle ? String(typeArticle) : "";
+            inputLib.value = lib ? String(lib) : "";
+            inputStatusArticle.value = statutAbrege ? String(statutAbrege) : "";
+            status.textContent = "OK";
+            status.style.color = "#34d399";
+          } catch (e) {
+            status.textContent = "Erreur";
+            status.style.color = "#f87171";
+            return;
+          }
+        }
+
+        let debounceTimer = null;
+        function scheduleFillFromCode() {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          debounceTimer = setTimeout(() => {
+            debounceTimer = null;
+            fillFromCode();
+          }, 350);
+        }
+
+        inputCode.addEventListener("change", fillFromCode);
+        inputCode.addEventListener("blur", fillFromCode);
+        inputCode.addEventListener("input", scheduleFillFromCode);
+        inputCode.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            fillFromCode();
+          }
+        });
+
+        btnDel.addEventListener("click", () => {
+          tr.remove();
+        });
+
+        return {
+          tr,
+          inputCode,
+          inputFeuille,
+          inputType,
+          inputLib,
+          inputStatusArticle,
+          inputNewStatus,
+          inputCause,
+          status,
+        };
+      }
+
+      function ensureOneAchetableRow() {
+        if (!achetableTbody) return;
+        if (achetableTbody.querySelectorAll("tr").length > 0) return;
+        const row = createAchetableRow();
+        achetableTbody.appendChild(row.tr);
+      }
+
+      function createEquivalenceRow() {
+        const tr = document.createElement("tr");
+
+        const tdCode = document.createElement("td");
+        tdCode.style.padding = "6px";
+        const inputCode = document.createElement("input");
+        inputCode.type = "text";
+        inputCode.placeholder = "Code article";
+        inputCode.setAttribute("data-required", "1");
+        inputCode.className = "scapp-excel-input";
+        tdCode.appendChild(inputCode);
+
+        const tdLib = document.createElement("td");
+        tdLib.style.padding = "6px";
+        const inputLib = document.createElement("input");
+        inputLib.type = "text";
+        inputLib.readOnly = true;
+        inputLib.className = "scapp-excel-input";
+        tdLib.appendChild(inputLib);
+
+        const tdEqCode = document.createElement("td");
+        tdEqCode.style.padding = "6px";
+        const inputEqCode = document.createElement("input");
+        inputEqCode.type = "text";
+        inputEqCode.placeholder = "Code équivalent";
+        inputEqCode.setAttribute("data-required", "1");
+        inputEqCode.className = "scapp-excel-input";
+        tdEqCode.appendChild(inputEqCode);
+
+        const tdEqLib = document.createElement("td");
+        tdEqLib.style.padding = "6px";
+        const inputEqLib = document.createElement("input");
+        inputEqLib.type = "text";
+        inputEqLib.readOnly = true;
+        inputEqLib.className = "scapp-excel-input";
+        tdEqLib.appendChild(inputEqLib);
+
+        const tdType = document.createElement("td");
+        tdType.style.padding = "6px";
+        const inputType = document.createElement("select");
+        inputType.setAttribute("data-required", "1");
+        inputType.className = "scapp-excel-select";
+        inputType.innerHTML = `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="substitution">substitution</option>
+          <option value="substitution d'article">substitution d'article</option>
+        `;
+        tdType.appendChild(inputType);
+
+        const tdRecip = document.createElement("td");
+        tdRecip.style.padding = "6px";
+        const inputRecip = document.createElement("select");
+        inputRecip.setAttribute("data-required", "1");
+        inputRecip.className = "scapp-excel-select";
+        inputRecip.innerHTML = `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        `;
+        tdRecip.appendChild(inputRecip);
+
+        const tdRang = document.createElement("td");
+        tdRang.style.padding = "6px";
+        const inputRang = document.createElement("input");
+        inputRang.type = "number";
+        inputRang.min = "1";
+        inputRang.placeholder = "Rang";
+        inputRang.setAttribute("data-required", "1");
+        inputRang.className = "scapp-excel-input";
+        tdRang.appendChild(inputRang);
+
+        const tdStatus = document.createElement("td");
+        tdStatus.style.padding = "6px";
+        const status = document.createElement("span");
+        status.className = "muted";
+        status.textContent = "";
+        tdStatus.appendChild(status);
+
+        const tdActions = document.createElement("td");
+        tdActions.className = "scapp-excel-actions";
+        const btnDel = document.createElement("button");
+        btnDel.type = "button";
+        btnDel.textContent = "Supprimer";
+        tdActions.appendChild(btnDel);
+
+        tr.appendChild(tdCode);
+        tr.appendChild(tdLib);
+        tr.appendChild(tdEqCode);
+        tr.appendChild(tdEqLib);
+        tr.appendChild(tdType);
+        tr.appendChild(tdRecip);
+        tr.appendChild(tdRang);
+        tr.appendChild(tdStatus);
+        tr.appendChild(tdActions);
+
+        async function fillLibelleFromCode(which) {
+          const isEq = which === "eq";
+          const codeInput = isEq ? inputEqCode : inputCode;
+          const libInput = isEq ? inputEqLib : inputLib;
+
+          const code = norm(codeInput.value).toUpperCase();
+          codeInput.value = code;
+          libInput.value = "";
+          status.textContent = "";
+          status.style.color = "";
+
+          if (!code) return;
+          if (typeof API !== "function") {
+            status.textContent = "API indisponible";
+            status.style.color = "#f87171";
+            return;
+          }
+          try {
+            status.textContent = "Chargement...";
+            const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
+            if (!resp.ok) {
+              status.textContent = "Code inconnu / API";
+              status.style.color = "#f87171";
+              return;
+            }
+            const data = await resp.json().catch(() => null);
+            const item = data && typeof data === "object" ? data.item : null;
+            if (!item || typeof item !== "object") {
+              status.textContent = "Code inconnu";
+              status.style.color = "#f87171";
+              return;
+            }
+            const lib = item.libelle_court_article || item.libelle_article || item.libelle || "";
+            libInput.value = lib ? String(lib) : "";
+            status.textContent = "OK";
+            status.style.color = "#34d399";
+          } catch (e) {
+            status.textContent = "Erreur";
+            status.style.color = "#f87171";
+            return;
+          }
+        }
+
+        let debounceTimerCode = null;
+        function scheduleFillCode() {
+          if (debounceTimerCode) {
+            clearTimeout(debounceTimerCode);
+          }
+          debounceTimerCode = setTimeout(() => {
+            debounceTimerCode = null;
+            fillLibelleFromCode("src");
+          }, 350);
+        }
+
+        let debounceTimerEq = null;
+        function scheduleFillEq() {
+          if (debounceTimerEq) {
+            clearTimeout(debounceTimerEq);
+          }
+          debounceTimerEq = setTimeout(() => {
+            debounceTimerEq = null;
+            fillLibelleFromCode("eq");
+          }, 350);
+        }
+
+        inputCode.addEventListener("change", () => fillLibelleFromCode("src"));
+        inputCode.addEventListener("blur", () => fillLibelleFromCode("src"));
+        inputCode.addEventListener("input", scheduleFillCode);
+        inputCode.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            fillLibelleFromCode("src");
+          }
+        });
+
+        inputEqCode.addEventListener("change", () => fillLibelleFromCode("eq"));
+        inputEqCode.addEventListener("blur", () => fillLibelleFromCode("eq"));
+        inputEqCode.addEventListener("input", scheduleFillEq);
+        inputEqCode.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            fillLibelleFromCode("eq");
+          }
+        });
+
+        btnDel.addEventListener("click", () => {
+          tr.remove();
+        });
+
+        return {
+          tr,
+          inputCode,
+          inputLib,
+          inputEqCode,
+          inputEqLib,
+          inputType,
+          inputRecip,
+          inputRang,
+          status,
+        };
+      }
+
+      function ensureOneEquivalenceRow() {
+        if (!equivalenceTbody) return;
+        if (equivalenceTbody.querySelectorAll("tr").length > 0) return;
+        const row = createEquivalenceRow();
+        equivalenceTbody.appendChild(row.tr);
+      }
+
+      function createRebutRow() {
+        const tr = document.createElement("tr");
+
+        const tdCode = document.createElement("td");
+        tdCode.style.padding = "6px";
+        const inputCode = document.createElement("input");
+        inputCode.type = "text";
+        inputCode.placeholder = "Code article";
+        inputCode.setAttribute("data-required", "1");
+        inputCode.className = "scapp-excel-input";
+        tdCode.appendChild(inputCode);
+
+        const makeRo = () => {
+          const td = document.createElement("td");
+          td.style.padding = "6px";
+          const inp = document.createElement("input");
+          inp.type = "text";
+          inp.readOnly = true;
+          inp.className = "scapp-excel-input";
+          td.appendChild(inp);
+          return { td, inp };
+        };
+
+        const roLib = makeRo();
+        const roFeuille = makeRo();
+        const roType = makeRo();
+        const roStatut = makeRo();
+        const roCrit = makeRo();
+        const roCycleProd = makeRo();
+        const roCycleAchat = makeRo();
+        const roLieuRepar = makeRo();
+        const roRma = makeRo();
+        const roRetourProd = makeRo();
+
+        tr.appendChild(tdCode);
+        tr.appendChild(roLib.td);
+        tr.appendChild(roFeuille.td);
+        tr.appendChild(roType.td);
+        tr.appendChild(roStatut.td);
+        tr.appendChild(roCrit.td);
+        tr.appendChild(roCycleProd.td);
+        tr.appendChild(roCycleAchat.td);
+        tr.appendChild(roLieuRepar.td);
+        tr.appendChild(roRma.td);
+        tr.appendChild(roRetourProd.td);
+
+        async function fillFromCode() {
+          const code = norm(inputCode.value).toUpperCase();
+          inputCode.value = code;
+          roLib.inp.value = "";
+          roFeuille.inp.value = "";
+          roType.inp.value = "";
+          roStatut.inp.value = "";
+          roCrit.inp.value = "";
+          roCycleProd.inp.value = "";
+          roCycleAchat.inp.value = "";
+          roLieuRepar.inp.value = "";
+          roRma.inp.value = "";
+          roRetourProd.inp.value = "";
+
+          if (!code) return;
+          if (typeof API !== "function") {
+            if (rebutFeedback) rebutFeedback.textContent = "API indisponible";
+            return;
+          }
+
+          try {
+            const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
+            if (!resp.ok) {
+              if (rebutFeedback) rebutFeedback.textContent = "Code article inconnu / API";
+              return;
+            }
+            const data = await resp.json().catch(() => null);
+            const item = data && typeof data === "object" ? data.item : null;
+            if (!item || typeof item !== "object") {
+              if (rebutFeedback) rebutFeedback.textContent = "Code article inconnu";
+              return;
+            }
+
+            const feuille = item.feuille_du_catalogue || item.feuille_de_catalogue || item.feuille_catalogue || "";
+            const typeArticle = item.type_article || item.type || "";
+            const lib = item.libelle_court_article || item.libelle_article || item.libelle || "";
+            const statutAbrege = item.statut_abrege_article || item.statut || "";
+            const crit = item.criticite_pim || item.criticite || item.criticite_article || "";
+            const cycleProd = item.cycle_de_vie_de_production_pim || item.cycle_vie_production_pim || item.cycle_de_vie_de_production || "";
+            const cycleAchat = item.cycle_de_vie_achat || item.cycle_vie_achat || "";
+            const lieuRepar = item.lieu_de_reparation_pim || item.lieu_reparation_pim || item.lieu_de_reparation || "";
+            const rma = item.rma || "";
+            const retourProd = item.retour_production || item.retour_prod || "";
+
+            roLib.inp.value = lib ? String(lib) : "";
+            roFeuille.inp.value = feuille ? String(feuille) : "";
+            roType.inp.value = typeArticle ? String(typeArticle) : "";
+            roStatut.inp.value = statutAbrege ? String(statutAbrege) : "";
+            roCrit.inp.value = crit ? String(crit) : "";
+            roCycleProd.inp.value = cycleProd ? String(cycleProd) : "";
+            roCycleAchat.inp.value = cycleAchat ? String(cycleAchat) : "";
+            roLieuRepar.inp.value = lieuRepar ? String(lieuRepar) : "";
+            roRma.inp.value = rma ? String(rma) : "";
+            roRetourProd.inp.value = retourProd ? String(retourProd) : "";
+          } catch (e) {
+            if (rebutFeedback) rebutFeedback.textContent = "Erreur lors du chargement";
+          }
+        }
+
+        let debounceTimer = null;
+        function scheduleFillFromCode() {
+          if (debounceTimer) {
+            clearTimeout(debounceTimer);
+          }
+          debounceTimer = setTimeout(() => {
+            debounceTimer = null;
+            fillFromCode();
+          }, 350);
+        }
+
+        inputCode.addEventListener("change", fillFromCode);
+        inputCode.addEventListener("blur", fillFromCode);
+        inputCode.addEventListener("input", scheduleFillFromCode);
+        inputCode.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            fillFromCode();
+          }
+        });
+
+        return { tr, inputCode };
+      }
+
+      function ensureOneRebutRow() {
+        if (!rebutTbody) return;
+        if (rebutTbody.querySelectorAll("tr").length > 0) return;
+        const row = createRebutRow();
+        rebutTbody.appendChild(row.tr);
+      }
+
       function updateVisibility() {
         const hasSelection = !!(select.value && String(select.value).trim());
         section.style.display = hasSelection ? "block" : "none";
@@ -358,6 +1050,24 @@
           if (showCriticite) ensureOneRow();
         }
 
+        const showAchetable = hasSelection && select.value === "modification_achetable" && hasRequester();
+        if (achetableSection) {
+          achetableSection.style.display = showAchetable ? "block" : "none";
+          if (showAchetable) ensureOneAchetableRow();
+        }
+
+        const showEquivalence = hasSelection && select.value === "declaration_equivalence" && hasRequester();
+        if (equivalenceSection) {
+          equivalenceSection.style.display = showEquivalence ? "block" : "none";
+          if (showEquivalence) ensureOneEquivalenceRow();
+        }
+
+        const showRebut = hasSelection && select.value === "passage_rebut" && hasRequester();
+        if (rebutSection) {
+          rebutSection.style.display = showRebut ? "block" : "none";
+          if (showRebut) ensureOneRebutRow();
+        }
+
         if (criticiteFeedback) {
           if (hasSelection && select.value === "modification_criticite" && !hasRequester()) {
             criticiteFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
@@ -366,10 +1076,76 @@
           }
         }
 
+        if (achetableFeedback) {
+          if (hasSelection && select.value === "modification_achetable" && !hasRequester()) {
+            achetableFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else {
+            achetableFeedback.textContent = "";
+          }
+        }
+
+        if (equivalenceFeedback) {
+          if (hasSelection && select.value === "declaration_equivalence" && !hasRequester()) {
+            equivalenceFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else {
+            equivalenceFeedback.textContent = "";
+          }
+        }
+
+        if (rebutFeedback) {
+          if (hasSelection && select.value === "passage_rebut" && !hasRequester()) {
+            rebutFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else if (!showRebut) {
+            rebutFeedback.textContent = "";
+          }
+        }
+
         if (criticiteTbody) {
           criticiteTbody.querySelectorAll("tr").forEach((tr) => {
             tr.querySelectorAll("input, select").forEach((inp) => {
               if (!showCriticite) {
+                inp.required = false;
+                return;
+              }
+              if (inp.getAttribute("data-required") === "1") {
+                inp.required = true;
+              }
+            });
+          });
+        }
+
+        if (achetableTbody) {
+          achetableTbody.querySelectorAll("tr").forEach((tr) => {
+            tr.querySelectorAll("input, select").forEach((inp) => {
+              if (!showAchetable) {
+                inp.required = false;
+                return;
+              }
+              if (inp.getAttribute("data-required") === "1") {
+                inp.required = true;
+              }
+            });
+          });
+        }
+
+        if (equivalenceTbody) {
+          equivalenceTbody.querySelectorAll("tr").forEach((tr) => {
+            tr.querySelectorAll("input, select").forEach((inp) => {
+              if (!showEquivalence) {
+                inp.required = false;
+                return;
+              }
+              if (inp.getAttribute("data-required") === "1") {
+                inp.required = true;
+              }
+            });
+          });
+        }
+
+        if (rebutTbody) {
+          rebutTbody.querySelectorAll("tr").forEach((tr) => {
+            tr.querySelectorAll("input, select").forEach((inp) => {
+              if (!showRebut) {
                 inp.required = false;
                 return;
               }
@@ -392,6 +1168,172 @@
         });
       }
 
+      if (achetableAddRowBtn && achetableTbody) {
+        achetableAddRowBtn.addEventListener("click", () => {
+          const row = createAchetableRow();
+          achetableTbody.appendChild(row.tr);
+        });
+      }
+
+      if (equivalenceAddRowBtn && equivalenceTbody) {
+        equivalenceAddRowBtn.addEventListener("click", () => {
+          const row = createEquivalenceRow();
+          equivalenceTbody.appendChild(row.tr);
+        });
+      }
+
+      if (rebutAddRowBtn && rebutTbody) {
+        rebutAddRowBtn.addEventListener("click", () => {
+          const row = createRebutRow();
+          rebutTbody.appendChild(row.tr);
+        });
+      }
+
+      if (rebutValidateBtn) {
+        rebutValidateBtn.addEventListener("click", async () => {
+          const showRebut = select.value === "passage_rebut" && hasRequester();
+          if (!showRebut) {
+            if (rebutFeedback) {
+              rebutFeedback.textContent = "Veuillez sélectionner 'Demande de passage en REBUT' et renseigner prénom/nom.";
+            }
+            return;
+          }
+
+          const rows = [];
+          if (rebutTbody) {
+            rebutTbody.querySelectorAll("tr").forEach((tr) => {
+              const code = norm(tr.querySelector("td:nth-child(1) input")?.value || "");
+              const lib = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
+              const feuille = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
+              const typeArticle = norm(tr.querySelector("td:nth-child(4) input")?.value || "");
+              const statut = norm(tr.querySelector("td:nth-child(5) input")?.value || "");
+              const crit = norm(tr.querySelector("td:nth-child(6) input")?.value || "");
+              const cycleProd = norm(tr.querySelector("td:nth-child(7) input")?.value || "");
+              const cycleAchat = norm(tr.querySelector("td:nth-child(8) input")?.value || "");
+              const lieuRep = norm(tr.querySelector("td:nth-child(9) input")?.value || "");
+              const rma = norm(tr.querySelector("td:nth-child(10) input")?.value || "");
+              const retourProd = norm(tr.querySelector("td:nth-child(11) input")?.value || "");
+
+              if (!code && !lib && !feuille && !typeArticle) return;
+              rows.push({ code, lib, feuille, typeArticle, statut, crit, cycleProd, cycleAchat, lieuRep, rma, retourProd });
+            });
+          }
+
+          const missing = rows.some((r) => !r.code);
+          if (rows.length === 0 || missing) {
+            if (rebutFeedback) {
+              rebutFeedback.textContent = "Veuillez renseigner au moins une ligne (code_article).";
+            }
+            return;
+          }
+
+          let excelInfo = null;
+          if (typeof API === "function") {
+            try {
+              if (rebutFeedback) {
+                rebutFeedback.textContent = "Sauvegarde Excel en cours...";
+              }
+              const payload = {
+                date_demande: toIsoLocal(new Date()),
+                demandeur: `${norm(firstname.value)} ${norm(lastname.value)}`.trim(),
+                type_demande: "Demande de passage en REBUT",
+                rows: rows.map((r) => ({
+                  code_article: r.code,
+                  libelle_article: r.lib,
+                  feuille_du_catalogue: r.feuille,
+                  type_article: r.typeArticle,
+                  statut_abrege_article: r.statut,
+                  criticite: r.crit,
+                  cycle_de_vie_de_production_pim: r.cycleProd,
+                  cycle_de_vie_achat: r.cycleAchat,
+                  lieu_de_reparation_pim: r.lieuRep,
+                  rma: r.rma,
+                  retour_production: r.retourProd,
+                })),
+              };
+
+              const resp = await fetch(API(`/downloads/demandes/passage_rebut_xlsx`), {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(payload),
+              });
+              if (resp.ok) {
+                excelInfo = await resp.json().catch(() => null);
+              } else {
+                excelInfo = null;
+              }
+            } catch (e) {
+              excelInfo = null;
+            }
+          }
+
+          const now = new Date();
+          const dateStr = toIsoLocal(now);
+          const requesterFirstname = norm(firstname.value);
+          const requesterLastname = norm(lastname.value);
+          const requester = `${requesterFirstname} ${requesterLastname}`.trim();
+          const subject = `[DDE MODIF ARTICLE] - Passage en REBUT - ${requester} - ${dateStr}`;
+          const to = "referentiel_logistique@tdf.fr";
+
+          const safeText = (v) => String(v || "").replace(/\s+/g, " ").trim();
+          const cut = (s, n) => {
+            const t = safeText(s);
+            if (t.length <= n) return t;
+            return t.slice(0, Math.max(0, n - 1)) + "…";
+          };
+
+          const columns = [
+            "code_article",
+            "libelle_article",
+            "feuille_du_catalogue",
+            "type_article",
+            "statut_abrege_article",
+            "criticite",
+            "cycle_de_vie_de_production_pim",
+            "cycle_de_vie_achat",
+            "lieu_de_reparation_pim",
+            "rma",
+            "retour_production",
+          ];
+
+          const header = [
+            "Demande : Passage en REBUT",
+            `Demandeur : ${requester}`,
+            `Date : ${dateStr}`,
+            excelInfo && excelInfo.dir ? `Répertoire de sauvegarde : ${excelInfo.dir}` : "Répertoire de sauvegarde : (non disponible)",
+            excelInfo && excelInfo.path ? `Fichier Excel sauvegardé : ${excelInfo.path}` : "Fichier Excel non sauvegardé (API/accès partage).",
+            "",
+            columns.join("\t"),
+          ];
+
+          const lines = rows.map((r) => {
+            const vals = [
+              cut(r.code, 40),
+              cut(r.lib, 120),
+              cut(r.feuille, 60),
+              cut(r.typeArticle, 60),
+              cut(r.statut, 60),
+              cut(r.crit, 40),
+              cut(r.cycleProd, 80),
+              cut(r.cycleAchat, 80),
+              cut(r.lieuRep, 80),
+              cut(r.rma, 40),
+              cut(r.retourProd, 60),
+            ];
+            return vals.join("\t");
+          });
+
+          const body = header.concat(lines).join("\n");
+          const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+          if (rebutFeedback) {
+            rebutFeedback.textContent = "Ouverture du mail...";
+          }
+          window.location.href = mailtoUrl;
+        });
+      }
+
       if (criticiteValidateBtn) {
         criticiteValidateBtn.addEventListener("click", async () => {
           const showCriticite = select.value === "modification_criticite" && hasRequester();
@@ -406,13 +1348,15 @@
           if (criticiteTbody) {
             criticiteTbody.querySelectorAll("tr").forEach((tr) => {
               const code = norm(tr.querySelector("td:nth-child(1) input")?.value || "");
-              const lib = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
-              const crit = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
-              const newCrit = norm(tr.querySelector("td:nth-child(4) select")?.value || "");
-              const cause = norm(tr.querySelector("td:nth-child(5) input")?.value || "");
+              const feuille = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
+              const typeArticle = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
+              const lib = norm(tr.querySelector("td:nth-child(4) input")?.value || "");
+              const crit = norm(tr.querySelector("td:nth-child(5) input")?.value || "");
+              const newCrit = norm(tr.querySelector("td:nth-child(6) select")?.value || "");
+              const cause = norm(tr.querySelector("td:nth-child(7) input")?.value || "");
 
               if (!code && !newCrit && !cause) return;
-              rows.push({ code, lib, crit, newCrit, cause });
+              rows.push({ code, feuille, typeArticle, lib, crit, newCrit, cause });
             });
           }
 
@@ -438,6 +1382,8 @@
 
           const widths = {
             code: 12,
+            feuille: 20,
+            typeArticle: 20,
             lib: 70,
             crit: 10,
             newCrit: 12,
@@ -458,6 +1404,8 @@
           const lineSep = () => {
             const parts = [
               "-".repeat(widths.code),
+              "-".repeat(widths.feuille),
+              "-".repeat(widths.typeArticle),
               "-".repeat(widths.lib),
               "-".repeat(widths.crit),
               "-".repeat(widths.newCrit),
@@ -469,6 +1417,8 @@
           const headerRow = () => {
             const parts = [
               pad("code_article", widths.code),
+              pad("feuille_de_catalogue", widths.feuille),
+              pad("type_article", widths.typeArticle),
               pad("libelle_article", widths.lib),
               pad("criticite", widths.crit),
               pad("nouvelle", widths.newCrit),
@@ -480,6 +1430,8 @@
           const dataRows = rows.map((r) => {
             const parts = [
               pad(cut(r.code, widths.code), widths.code),
+              pad(cut(r.feuille, widths.feuille), widths.feuille),
+              pad(cut(r.typeArticle, widths.typeArticle), widths.typeArticle),
               pad(cut(r.lib, widths.lib), widths.lib),
               pad(cut(r.crit, widths.crit), widths.crit),
               pad(cut(r.newCrit, widths.newCrit), widths.newCrit),
@@ -489,12 +1441,14 @@
           });
 
           const tsv = [
-            "code_article\tlibelle_article\tcriticite_article\tnouvelle_criticite_article\tcauses",
-            ...rows.map((r) => [safeText(r.code), safeText(r.lib), safeText(r.crit), safeText(r.newCrit), safeText(r.cause)].join("\t")),
+            "code_article\tfeuille_du_catalogue\ttype_article\tlibelle_article\tcriticite_article\tnouvelle_criticite_article\tcauses",
+            ...rows.map((r) => [safeText(r.code), safeText(r.feuille), safeText(r.typeArticle), safeText(r.lib), safeText(r.crit), safeText(r.newCrit), safeText(r.cause)].join("\t")),
           ].join("\n");
 
           const apiRows = rows.map((r) => ({
             code_article: safeText(r.code),
+            feuille_du_catalogue: safeText(r.feuille),
+            type_article: safeText(r.typeArticle),
             libelle_article: safeText(r.lib),
             criticite_article: safeText(r.crit),
             nouvelle_criticite_article: safeText(r.newCrit),
@@ -562,6 +1516,266 @@
 
           if (criticiteFeedback) {
             criticiteFeedback.textContent = savedInfo && savedInfo.filename
+              ? `Fichier Excel sauvegardé sur le partage : ${savedInfo.filename}. Ouverture du mail...`
+              : "Impossible de sauvegarder le fichier Excel sur le partage. Ouverture du mail quand même.";
+          }
+
+          window.location.href = fullUrl;
+        });
+      }
+
+      if (achetableValidateBtn) {
+        achetableValidateBtn.addEventListener("click", async () => {
+          const showAchetable = select.value === "modification_achetable" && hasRequester();
+          if (!showAchetable) {
+            if (achetableFeedback) {
+              achetableFeedback.textContent = "Veuillez sélectionner 'Modification du statut achetable / non achetable' et renseigner prénom/nom.";
+            }
+            return;
+          }
+
+          const rows = [];
+          if (achetableTbody) {
+            achetableTbody.querySelectorAll("tr").forEach((tr) => {
+              const code = norm(tr.querySelector("td:nth-child(1) input")?.value || "");
+              const feuille = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
+              const typeArticle = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
+              const lib = norm(tr.querySelector("td:nth-child(4) input")?.value || "");
+              const statutActuel = norm(tr.querySelector("td:nth-child(5) input")?.value || "");
+              const nouveauStatut = norm(tr.querySelector("td:nth-child(6) select")?.value || "");
+              const cause = norm(tr.querySelector("td:nth-child(7) input")?.value || "");
+
+              if (!code && !nouveauStatut && !cause) return;
+              rows.push({ code, feuille, typeArticle, lib, statutActuel, nouveauStatut, cause });
+            });
+          }
+
+          const missing = rows.some((r) => !r.code || !r.nouveauStatut || !r.cause);
+          if (rows.length === 0 || missing) {
+            if (achetableFeedback) {
+              achetableFeedback.textContent = "Veuillez renseigner au moins une ligne complète (code_article, nouveau statut, cause).";
+            }
+            return;
+          }
+
+          const now = new Date();
+          const dateStr = toIsoLocal(now);
+          const requesterFirstname = norm(firstname.value);
+          const requesterLastname = norm(lastname.value);
+          const requester = `${requesterFirstname} ${requesterLastname}`.trim();
+          const typeDemandeLabel = "Modification du statut achetable / non achetable";
+
+          const subject = `[DDE MODIF ARTICLE] - Statut achetable/non achetable - ${requester} - ${dateStr}`;
+
+          const safeText = (v) => String(v || "").replace(/\s+/g, " ").trim();
+          const to = "referentiel_logistique@tdf.fr";
+
+          const tsv = [
+            "code_article\tfeuille_du_catalogue\ttype_article\tlibelle_article\tstatut_abrege_article\tnouveau_statut_abrege_article\tcauses",
+            ...rows.map((r) => [
+              safeText(r.code),
+              safeText(r.feuille),
+              safeText(r.typeArticle),
+              safeText(r.lib),
+              safeText(r.statutActuel),
+              safeText(r.nouveauStatut),
+              safeText(r.cause),
+            ].join("\t")),
+          ].join("\n");
+
+          const apiRows = rows.map((r) => ({
+            code_article: safeText(r.code),
+            feuille_du_catalogue: safeText(r.feuille),
+            type_article: safeText(r.typeArticle),
+            libelle_article: safeText(r.lib),
+            statut_abrege_article: safeText(r.statutActuel),
+            nouveau_statut_abrege_article: safeText(r.nouveauStatut),
+            causes: safeText(r.cause),
+          }));
+
+          let savedInfo = null;
+          if (typeof API === "function") {
+            try {
+              if (achetableFeedback) {
+                achetableFeedback.textContent = "Sauvegarde du fichier Excel sur le partage...";
+              }
+              const resp = await fetch(API("/downloads/demandes/modif_achetable_xlsx"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  date_demande: dateStr,
+                  demandeur: requester,
+                  type_demande: typeDemandeLabel,
+                  rows: apiRows,
+                }),
+              });
+              const data = await resp.json().catch(() => null);
+              if (resp.ok && data && data.ok) {
+                savedInfo = data;
+              } else {
+                savedInfo = null;
+              }
+            } catch (e) {
+              savedInfo = null;
+            }
+          }
+
+          const pieceJointeLine = savedInfo && savedInfo.filename
+            ? `Fichier Excel sauvegardé : ${savedInfo.filename}`
+            : "Fichier Excel non sauvegardé (vérifier accès au partage \\\\apps\\... ).";
+
+          const bodyText = [
+            `Type de demande : ${typeDemandeLabel}`,
+            `Prénom : ${requesterFirstname}`,
+            `Nom : ${requesterLastname}`,
+            `Date de la demande : ${dateStr}`,
+            pieceJointeLine,
+            "",
+            tsv,
+            "",
+          ].join("\n");
+
+          const MAILTO_URL_LIMIT = 1800;
+          const fullUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+          if (fullUrl.length > MAILTO_URL_LIMIT) {
+            if (achetableFeedback) {
+              achetableFeedback.textContent = "Le contenu est trop long pour être envoyé via mailto. Réduisez le nombre de lignes ou la longueur des champs.";
+            }
+            return;
+          }
+
+          if (achetableFeedback) {
+            achetableFeedback.textContent = savedInfo && savedInfo.filename
+              ? `Fichier Excel sauvegardé sur le partage : ${savedInfo.filename}. Ouverture du mail...`
+              : "Impossible de sauvegarder le fichier Excel sur le partage. Ouverture du mail quand même.";
+          }
+
+          window.location.href = fullUrl;
+        });
+      }
+
+      if (equivalenceValidateBtn) {
+        equivalenceValidateBtn.addEventListener("click", async () => {
+          const showEquivalence = select.value === "declaration_equivalence" && hasRequester();
+          if (!showEquivalence) {
+            if (equivalenceFeedback) {
+              equivalenceFeedback.textContent = "Veuillez sélectionner 'Déclaration d\"une équivalence' et renseigner prénom/nom.";
+            }
+            return;
+          }
+
+          const rows = [];
+          if (equivalenceTbody) {
+            equivalenceTbody.querySelectorAll("tr").forEach((tr) => {
+              const code_article = norm(tr.querySelector("td:nth-child(1) input")?.value || "");
+              const libelle_article = norm(tr.querySelector("td:nth-child(2) input")?.value || "");
+              const code_equivalent = norm(tr.querySelector("td:nth-child(3) input")?.value || "");
+              const libelle_article_equivalent = norm(tr.querySelector("td:nth-child(4) input")?.value || "");
+              const type_equivalence = norm(tr.querySelector("td:nth-child(5) select")?.value || "");
+              const reciprocite = norm(tr.querySelector("td:nth-child(6) select")?.value || "");
+              const rang = norm(tr.querySelector("td:nth-child(7) input")?.value || "");
+
+              if (!code_article && !code_equivalent && !type_equivalence && !reciprocite && !rang) return;
+              rows.push({ code_article, libelle_article, code_equivalent, libelle_article_equivalent, type_equivalence, reciprocite, rang });
+            });
+          }
+
+          const missing = rows.some((r) => !r.code_article || !r.code_equivalent || !r.type_equivalence || !r.reciprocite || !r.rang);
+          if (rows.length === 0 || missing) {
+            if (equivalenceFeedback) {
+              equivalenceFeedback.textContent = "Veuillez renseigner au moins une ligne complète (code_article, code_equivalent, type_equivalence, reciprocite, rang).";
+            }
+            return;
+          }
+
+          const now = new Date();
+          const dateStr = toIsoLocal(now);
+          const requesterFirstname = norm(firstname.value);
+          const requesterLastname = norm(lastname.value);
+          const requester = `${requesterFirstname} ${requesterLastname}`.trim();
+          const typeDemandeLabel = "Déclaration d'une équivalence";
+
+          const subject = `[DDE MODIF ARTICLE] - Déclaration d'une équivalence - ${requester} - ${dateStr}`;
+
+          const safeText = (v) => String(v || "").replace(/\s+/g, " ").trim();
+          const to = "referentiel_logistique@tdf.fr";
+
+          const tsv = [
+            "code_article\tlibelle_article\tcode_equivalent\tlibelle_article_equivalent\ttype_equivalence\treciprocite\trang",
+            ...rows.map((r) => [
+              safeText(r.code_article),
+              safeText(r.libelle_article),
+              safeText(r.code_equivalent),
+              safeText(r.libelle_article_equivalent),
+              safeText(r.type_equivalence),
+              safeText(r.reciprocite),
+              safeText(r.rang),
+            ].join("\t")),
+          ].join("\n");
+
+          let savedInfo = null;
+          if (typeof API === "function") {
+            try {
+              if (equivalenceFeedback) {
+                equivalenceFeedback.textContent = "Sauvegarde du fichier Excel sur le partage...";
+              }
+              const resp = await fetch(API("/downloads/demandes/equivalence_xlsx"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  date_demande: dateStr,
+                  demandeur: requester,
+                  type_demande: typeDemandeLabel,
+                  rows: rows.map((r) => ({
+                    code_article: safeText(r.code_article),
+                    libelle_article: safeText(r.libelle_article),
+                    code_equivalent: safeText(r.code_equivalent),
+                    libelle_article_equivalent: safeText(r.libelle_article_equivalent),
+                    type_equivalence: safeText(r.type_equivalence),
+                    reciprocite: safeText(r.reciprocite),
+                    rang: safeText(r.rang),
+                  })),
+                }),
+              });
+              const data = await resp.json().catch(() => null);
+              if (resp.ok && data && data.ok) {
+                savedInfo = data;
+              } else {
+                savedInfo = null;
+              }
+            } catch (e) {
+              savedInfo = null;
+            }
+          }
+
+          const pieceJointeLine = savedInfo && savedInfo.filename
+            ? `Fichier Excel sauvegardé : ${savedInfo.filename}`
+            : "Fichier Excel non sauvegardé (vérifier accès au partage \\\\apps\\... ).";
+
+          const bodyText = [
+            `Type de demande : ${typeDemandeLabel}`,
+            `Prénom : ${requesterFirstname}`,
+            `Nom : ${requesterLastname}`,
+            `Date de la demande : ${dateStr}`,
+            pieceJointeLine,
+            "",
+            tsv,
+            "",
+          ].join("\n");
+
+          const MAILTO_URL_LIMIT = 1800;
+          const fullUrl = `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(bodyText)}`;
+          if (fullUrl.length > MAILTO_URL_LIMIT) {
+            if (equivalenceFeedback) {
+              equivalenceFeedback.textContent = "Le contenu est trop long pour être envoyé via mailto. Réduisez le nombre de lignes ou la longueur des champs.";
+            }
+            return;
+          }
+
+          if (equivalenceFeedback) {
+            equivalenceFeedback.textContent = savedInfo && savedInfo.filename
               ? `Fichier Excel sauvegardé sur le partage : ${savedInfo.filename}. Ouverture du mail...`
               : "Impossible de sauvegarder le fichier Excel sur le partage. Ouverture du mail quand même.";
           }

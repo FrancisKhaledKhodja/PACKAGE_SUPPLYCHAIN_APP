@@ -159,6 +159,8 @@ def save_demande_modif_criticite_xlsx():
             "demandeur",
             "type_demande",
             "code_article",
+            "feuille_du_catalogue",
+            "type_article",
             "libelle_article",
             "criticite_article",
             "nouvelle_criticite_article",
@@ -177,10 +179,236 @@ def save_demande_modif_criticite_xlsx():
                 demandeur,
                 type_demande,
                 _s(r.get("code_article")),
+                _s(r.get("feuille_du_catalogue")),
+                _s(r.get("type_article")),
                 _s(r.get("libelle_article")),
                 _s(r.get("criticite_article")),
                 _s(r.get("nouvelle_criticite_article")),
                 _s(r.get("causes")),
+            ])
+
+        wb.save(out_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return jsonify({
+        "ok": True,
+        "filename": filename,
+        "path": out_path,
+        "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
+    })
+
+
+@bp.post("/demandes/passage_rebut_xlsx")
+def save_demande_passage_rebut_xlsx():
+    body = request.get_json(silent=True) or {}
+
+    date_demande = (body.get("date_demande") or "").strip()
+    demandeur = (body.get("demandeur") or "").strip()
+    type_demande = (body.get("type_demande") or "").strip() or "Demande de passage en REBUT"
+    rows = body.get("rows") or []
+
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"error": "rows_required"}), 400
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    filename = f"dde_passage_rebut_{ts}.xlsx"
+
+    try:
+        os.makedirs(ARTICLE_REQUESTS_DEMANDES_DIR, exist_ok=True)
+    except Exception:
+        return jsonify({"error": "mkdir_failed", "dir": ARTICLE_REQUESTS_DEMANDES_DIR}), 500
+
+    out_path = os.path.join(ARTICLE_REQUESTS_DEMANDES_DIR, filename)
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "demandes"
+
+        headers = [
+            "date_demande",
+            "demandeur",
+            "type_demande",
+            "code_article",
+            "libelle_article",
+            "feuille_du_catalogue",
+            "type_article",
+            "statut_abrege_article",
+            "criticite",
+            "cycle_de_vie_de_production_pim",
+            "cycle_de_vie_achat",
+            "lieu_de_reparation_pim",
+            "rma",
+            "retour_production",
+        ]
+        ws.append(headers)
+
+        def _s(v):
+            return "" if v is None else str(v)
+
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            ws.append([
+                date_demande,
+                demandeur,
+                type_demande,
+                _s(r.get("code_article")),
+                _s(r.get("libelle_article")),
+                _s(r.get("feuille_du_catalogue")),
+                _s(r.get("type_article")),
+                _s(r.get("statut_abrege_article")),
+                _s(r.get("criticite")),
+                _s(r.get("cycle_de_vie_de_production_pim")),
+                _s(r.get("cycle_de_vie_achat")),
+                _s(r.get("lieu_de_reparation_pim")),
+                _s(r.get("rma")),
+                _s(r.get("retour_production")),
+            ])
+
+        wb.save(out_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return jsonify({
+        "ok": True,
+        "filename": filename,
+        "path": out_path,
+        "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
+    })
+
+
+@bp.post("/demandes/modif_achetable_xlsx")
+def save_demande_modif_achetable_xlsx():
+    body = request.get_json(silent=True) or {}
+
+    date_demande = (body.get("date_demande") or "").strip()
+    demandeur = (body.get("demandeur") or "").strip()
+    type_demande = (body.get("type_demande") or "").strip() or "Modification du statut achetable / non achetable"
+    rows = body.get("rows") or []
+
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"error": "rows_required"}), 400
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    filename = f"dde_modif_art_achetable_{ts}.xlsx"
+
+    try:
+        os.makedirs(ARTICLE_REQUESTS_DEMANDES_DIR, exist_ok=True)
+    except Exception:
+        return jsonify({"error": "mkdir_failed", "dir": ARTICLE_REQUESTS_DEMANDES_DIR}), 500
+
+    out_path = os.path.join(ARTICLE_REQUESTS_DEMANDES_DIR, filename)
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "demandes"
+
+        headers = [
+            "date_demande",
+            "demandeur",
+            "type_demande",
+            "code_article",
+            "feuille_du_catalogue",
+            "type_article",
+            "libelle_article",
+            "statut_abrege_article",
+            "nouveau_statut_abrege_article",
+            "causes",
+        ]
+        ws.append(headers)
+
+        def _s(v):
+            return "" if v is None else str(v)
+
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            ws.append([
+                date_demande,
+                demandeur,
+                type_demande,
+                _s(r.get("code_article")),
+                _s(r.get("feuille_du_catalogue")),
+                _s(r.get("type_article")),
+                _s(r.get("libelle_article")),
+                _s(r.get("statut_abrege_article")),
+                _s(r.get("nouveau_statut_abrege_article")),
+                _s(r.get("causes")),
+            ])
+
+        wb.save(out_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return jsonify({
+        "ok": True,
+        "filename": filename,
+        "path": out_path,
+        "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
+    })
+
+
+@bp.post("/demandes/equivalence_xlsx")
+def save_demande_equivalence_xlsx():
+    body = request.get_json(silent=True) or {}
+
+    date_demande = (body.get("date_demande") or "").strip()
+    demandeur = (body.get("demandeur") or "").strip()
+    type_demande = (body.get("type_demande") or "").strip() or "Déclaration d'une équivalence"
+    rows = body.get("rows") or []
+
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"error": "rows_required"}), 400
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    filename = f"dde_equivalence_{ts}.xlsx"
+
+    try:
+        os.makedirs(ARTICLE_REQUESTS_DEMANDES_DIR, exist_ok=True)
+    except Exception:
+        return jsonify({"error": "mkdir_failed", "dir": ARTICLE_REQUESTS_DEMANDES_DIR}), 500
+
+    out_path = os.path.join(ARTICLE_REQUESTS_DEMANDES_DIR, filename)
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "demandes"
+
+        headers = [
+            "date_demande",
+            "demandeur",
+            "type_demande",
+            "code_article",
+            "libelle_article",
+            "code_equivalent",
+            "libelle_article_equivalent",
+            "type_equivalence",
+            "reciprocite",
+            "rang",
+        ]
+        ws.append(headers)
+
+        def _s(v):
+            return "" if v is None else str(v)
+
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            ws.append([
+                date_demande,
+                demandeur,
+                type_demande,
+                _s(r.get("code_article")),
+                _s(r.get("libelle_article")),
+                _s(r.get("code_equivalent")),
+                _s(r.get("libelle_article_equivalent")),
+                _s(r.get("type_equivalence")),
+                _s(r.get("reciprocite")),
+                _s(r.get("rang")),
             ])
 
         wb.save(out_path)

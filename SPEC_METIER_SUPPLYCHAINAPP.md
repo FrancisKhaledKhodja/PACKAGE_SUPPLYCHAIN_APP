@@ -301,41 +301,65 @@ Sortie attendue :
 
 #### 2.10.1. Objectif
 
-- Standardiser et accélérer la **création d'une demande de modification d'article** (actuellement : **changement de criticité**).
+- Standardiser et accélérer la **création de demandes** autour du référentiel article.
 - Réduire les manipulations manuelles (copier/coller Excel, consolidation du contenu, etc.).
+- Assurer une **traçabilité** via un fichier Excel sauvegardé automatiquement sur un partage réseau.
 
-#### 2.10.2. Workflow utilisateur (modification de criticité)
+#### 2.10.2. Types de demandes couvertes
 
-1. L'utilisateur sélectionne le type : **Modification d'une criticité**.
+L'écran `article_request.html` couvre les demandes suivantes :
+
+- **Modification d'une criticité**
+- **Modification du statut achetable / non achetable**
+- **Déclaration d'une équivalence**
+- **Demande de passage en REBUT**
+
+#### 2.10.3. Auto-remplissage des champs article
+
+Pour les demandes basées sur un `code_article`, l'application récupère automatiquement les champs via l'API article :
+
+- Endpoint : `GET /api/items/<code>/details`
+- Objectif : limiter les erreurs de saisie et éviter les copier/coller depuis le PIM.
+
+#### 2.10.4. Workflow utilisateur (générique)
+
+1. L'utilisateur sélectionne un **type de demande**.
 2. Il saisit : **Prénom** + **Nom**.
-3. Il ajoute une ou plusieurs lignes contenant :
-   - `code_article`
-   - `nouvelle_criticite_article`
-   - `Cause(s) de la modification`
-   (le libellé et la criticité actuelle sont récupérés via l'API article).
+3. Il ajoute une ou plusieurs lignes de demande.
 4. Au clic sur **Valider** :
    - un fichier Excel est généré et sauvegardé automatiquement sur un partage réseau,
-   - puis un email est ouvert via `mailto:` avec un objet standard et un corps TSV.
+   - puis un email est ouvert via `mailto:` avec un objet standard et un corps TSV,
+   - le mail mentionne explicitement le **répertoire de sauvegarde** et le **chemin complet** du fichier Excel.
 
-#### 2.10.3. Contenu standardisé du mail
+#### 2.10.5. Contenu standardisé du mail
 
 - Destinataire : `referentiel_logistique@tdf.fr`
-- Objet : `[DDE MODIF ARTICLE] - Changement de criticité - <prenom nom> - <date>`
+- Objet : `[DDE MODIF ARTICLE] - <type demande> - <prenom nom> - <date>`
 - Corps :
   - en-tête (type de demande, prénom, nom, date),
+  - répertoire de sauvegarde et chemin du fichier Excel,
   - liste des articles au format TSV.
 
 Limitation : `mailto:` ne permet pas d'ajouter automatiquement une pièce jointe.
 
-#### 2.10.4. Fichier Excel de demande (sauvegarde automatique)
+#### 2.10.6. Fichier Excel de demande (sauvegarde automatique)
 
 - Répertoire cible :
   - `\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES`
-- Nom du fichier :
-  - `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx`
-- Colonnes (au minimum) :
-  - `date_demande`, `demandeur`, `type_demande`,
-  - `code_article`, `libelle_article`, `criticite_article`, `nouvelle_criticite_article`, `causes`.
+
+Le nom du fichier dépend du type de demande :
+
+- Criticité : `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx`
+- Achetable : `dde_modif_art_achetable_YYYYMMDDTHHMMSS.xlsx`
+- Équivalence : `dde_equivalence_YYYYMMDDTHHMMSS.xlsx`
+- Passage rebut : `dde_passage_rebut_YYYYMMDDTHHMMSS.xlsx`
+
+#### 2.10.7. Endpoints backend (génération Excel)
+
+- `POST /api/downloads/demandes/modif_criticite_xlsx`
+- `POST /api/downloads/demandes/modif_achetable_xlsx`
+- `POST /api/downloads/demandes/equivalence_xlsx`
+- `POST /api/downloads/demandes/passage_rebut_xlsx`
 
 ---
 

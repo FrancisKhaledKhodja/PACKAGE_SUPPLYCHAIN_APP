@@ -145,6 +145,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadAssignments() {
+    if (countDiv) {
+      countDiv.textContent = "Chargement...";
+    }
     const params = new URLSearchParams();
     const q = (qInput?.value || "").trim();
     const pr = (prInput?.value || "").trim();
@@ -163,8 +166,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = API("/technicians/assignments") + (params.toString() ? "?" + params.toString() : "");
     try {
       const res = await fetch(url);
-      if (!res.ok) return;
-      const data = await res.json();
+      if (!res.ok) {
+        if (countDiv) {
+          countDiv.textContent = `Erreur API (${res.status}) : impossible de charger les affectations.`;
+        }
+        if (tbody) tbody.innerHTML = "";
+        return;
+      }
+      const data = await res.json().catch(() => null);
+      if (!data || typeof data !== "object") {
+        if (countDiv) {
+          countDiv.textContent = "Erreur API : réponse JSON invalide.";
+        }
+        if (tbody) tbody.innerHTML = "";
+        return;
+      }
       const rows = data.rows || [];
       currentRows = rows;
 
@@ -175,7 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
       updateTeamOptions(rows);
       renderRows(rows);
     } catch (e) {
-      // ignore
+      if (countDiv) {
+        countDiv.textContent = "API indisponible : démarrez l'API sur http://127.0.0.1:5001 (commande: py -m supplychain_app.run).";
+      }
+      if (tbody) tbody.innerHTML = "";
     }
   }
 
