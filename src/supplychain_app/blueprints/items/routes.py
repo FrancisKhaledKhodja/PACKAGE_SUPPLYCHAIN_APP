@@ -9,6 +9,58 @@ from supplychain_app.items import Nomenclatures
 from supplychain_app.constants import path_datan, folder_name_app, path_output
 from supplychain_app.data.pudo_service import get_equivalents_for
 
+
+@bp.get("/meta/feuilles_du_catalogue")
+def list_feuilles_du_catalogue():
+    """Retourne les valeurs distinctes de feuille_du_catalogue (pour alimenter les listes déroulantes)."""
+    parquet_path = os.path.join(path_datan, folder_name_app, "items.parquet")
+    if not os.path.exists(parquet_path):
+        return jsonify({"values": []})
+
+    try:
+        df = pl.read_parquet(parquet_path, columns=["feuille_du_catalogue"])
+        if "feuille_du_catalogue" not in df.columns:
+            return jsonify({"values": []})
+        values = (
+            df.select(pl.col("feuille_du_catalogue").cast(pl.Utf8))
+            .drop_nulls()
+            .unique()
+            .to_series()
+            .to_list()
+        )
+        values = [str(v).strip() for v in values if str(v).strip()]
+        values = sorted(set(values), key=lambda s: s.upper())
+        return jsonify({"values": values})
+    except Exception:
+        return jsonify({"values": []})
+
+
+@bp.get("/meta/fabricants")
+def list_fabricants():
+    """Retourne les valeurs distinctes de nom_fabricant depuis manufacturers.parquet."""
+    parquet_path = os.path.join(path_datan, folder_name_app, "manufacturers.parquet")
+    if not os.path.exists(parquet_path):
+        parquet_path = os.path.join(path_datan, folder_name_app, "manufacturer.parquet")
+        if not os.path.exists(parquet_path):
+            return jsonify({"values": []})
+
+    try:
+        df = pl.read_parquet(parquet_path, columns=["nom_fabricant"])
+        if "nom_fabricant" not in df.columns:
+            return jsonify({"values": []})
+        values = (
+            df.select(pl.col("nom_fabricant").cast(pl.Utf8))
+            .drop_nulls()
+            .unique()
+            .to_series()
+            .to_list()
+        )
+        values = [str(v).strip() for v in values if str(v).strip()]
+        values = sorted(set(values), key=lambda s: s.upper())
+        return jsonify({"values": values})
+    except Exception:
+        return jsonify({"values": []})
+
 @bp.post("/search")
 def items_search():
     body = request.get_json(silent=True) or {}

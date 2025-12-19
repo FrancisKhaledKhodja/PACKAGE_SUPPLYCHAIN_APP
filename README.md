@@ -326,6 +326,7 @@ Navigation (header) :
   - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
 - **Demande création / modification article (`article_request.html`)** :
   - saisie d'une demande via un tableau multi-lignes :
+    - **Création d'article(s)** (mode formulaire ou feuille multi-lignes)
     - **Modification d'une criticité**
     - **Modification du statut achetable / non achetable**
     - **Déclaration d'une équivalence**
@@ -360,6 +361,9 @@ Endpoints backend :
 
 - `POST /api/downloads/demandes/passage_rebut_xlsx`
   - sauvegarde un fichier `dde_passage_rebut_YYYYMMDDTHHMMSS.xlsx` dans le même répertoire.
+
+- `POST /api/downloads/demandes/creation_articles_xlsx`
+  - sauvegarde un fichier `dde_creation_article_YYYYMMDDTHHMMSS.xlsx` dans le même répertoire.
 
 Notes :
 

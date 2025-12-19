@@ -309,6 +309,7 @@ Sortie attendue :
 
 L'écran `article_request.html` couvre les demandes suivantes :
 
+- **Création d'article(s)**
 - **Modification d'une criticité**
 - **Modification du statut achetable / non achetable**
 - **Déclaration d'une équivalence**
@@ -349,6 +350,7 @@ Limitation : `mailto:` ne permet pas d'ajouter automatiquement une pièce jointe
 
 Le nom du fichier dépend du type de demande :
 
+- Création article : `dde_creation_article_YYYYMMDDTHHMMSS.xlsx`
 - Criticité : `dde_modif_art_criticite_YYYYMMDDTHHMMSS.xlsx`
 - Achetable : `dde_modif_art_achetable_YYYYMMDDTHHMMSS.xlsx`
 - Équivalence : `dde_equivalence_YYYYMMDDTHHMMSS.xlsx`
@@ -356,6 +358,7 @@ Le nom du fichier dépend du type de demande :
 
 #### 2.10.7. Endpoints backend (génération Excel)
 
+- `POST /api/downloads/demandes/creation_articles_xlsx`
 - `POST /api/downloads/demandes/modif_criticite_xlsx`
 - `POST /api/downloads/demandes/modif_achetable_xlsx`
 - `POST /api/downloads/demandes/equivalence_xlsx`

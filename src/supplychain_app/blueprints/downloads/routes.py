@@ -199,6 +199,120 @@ def save_demande_modif_criticite_xlsx():
     })
 
 
+@bp.post("/demandes/creation_articles_xlsx")
+def save_demande_creation_articles_xlsx():
+    body = request.get_json(silent=True) or {}
+
+    date_demande = (body.get("date_demande") or "").strip()
+    demandeur = (body.get("demandeur") or "").strip()
+    type_demande = (body.get("type_demande") or "").strip() or "Création d'article(s)"
+    rows = body.get("rows") or []
+
+    if not isinstance(rows, list) or not rows:
+        return jsonify({"error": "rows_required"}), 400
+
+    ts = datetime.now().strftime("%Y%m%dT%H%M%S")
+    filename = f"dde_creation_article_{ts}.xlsx"
+
+    try:
+        os.makedirs(ARTICLE_REQUESTS_DEMANDES_DIR, exist_ok=True)
+    except Exception:
+        return jsonify({"error": "mkdir_failed", "dir": ARTICLE_REQUESTS_DEMANDES_DIR}), 500
+
+    out_path = os.path.join(ARTICLE_REQUESTS_DEMANDES_DIR, filename)
+
+    try:
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "demandes"
+
+        headers = [
+            "date_demande",
+            "demandeur",
+            "type_demande",
+            "article_tdf_clt",
+            "feuille_du_catalogue",
+            "libelle_court",
+            "libelle_long",
+            "type_article",
+            "cycle_vie_production",
+            "statut_article",
+            "cycle_vie_achat",
+            "commentaire_technique",
+            "poids_kg",
+            "long_m",
+            "larg_m",
+            "haut_m",
+            "article_datacenter",
+            "article_hors_norme",
+            "peremption",
+            "matiere_dangereuse",
+            "categorie_md",
+            "code_onu",
+            "catalogue_consommables",
+            "categorie_consommables",
+            "sous_categorie_consommables",
+            "retour_production",
+            "prix_previsionnel",
+            "criticite",
+            "mnemonique",
+            "fabricant",
+            "reference_fabricant",
+        ]
+        ws.append(headers)
+
+        def _s(v):
+            return "" if v is None else str(v)
+
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            ws.append([
+                date_demande,
+                demandeur,
+                type_demande,
+                _s(r.get("article_tdf_clt")),
+                _s(r.get("feuille_du_catalogue")),
+                _s(r.get("libelle_court")),
+                _s(r.get("libelle_long")),
+                _s(r.get("type_article")),
+                _s(r.get("cycle_vie_production")),
+                _s(r.get("statut_article")),
+                _s(r.get("cycle_vie_achat")),
+                _s(r.get("commentaire_technique")),
+                _s(r.get("poids_kg")),
+                _s(r.get("long_m")),
+                _s(r.get("larg_m")),
+                _s(r.get("haut_m")),
+                _s(r.get("article_datacenter")),
+                _s(r.get("article_hors_norme")),
+                _s(r.get("peremption")),
+                _s(r.get("matiere_dangereuse")),
+                _s(r.get("categorie_md")),
+                _s(r.get("code_onu")),
+                _s(r.get("catalogue_consommables")),
+                _s(r.get("categorie_consommables")),
+                _s(r.get("sous_categorie_consommables")),
+                _s(r.get("retour_production")),
+                _s(r.get("prix_previsionnel")),
+                _s(r.get("criticite")),
+                _s(r.get("mnemonique")),
+                _s(r.get("fabricant")),
+                _s(r.get("reference_fabricant")),
+            ])
+
+        wb.save(out_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return jsonify({
+        "ok": True,
+        "filename": filename,
+        "path": out_path,
+        "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
+    })
+
+
 @bp.post("/demandes/passage_rebut_xlsx")
 def save_demande_passage_rebut_xlsx():
     body = request.get_json(silent=True) or {}

@@ -17,7 +17,14 @@ def run_frontend() -> None:
         web_dir = get_web_dir()
         os.chdir(web_dir)
 
-        handler = http.server.SimpleHTTPRequestHandler
+        class NoCacheHandler(http.server.SimpleHTTPRequestHandler):
+            def end_headers(self):
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Expires", "0")
+                return super().end_headers()
+
+        handler = NoCacheHandler
         with socketserver.TCPServer(("127.0.0.1", 8000), handler) as httpd:
             httpd.serve_forever()
     except Exception:

@@ -13,6 +13,139 @@
       background: #fff;
     }
 
+    .scapp-creation-form-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(220px, 320px));
+      gap: 0.75rem 1.25rem;
+      margin-top: 0.75rem;
+      justify-content: start;
+      max-width: 1360px;
+    }
+
+    .scapp-creation-form-field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      max-width: 320px;
+    }
+
+    .scapp-creation-form-field.scapp-field-narrow {
+      max-width: 240px;
+    }
+
+    .scapp-creation-form-field.scapp-field-wide {
+      max-width: 520px;
+    }
+
+    .scapp-creation-form-section {
+      grid-column: 1 / -1;
+      border: 1px solid var(--border);
+      background: #f9fafb;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+    }
+
+    .scapp-creation-form-section-title {
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .scapp-creation-form-row-2 {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(320px, 1fr));
+      gap: 0.75rem 1.25rem;
+      align-items: start;
+    }
+
+    .scapp-creation-form-row-2 > .scapp-creation-form-section {
+      grid-column: auto;
+      height: 100%;
+    }
+
+    #creation-form-libelles-section {
+      margin-top: 0.75rem;
+    }
+
+    #creation-form-libelles-section .scapp-creation-form-inline {
+      flex-wrap: nowrap;
+      align-items: flex-end;
+    }
+
+    #creation-form-libelles-section .scapp-creation-form-field.scapp-field-wide {
+      max-width: none;
+      flex: 1 1 0;
+    }
+
+    .scapp-creation-form-subgrid {
+      display: grid;
+      grid-template-columns: inherit;
+      gap: 0.75rem 1.25rem;
+      justify-content: start;
+    }
+
+    .scapp-creation-form-inline {
+      display: flex;
+      align-items: flex-end;
+      gap: 0.75rem 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .scapp-creation-form-inline .scapp-creation-form-field {
+      margin: 0;
+    }
+
+    .scapp-creation-form-field label {
+      min-width: 0;
+    }
+
+    .scapp-creation-form-field input,
+    .scapp-creation-form-field select {
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+    }
+
+    @media (max-width: 1360px) {
+      .scapp-creation-form-grid {
+        grid-template-columns: repeat(3, minmax(240px, 360px));
+        max-width: 1120px;
+      }
+
+      .scapp-creation-form-field {
+        max-width: 360px;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .scapp-creation-form-grid {
+        grid-template-columns: repeat(2, minmax(280px, 420px));
+        max-width: 980px;
+      }
+
+      .scapp-creation-form-field {
+        max-width: 420px;
+      }
+    }
+
+    @media (max-width: 980px) {
+      .scapp-creation-form-grid {
+        grid-template-columns: 1fr;
+        max-width: 520px;
+      }
+
+      .scapp-creation-form-row-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .scapp-creation-form-subgrid {
+        grid-template-columns: 1fr;
+      }
+    }
+
     .scapp-excel {
       width: 100%;
       border-collapse: collapse;
@@ -118,6 +251,386 @@
       <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.75rem;">
         <label for="requester-lastname" class="muted" style="min-width:220px;">Nom</label>
         <input id="requester-lastname" name="requester_lastname" type="text" placeholder="Saisir votre nom" style="min-width:420px; max-width:100%;" />
+      </div>
+    </div>
+
+    <div id="creation-section" class="section" style="display:none; margin-top:1rem;">
+      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Création d'article(s)</h3>
+      <div class="row" style="gap:1rem; align-items:center; flex-wrap:wrap;">
+        <span class="muted" style="min-width:220px;">Mode de saisie</span>
+        <label style="display:flex; align-items:center; gap:0.35rem;">
+          <input type="radio" name="creation-mode" id="creation-mode-form" value="form" checked />
+          Formulaire
+        </label>
+        <label style="display:flex; align-items:center; gap:0.35rem;">
+          <input type="radio" name="creation-mode" id="creation-mode-excel" value="excel" />
+          Feuille (type Excel)
+        </label>
+      </div>
+
+      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem;">
+        <button id="creation-add-row" type="button">Ajouter une ligne</button>
+        <button id="creation-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+      </div>
+
+      <div id="creation-feedback" class="muted" style="margin-top:0.5rem;"></div>
+
+      <div id="creation-form" style="display:block; margin-top:0.75rem;">
+        <div class="scapp-creation-form-grid">
+          <div class="scapp-creation-form-row-2">
+            <div class="scapp-creation-form-section" id="creation-form-ref-fab-section">
+              <div class="scapp-creation-form-section-title">REFERENCE FABRICANT</div>
+              <div class="scapp-creation-form-inline">
+                <div class="scapp-creation-form-field">
+                  <label class="muted">Fabricant</label>
+                  <input id="creation-form-fabricant" type="text" placeholder="Fabricant" list="creation-form-fabricant-list" />
+                  <datalist id="creation-form-fabricant-list"></datalist>
+                  <div id="creation-form-fabricant-new" style="display:none; color:#dc2626; font-weight:600;">nouveau fournisseur</div>
+                </div>
+                <div class="scapp-creation-form-field">
+                  <label class="muted">Référence fabricant</label>
+                  <input id="creation-form-ref-fab" type="text" placeholder="31 caractères max" />
+                </div>
+              </div>
+            </div>
+            <div class="scapp-creation-form-section" id="creation-form-famille-section">
+              <div class="scapp-creation-form-section-title">FAMILLE ARTICLE</div>
+              <div class="scapp-creation-form-inline">
+                <div class="scapp-creation-form-field">
+                  <label class="muted">Article TDF ou CLT</label>
+                  <select id="creation-form-article">
+                    <option value="" selected disabled>Choisir...</option>
+                    <option value="TDF">TDF</option>
+                    <option value="CLT">CLT</option>
+                  </select>
+                </div>
+                <div class="scapp-creation-form-field">
+                  <label class="muted">Feuille de catalogue</label>
+                  <select id="creation-form-feuille">
+                    <option value="" selected disabled>Choisir...</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="scapp-creation-form-section" id="creation-form-libelles-section">
+            <div class="scapp-creation-form-section-title">LIBELLE ARTICLE</div>
+            <div class="scapp-creation-form-inline">
+              <div class="scapp-creation-form-field scapp-field-wide">
+                <label class="muted">Libellé court</label>
+                <input id="creation-form-libelle-court" type="text" placeholder="MAJUSCULES sans accents (120 car. max)" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-wide">
+                <label class="muted">Libellé long</label>
+                <input id="creation-form-libelle-long" type="text" placeholder="MAJUSCULES sans accents (240 car. max)" />
+              </div>
+            </div>
+          </div>
+          <div class="scapp-creation-form-section" id="creation-form-cycles-section">
+            <div class="scapp-creation-form-section-title">CYCLES / STATUT</div>
+            <div class="scapp-creation-form-inline">
+              <div class="scapp-creation-form-field">
+                <label class="muted">Type article</label>
+                <select id="creation-form-type">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="VAREQ">VAREQ</option>
+                  <option value="SOUSEN">SOUSEN</option>
+                  <option value="COMPOS">COMPOS</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow" id="creation-form-mnemo-wrap" style="display:none;">
+                <label class="muted">Mnémonique</label>
+                <input id="creation-form-mnemo" type="text" placeholder="20 caractères max" />
+              </div>
+              <div class="scapp-creation-form-field">
+                <label class="muted">Cycle de vie production</label>
+                <select id="creation-form-cycle-prod">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="EXPERTISE">EXPERTISE</option>
+                  <option value="INSTALLABLE AVEC RESERVE">INSTALLABLE AVEC RESERVE</option>
+                  <option value="INSTALLABLE SANS RESERVE">INSTALLABLE SANS RESERVE</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field">
+                <label class="muted">Cycle de vie achat</label>
+                <select id="creation-form-cycle-achat">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="ACHETABLE">ACHETABLE</option>
+                  <option value="NON ACHETABLE">NON ACHETABLE</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field">
+                <label class="muted">Statut d'article</label>
+                <select id="creation-form-statut">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="N.Stk.Ach.">N.Stk.Ach.</option>
+                  <option value="N.StkN.Ach">N.StkN.Ach</option>
+                  <option value="Stk. Ach.">Stk. Ach.</option>
+                  <option value="Stk. N.Ach">Stk. N.Ach</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Criticité</label>
+                <select id="creation-form-criticite">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="0">0</option>
+                  <option value="2">2</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-wide">
+                <label class="muted">Commentaire technique</label>
+                <input id="creation-form-comm-tech" type="text" placeholder="Commentaire technique" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Prix prévisionnel</label>
+                <input id="creation-form-prix-prev" type="number" step="0.01" min="0" placeholder="ex: 12.50" />
+              </div>
+            </div>
+          </div>
+
+          <div class="scapp-creation-form-section" id="creation-form-logistique-section">
+            <div class="scapp-creation-form-section-title">DIMENSIONS / LOGISTIQUE</div>
+            <div class="scapp-creation-form-inline">
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Poids (kg)</label>
+                <input id="creation-form-poids" type="number" step="0.001" min="0" placeholder="ex: 1.250" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Longueur (m)</label>
+                <input id="creation-form-long" type="number" step="0.001" min="0" placeholder="ex: 0.450" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Largeur (m)</label>
+                <input id="creation-form-larg" type="number" step="0.001" min="0" placeholder="ex: 0.300" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Hauteur (m)</label>
+                <input id="creation-form-haut" type="number" step="0.001" min="0" placeholder="ex: 0.120" />
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Article datacenter</label>
+                <select id="creation-form-datacenter">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="OUI">OUI</option>
+                  <option value="NON">NON</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Article hors norme</label>
+                <select id="creation-form-hors-norme">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="OUI">OUI</option>
+                  <option value="NON">NON</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Péremption</label>
+                <select id="creation-form-peremption">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="OUI">OUI</option>
+                  <option value="NON">NON</option>
+                </select>
+              </div>
+              <div class="scapp-creation-form-field scapp-field-narrow">
+                <label class="muted">Retour production</label>
+                <select id="creation-form-retour-prod">
+                  <option value="" selected disabled>Choisir...</option>
+                  <option value="OUI">OUI</option>
+                  <option value="NON">NON</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="scapp-creation-form-row-2">
+            <div class="scapp-creation-form-section" id="creation-form-md-section">
+              <div class="scapp-creation-form-section-title">MATIERE DANGEREUSE</div>
+              <div class="scapp-creation-form-inline">
+                <div class="scapp-creation-form-field scapp-field-narrow">
+                  <label class="muted">Matière dangereuse</label>
+                  <select id="creation-form-mat-dang">
+                    <option value="" selected disabled>Choisir...</option>
+                    <option value="OUI">OUI</option>
+                    <option value="NON">NON</option>
+                  </select>
+                </div>
+                <div id="creation-form-md-details" class="scapp-creation-form-inline" style="display:none;">
+                  <div class="scapp-creation-form-field">
+                    <label class="muted">Catégorie MD</label>
+                    <select id="creation-form-cat-md">
+                      <option value="" selected disabled>Choisir...</option>
+                      <option value="Liquide inflammable (peintures, solvants…)">Liquide inflammable (peintures, solvants…)</option>
+                      <option value="Aérosol inflammable">Aérosol inflammable</option>
+                      <option value="Piles/Batteries Plomb">Piles/Batteries Plomb</option>
+                      <option value="Piles/Batteries Plomb étanche">Piles/Batteries Plomb étanche</option>
+                      <option value="Pile/Batterie Métal seule">Pile/Batterie Métal seule</option>
+                      <option value="Pile/Batterie Métal avec/dans équipement">Pile/Batterie Métal avec/dans équipement</option>
+                      <option value="Pile/Batterie Ionique seule">Pile/Batterie Ionique seule</option>
+                      <option value="Pile/Batterie Ionique avec/dans équipement">Pile/Batterie Ionique avec/dans équipement</option>
+                      <option value="Pile/Batterie Nickel">Pile/Batterie Nickel</option>
+                      <option value="Matière dangereuse du point de vue de l'environnement (solide)">Matière dangereuse du point de vue de l'environnement (solide)</option>
+                      <option value="Autres (à préciser)">Autres (à préciser)</option>
+                    </select>
+                  </div>
+                  <div class="scapp-creation-form-field">
+                    <label class="muted">Code ONU</label>
+                    <input id="creation-form-code-onu" type="text" placeholder="Code ONU" />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="scapp-creation-form-section" id="creation-form-conso-section">
+              <div class="scapp-creation-form-section-title">CONSOMMABLE</div>
+              <div class="scapp-creation-form-inline">
+                <div class="scapp-creation-form-field scapp-field-narrow">
+                  <label class="muted">Catalogue consommables</label>
+                  <select id="creation-form-cat-conso-flag">
+                    <option value="" selected disabled>Choisir...</option>
+                    <option value="OUI">OUI</option>
+                    <option value="NON">NON</option>
+                  </select>
+                </div>
+                <div id="creation-form-conso-details" class="scapp-creation-form-inline" style="display:none;">
+                  <div class="scapp-creation-form-field">
+                    <label class="muted">Catégorie consommables</label>
+                    <select id="creation-form-cat-conso">
+                      <option value="" selected disabled>Choisir...</option>
+                      <option value="BASSE FREQ/COURANTS FAIBLES">BASSE FREQ/COURANTS FAIBLES</option>
+                      <option value="CHAUFFAGE/VENTIL/CLIM">CHAUFFAGE/VENTIL/CLIM</option>
+                      <option value="ENERGIE">ENERGIE</option>
+                      <option value="HYGIENE/SECURITE">HYGIENE/SECURITE</option>
+                      <option value="INFORMATIQUE">INFORMATIQUE</option>
+                      <option value="KIT">KIT</option>
+                      <option value="OPTIQUE">OPTIQUE</option>
+                      <option value="OUTILLAGE/FOURNITURES">OUTILLAGE/FOURNITURES</option>
+                      <option value="PYLONE/AERIEN">PYLONE/AERIEN</option>
+                      <option value="RF">RF</option>
+                    </select>
+                  </div>
+                  <div class="scapp-creation-form-field">
+                    <label class="muted">Sous catégorie consommables</label>
+                    <select id="creation-form-sous-cat-conso">
+                      <option value="" selected disabled>Choisir...</option>
+                      <option value="CABLE/CORDON">CABLE/CORDON</option>
+                      <option value="CONNECTEUR">CONNECTEUR</option>
+                      <option value="ADAPTATEUR/TRANSITION">ADAPTATEUR/TRANSITION</option>
+                      <option value="VENTILATEUR">VENTILATEUR</option>
+                      <option value="FILTRE">FILTRE</option>
+                      <option value="PILES/BATTERIES/ALIM">PILES/BATTERIES/ALIM</option>
+                      <option value="CONTACTEUR/DECLENCHEUR">CONTACTEUR/DECLENCHEUR</option>
+                      <option value="PROTECTION">PROTECTION</option>
+                      <option value="RACCORDEMENT">RACCORDEMENT</option>
+                      <option value="ECLAIRAGE">ECLAIRAGE</option>
+                      <option value="MISE A LA TERRE">MISE A LA TERRE</option>
+                      <option value="IDENTIFICATION">IDENTIFICATION</option>
+                      <option value="OUTILS">OUTILS</option>
+                      <option value="ETANCHEITE/PROTECTION">ETANCHEITE/PROTECTION</option>
+                      <option value="SECURITE/IDENTIFICATION">SECURITE/IDENTIFICATION</option>
+                      <option value="FIXATION">FIXATION</option>
+                      <option value="HYGIENE">HYGIENE</option>
+                      <option value="ENERGIE">ENERGIE</option>
+                      <option value="OUTIL ISOLE">OUTIL ISOLE</option>
+                      <option value="ACCES">ACCES</option>
+                      <option value="OPTIQUE">OPTIQUE</option>
+                      <option value="CHAUFFAGE/VENTIL/CLIM">CHAUFFAGE/VENTIL/CLIM</option>
+                      <option value="BATIMENT/ESPACESVERTS">BATIMENT/ESPACESVERTS</option>
+                      <option value="IDENTIFICATION/SECURITE">IDENTIFICATION/SECURITE</option>
+                      <option value="VISSERIE">VISSERIE</option>
+                      <option value="MEMOIRES">MEMOIRES</option>
+                      <option value="ROUTEUR/MODEM">ROUTEUR/MODEM</option>
+                      <option value="EMETTEUR HARRIS">EMETTEUR HARRIS</option>
+                      <option value="INTERFACE/RACCORD">INTERFACE/RACCORD</option>
+                      <option value="JARRETIERE">JARRETIERE</option>
+                      <option value="ATTENUATEUR">ATTENUATEUR</option>
+                      <option value="SPLITTER">SPLITTER</option>
+                      <option value="CONDITIONNEMENT/EMBALLAGE">CONDITIONNEMENT/EMBALLAGE</option>
+                      <option value="INFORMATIQUE">INFORMATIQUE</option>
+                      <option value="RF">RF</option>
+                      <option value="AERIEN">AERIEN</option>
+                      <option value="RECEPTIONSAT">RECEPTIONSAT</option>
+                      <option value="CHARGE">CHARGE</option>
+                      <option value="BRETELLES">BRETELLES</option>
+                      <option value="REPARTITEUR">REPARTITEUR</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="muted" style="margin-top:0.75rem;">Pour saisir plusieurs articles, basculez en mode "Feuille (type Excel)".</div>
+      </div>
+
+      <div id="creation-excel" style="display:none; margin-top:0.75rem;">
+        <div class="scapp-excel-wrap">
+          <table id="creation-table" class="scapp-excel">
+            <colgroup>
+              <col style="width:140px;" />
+              <col style="width:150px;" />
+              <col style="width:360px;" />
+              <col style="width:520px;" />
+              <col style="width:140px;" />
+              <col style="width:240px;" />
+              <col style="width:150px;" />
+              <col style="width:160px;" />
+              <col style="width:360px;" />
+              <col style="width:110px;" />
+              <col style="width:110px;" />
+              <col style="width:110px;" />
+              <col style="width:110px;" />
+              <col style="width:150px;" />
+              <col style="width:150px;" />
+              <col style="width:130px;" />
+              <col style="width:170px;" />
+              <col style="width:220px;" />
+              <col style="width:140px;" />
+              <col style="width:200px;" />
+              <col style="width:240px;" />
+              <col style="width:170px;" />
+              <col style="width:160px;" />
+              <col style="width:140px;" />
+              <col style="width:110px;" />
+              <col style="width:160px;" />
+              <col style="width:220px;" />
+              <col style="width:220px;" />
+              <col style="width:110px;" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th style="text-align:left; padding:8px;">article_tdf_clt</th>
+                <th style="text-align:left; padding:8px;">feuille_catalogue</th>
+                <th style="text-align:left; padding:8px;">libelle_court</th>
+                <th style="text-align:left; padding:8px;">libelle_long</th>
+                <th style="text-align:left; padding:8px;">type_article</th>
+                <th style="text-align:left; padding:8px;">cycle_vie_production</th>
+                <th style="text-align:left; padding:8px;">statut_article</th>
+                <th style="text-align:left; padding:8px;">cycle_vie_achat</th>
+                <th style="text-align:left; padding:8px;">commentaire_technique</th>
+                <th style="text-align:left; padding:8px;">poids_kg</th>
+                <th style="text-align:left; padding:8px;">long_m</th>
+                <th style="text-align:left; padding:8px;">larg_m</th>
+                <th style="text-align:left; padding:8px;">haut_m</th>
+                <th style="text-align:left; padding:8px;">datacenter</th>
+                <th style="text-align:left; padding:8px;">hors_norme</th>
+                <th style="text-align:left; padding:8px;">peremption</th>
+                <th style="text-align:left; padding:8px;">matiere_dangereuse</th>
+                <th style="text-align:left; padding:8px;">categorie_md</th>
+                <th style="text-align:left; padding:8px;">code_onu</th>
+                <th style="text-align:left; padding:8px;">catalogue_consommables</th>
+                <th style="text-align:left; padding:8px;">categorie_consommables</th>
+                <th style="text-align:left; padding:8px;">sous_categorie_consommables</th>
+                <th style="text-align:left; padding:8px;">retour_production</th>
+                <th style="text-align:left; padding:8px;">prix_previsionnel</th>
+                <th style="text-align:left; padding:8px;">criticite</th>
+                <th style="text-align:left; padding:8px;">mnemonique</th>
+                <th style="text-align:left; padding:8px;">fabricant</th>
+                <th style="text-align:left; padding:8px;">reference_fabricant</th>
+                <th style="text-align:left; padding:8px;">statut</th>
+              </tr>
+            </thead>
+            <tbody id="creation-tbody"></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -290,6 +803,16 @@
       const criticiteValidateBtn = document.getElementById("criticite-validate");
       const criticiteFeedback = document.getElementById("criticite-feedback");
 
+      const creationSection = document.getElementById("creation-section");
+      const creationForm = document.getElementById("creation-form");
+      const creationExcel = document.getElementById("creation-excel");
+      const creationModeForm = document.getElementById("creation-mode-form");
+      const creationModeExcel = document.getElementById("creation-mode-excel");
+      const creationTbody = document.getElementById("creation-tbody");
+      const creationAddRowBtn = document.getElementById("creation-add-row");
+      const creationValidateBtn = document.getElementById("creation-validate");
+      const creationFeedback = document.getElementById("creation-feedback");
+
       const achetableSection = document.getElementById("achetable-section");
       const achetableTbody = document.getElementById("achetable-tbody");
       const achetableAddRowBtn = document.getElementById("achetable-add-row");
@@ -326,6 +849,97 @@
         const hh = pad(d.getHours());
         const mi = pad(d.getMinutes());
         return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+      }
+
+      function toUpperNoAccents(s) {
+        const txt = String(s || "");
+        const normed = txt.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return normed.toUpperCase();
+      }
+
+      function isYes(v) {
+        return norm(v).toUpperCase() === "OUI";
+      }
+
+      function setCreationMode(mode) {
+        if (!creationForm || !creationExcel) return;
+        const m = mode === "excel" ? "excel" : "form";
+        creationForm.style.display = m === "form" ? "block" : "none";
+        creationExcel.style.display = m === "excel" ? "block" : "none";
+        if (m === "excel") {
+          ensureOneCreationRow();
+        } else {
+          updateCreationFormMdVisibility();
+          updateCreationFormConsoVisibility();
+        }
+      }
+
+      let creationFabricants = [];
+      async function loadFabricantsOptions() {
+        if (typeof API !== "function") return;
+        try {
+          const resp = await fetch(API("/items/meta/fabricants"), { credentials: "include" });
+          if (!resp.ok) return;
+          const data = await resp.json().catch(() => null);
+          const values = data && Array.isArray(data.values) ? data.values : [];
+          creationFabricants = (values || []).map((v) => String(v || "").trim()).filter((v) => v);
+
+          const dl = document.getElementById("creation-form-fabricant-list");
+          if (dl) {
+            dl.innerHTML = creationFabricants
+              .map((v) => `<option value="${String(v).replace(/"/g, "&quot;")}"></option>`)
+              .join("\n");
+          }
+
+          updateCreationFabricantIsNew();
+        } catch (e) {
+          // ignore
+        }
+      }
+
+      function updateCreationFabricantIsNew() {
+        const inp = document.getElementById("creation-form-fabricant");
+        const badge = document.getElementById("creation-form-fabricant-new");
+        if (!inp || !badge) return;
+        const v = norm(inp.value);
+        if (!v) {
+          badge.style.display = "none";
+          return;
+        }
+        const vUp = v.toUpperCase();
+        const isKnown = (creationFabricants || []).some((x) => String(x || "").trim().toUpperCase() === vUp);
+        badge.style.display = isKnown ? "none" : "block";
+      }
+
+      function setSelectOptions(selectEl, values) {
+        if (!selectEl) return;
+        const current = selectEl.value;
+        const options = [`<option value="" selected disabled>Choisir...</option>`]
+          .concat((values || []).map((v) => `<option value="${String(v).replace(/"/g, "&quot;")}">${String(v)}</option>`));
+        selectEl.innerHTML = options.join("\n");
+        if (current && (values || []).includes(current)) {
+          selectEl.value = current;
+        }
+      }
+
+      async function loadFeuillesDuCatalogueOptions() {
+        if (typeof API !== "function") return;
+        try {
+          const resp = await fetch(API("/items/meta/feuilles_du_catalogue"), { credentials: "include" });
+          if (!resp.ok) return;
+          const data = await resp.json().catch(() => null);
+          const values = data && Array.isArray(data.values) ? data.values : [];
+          setSelectOptions(document.getElementById("creation-form-feuille"), values);
+
+          if (creationTbody) {
+            creationTbody.querySelectorAll("tr").forEach((tr) => {
+              const sel = tr.querySelector("td:nth-child(2) select");
+              setSelectOptions(sel, values);
+            });
+          }
+        } catch (e) {
+          return;
+        }
       }
 
       function createCriticiteRow() {
@@ -1038,11 +1652,236 @@
         rebutTbody.appendChild(row.tr);
       }
 
+      function createCreationRow() {
+        const tr = document.createElement("tr");
+
+        const makeTdInput = (opts) => {
+          const td = document.createElement("td");
+          td.style.padding = "6px";
+          const inp = document.createElement("input");
+          inp.type = opts && opts.type ? opts.type : "text";
+          if (opts && opts.placeholder) inp.placeholder = opts.placeholder;
+          if (opts && opts.required) inp.setAttribute("data-required", "1");
+          if (opts && opts.maxLen) inp.maxLength = String(opts.maxLen);
+          if (opts && opts.min) inp.min = String(opts.min);
+          if (opts && opts.step) inp.step = String(opts.step);
+          inp.className = "scapp-excel-input";
+          td.appendChild(inp);
+          return { td, inp };
+        };
+
+        const makeTdSelect = (opts) => {
+          const td = document.createElement("td");
+          td.style.padding = "6px";
+          const sel = document.createElement("select");
+          if (opts && opts.required) sel.setAttribute("data-required", "1");
+          sel.className = "scapp-excel-select";
+          sel.innerHTML = opts && opts.html ? opts.html : `<option value="" selected disabled>Choisir...</option>`;
+          td.appendChild(sel);
+          return { td, sel };
+        };
+
+        const article = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="TDF">TDF</option>
+          <option value="CLT">CLT</option>
+        ` });
+        const feuille = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+        ` });
+        const libCourt = makeTdInput({ placeholder: "Libellé court", required: true, maxLen: 120 });
+        const libLong = makeTdInput({ placeholder: "Libellé long", required: true, maxLen: 240 });
+        const typeArticle = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="VAREQ">VAREQ</option>
+          <option value="SOUSEN">SOUSEN</option>
+          <option value="COMPOS">COMPOS</option>
+        ` });
+        const cycleProd = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="EXPERTISE">EXPERTISE</option>
+          <option value="INSTALLABLE AVEC RESERVE">INSTALLABLE AVEC RESERVE</option>
+          <option value="INSTALLABLE SANS RESERVE">INSTALLABLE SANS RESERVE</option>
+        ` });
+        const statut = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="N.Stk.Ach.">N.Stk.Ach.</option>
+          <option value="N.StkN.Ach">N.StkN.Ach</option>
+          <option value="Stk. Ach.">Stk. Ach.</option>
+          <option value="Stk. N.Ach">Stk. N.Ach</option>
+        ` });
+        const cycleAchat = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="ACHETABLE">ACHETABLE</option>
+          <option value="NON ACHETABLE">NON ACHETABLE</option>
+        ` });
+        const commTech = makeTdInput({ placeholder: "Commentaire technique" });
+        const poids = makeTdInput({ type: "number", step: "0.001", min: "0" });
+        const longM = makeTdInput({ type: "number", step: "0.001", min: "0" });
+        const largM = makeTdInput({ type: "number", step: "0.001", min: "0" });
+        const hautM = makeTdInput({ type: "number", step: "0.001", min: "0" });
+        const datacenter = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const horsNorme = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const peremption = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const matDang = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const catMd = makeTdInput({ placeholder: "Catégorie MD" });
+        const codeOnu = makeTdInput({ placeholder: "Code ONU" });
+        const catConsoFlag = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const catConso = makeTdInput({ placeholder: "Catégorie consommables" });
+        const sousCatConso = makeTdInput({ placeholder: "Sous catégorie" });
+        const retourProd = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const prixPrev = makeTdInput({ type: "number", step: "0.01", min: "0" });
+        const criticite = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="0">0</option>
+          <option value="2">2</option>
+          <option value="10">10</option>
+        ` });
+        const mnemo = makeTdInput({ placeholder: "Mnémonique", required: true, maxLen: 20 });
+        const fabricant = makeTdInput({ placeholder: "Fabricant", required: true });
+        const refFab = makeTdInput({ placeholder: "Réf fabricant", required: true, maxLen: 31 });
+
+        const tdStatus = document.createElement("td");
+        tdStatus.style.padding = "6px";
+        const status = document.createElement("span");
+        status.className = "muted";
+        status.textContent = "";
+        tdStatus.appendChild(status);
+
+        tr.appendChild(article.td);
+        tr.appendChild(feuille.td);
+        tr.appendChild(libCourt.td);
+        tr.appendChild(libLong.td);
+        tr.appendChild(typeArticle.td);
+        tr.appendChild(cycleProd.td);
+        tr.appendChild(statut.td);
+        tr.appendChild(cycleAchat.td);
+        tr.appendChild(commTech.td);
+        tr.appendChild(poids.td);
+        tr.appendChild(longM.td);
+        tr.appendChild(largM.td);
+        tr.appendChild(hautM.td);
+        tr.appendChild(datacenter.td);
+        tr.appendChild(horsNorme.td);
+        tr.appendChild(peremption.td);
+        tr.appendChild(matDang.td);
+        tr.appendChild(catMd.td);
+        tr.appendChild(codeOnu.td);
+        tr.appendChild(catConsoFlag.td);
+        tr.appendChild(catConso.td);
+        tr.appendChild(sousCatConso.td);
+        tr.appendChild(retourProd.td);
+        tr.appendChild(prixPrev.td);
+        tr.appendChild(criticite.td);
+        tr.appendChild(mnemo.td);
+        tr.appendChild(fabricant.td);
+        tr.appendChild(refFab.td);
+        tr.appendChild(tdStatus);
+
+        function enforceTextRules() {
+          libCourt.inp.value = toUpperNoAccents(libCourt.inp.value).slice(0, 120);
+          libLong.inp.value = toUpperNoAccents(libLong.inp.value).slice(0, 240);
+          mnemo.inp.value = toUpperNoAccents(mnemo.inp.value).slice(0, 20);
+          fabricant.inp.value = toUpperNoAccents(fabricant.inp.value);
+          refFab.inp.value = toUpperNoAccents(refFab.inp.value).slice(0, 31);
+        }
+
+        function applyConditionalRequired() {
+          const mdYes = isYes(matDang.sel.value);
+          catMd.inp.required = mdYes;
+          codeOnu.inp.required = mdYes;
+          const consoYes = isYes(catConsoFlag.sel.value);
+          catConso.inp.required = consoYes;
+          sousCatConso.inp.required = consoYes;
+        }
+
+        [libCourt.inp, libLong.inp, mnemo.inp, fabricant.inp, refFab.inp].forEach((inp) => {
+          inp.addEventListener("blur", enforceTextRules);
+        });
+        matDang.sel.addEventListener("change", applyConditionalRequired);
+        catConsoFlag.sel.addEventListener("change", applyConditionalRequired);
+
+        applyConditionalRequired();
+
+        return {
+          tr,
+          article,
+          feuille,
+          libCourt,
+          libLong,
+          typeArticle,
+          cycleProd,
+          statut,
+          cycleAchat,
+          commTech,
+          poids,
+          longM,
+          largM,
+          hautM,
+          datacenter,
+          horsNorme,
+          peremption,
+          matDang,
+          catMd,
+          codeOnu,
+          catConsoFlag,
+          catConso,
+          sousCatConso,
+          retourProd,
+          prixPrev,
+          criticite,
+          mnemo,
+          fabricant,
+          refFab,
+          status,
+        };
+      }
+
+      function ensureOneCreationRow() {
+        if (!creationTbody) return;
+        if (creationTbody.querySelectorAll("tr").length > 0) return;
+        const row = createCreationRow();
+        creationTbody.appendChild(row.tr);
+      }
+
       function updateVisibility() {
         const hasSelection = !!(select.value && String(select.value).trim());
         section.style.display = hasSelection ? "block" : "none";
         firstname.required = hasSelection;
         lastname.required = hasSelection;
+
+        const showCreation = hasSelection && select.value === "creation_articles" && hasRequester();
+        if (creationSection) {
+          creationSection.style.display = showCreation ? "block" : "none";
+          if (showCreation) {
+            const mode = creationModeExcel && creationModeExcel.checked ? "excel" : "form";
+            setCreationMode(mode);
+          }
+        }
 
         const showCriticite = hasSelection && select.value === "modification_criticite" && hasRequester();
         if (criticiteSection) {
@@ -1095,8 +1934,20 @@
         if (rebutFeedback) {
           if (hasSelection && select.value === "passage_rebut" && !hasRequester()) {
             rebutFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else if (hasSelection && select.value === "creation_articles" && !hasRequester()) {
+            rebutFeedback.textContent = "";
           } else if (!showRebut) {
             rebutFeedback.textContent = "";
+          } else {
+            rebutFeedback.textContent = "";
+          }
+        }
+
+        if (creationFeedback) {
+          if (hasSelection && select.value === "creation_articles" && !hasRequester()) {
+            creationFeedback.textContent = "Veuillez renseigner votre prénom et votre nom pour continuer.";
+          } else {
+            creationFeedback.textContent = "";
           }
         }
 
@@ -1155,11 +2006,30 @@
             });
           });
         }
+
+        if (creationTbody) {
+          creationTbody.querySelectorAll("tr").forEach((tr) => {
+            tr.querySelectorAll("input, select").forEach((inp) => {
+              if (!showCreation) {
+                inp.required = false;
+                return;
+              }
+              if (inp.getAttribute("data-required") === "1") {
+                inp.required = true;
+              }
+            });
+          });
+        }
       }
 
       select.addEventListener("change", updateVisibility);
       firstname.addEventListener("input", updateVisibility);
       lastname.addEventListener("input", updateVisibility);
+      firstname.addEventListener("change", updateVisibility);
+      lastname.addEventListener("change", updateVisibility);
+      firstname.addEventListener("blur", updateVisibility);
+      lastname.addEventListener("blur", updateVisibility);
+      window.setTimeout(updateVisibility, 0);
 
       if (criticiteAddRowBtn && criticiteTbody) {
         criticiteAddRowBtn.addEventListener("click", () => {
@@ -1186,6 +2056,404 @@
         rebutAddRowBtn.addEventListener("click", () => {
           const row = createRebutRow();
           rebutTbody.appendChild(row.tr);
+        });
+      }
+
+      if (creationModeForm) {
+        creationModeForm.addEventListener("change", () => setCreationMode("form"));
+      }
+      if (creationModeExcel) {
+        creationModeExcel.addEventListener("change", () => setCreationMode("excel"));
+      }
+
+      // Charger les valeurs possibles de feuille_du_catalogue depuis items.parquet
+      loadFeuillesDuCatalogueOptions();
+      loadFabricantsOptions();
+
+      const creationFormMatDang = document.getElementById("creation-form-mat-dang");
+      if (creationFormMatDang) {
+        creationFormMatDang.addEventListener("change", updateCreationFormMdVisibility);
+      }
+      updateCreationFormMdVisibility();
+
+      const creationFormCatMd = document.getElementById("creation-form-cat-md");
+      if (creationFormCatMd) {
+        creationFormCatMd.addEventListener("change", updateCreationFormMdVisibility);
+      }
+
+      const creationFormConsoFlag = document.getElementById("creation-form-cat-conso-flag");
+      if (creationFormConsoFlag) {
+        creationFormConsoFlag.addEventListener("change", updateCreationFormConsoVisibility);
+      }
+      updateCreationFormConsoVisibility();
+
+      const creationFormTypeArticle = document.getElementById("creation-form-type");
+      if (creationFormTypeArticle) {
+        creationFormTypeArticle.addEventListener("change", updateCreationFormMnemoVisibility);
+      }
+      updateCreationFormMnemoVisibility();
+
+      const creationFormFabricant = document.getElementById("creation-form-fabricant");
+      if (creationFormFabricant) {
+        creationFormFabricant.addEventListener("input", updateCreationFabricantIsNew);
+        creationFormFabricant.addEventListener("change", updateCreationFabricantIsNew);
+        creationFormFabricant.addEventListener("blur", updateCreationFabricantIsNew);
+      }
+
+      if (creationAddRowBtn && creationTbody) {
+        creationAddRowBtn.addEventListener("click", () => {
+          const row = createCreationRow();
+          creationTbody.appendChild(row.tr);
+        });
+      }
+
+      function getCreationRowsFromForm() {
+        const article = norm(document.getElementById("creation-form-article")?.value || "");
+        const feuille = norm(document.getElementById("creation-form-feuille")?.value || "");
+        const libCourt = norm(document.getElementById("creation-form-libelle-court")?.value || "");
+        const libLong = norm(document.getElementById("creation-form-libelle-long")?.value || "");
+        const typeArticle = norm(document.getElementById("creation-form-type")?.value || "");
+        const cycleProd = norm(document.getElementById("creation-form-cycle-prod")?.value || "");
+        const cycleAchat = norm(document.getElementById("creation-form-cycle-achat")?.value || "");
+        const statut = norm(document.getElementById("creation-form-statut")?.value || "");
+        const crit = norm(document.getElementById("creation-form-criticite")?.value || "");
+        const mnemo = norm(document.getElementById("creation-form-mnemo")?.value || "");
+        const fabricant = norm(document.getElementById("creation-form-fabricant")?.value || "");
+        const refFab = norm(document.getElementById("creation-form-ref-fab")?.value || "");
+
+        const commTech = norm(document.getElementById("creation-form-comm-tech")?.value || "");
+        const poids = norm(document.getElementById("creation-form-poids")?.value || "");
+        const longM = norm(document.getElementById("creation-form-long")?.value || "");
+        const largM = norm(document.getElementById("creation-form-larg")?.value || "");
+        const hautM = norm(document.getElementById("creation-form-haut")?.value || "");
+        const datacenter = norm(document.getElementById("creation-form-datacenter")?.value || "");
+        const horsNorme = norm(document.getElementById("creation-form-hors-norme")?.value || "");
+        const peremption = norm(document.getElementById("creation-form-peremption")?.value || "");
+        const matDang = norm(document.getElementById("creation-form-mat-dang")?.value || "");
+        const catMd = norm(document.getElementById("creation-form-cat-md")?.value || "");
+        const codeOnu = norm(document.getElementById("creation-form-code-onu")?.value || "");
+        const catConsoFlag = norm(document.getElementById("creation-form-cat-conso-flag")?.value || "");
+        const catConso = norm(document.getElementById("creation-form-cat-conso")?.value || "");
+        const sousCatConso = norm(document.getElementById("creation-form-sous-cat-conso")?.value || "");
+        const retourProd = norm(document.getElementById("creation-form-retour-prod")?.value || "");
+        const prixPrev = norm(document.getElementById("creation-form-prix-prev")?.value || "");
+
+        const row = {
+          article_tdf_clt: article,
+          feuille_du_catalogue: feuille,
+          libelle_court: toUpperNoAccents(libCourt).slice(0, 120),
+          libelle_long: toUpperNoAccents(libLong).slice(0, 240),
+          type_article: typeArticle,
+          cycle_vie_production: cycleProd,
+          statut_article: statut,
+          cycle_vie_achat: cycleAchat,
+          commentaire_technique: toUpperNoAccents(commTech),
+          poids_kg: poids,
+          long_m: longM,
+          larg_m: largM,
+          haut_m: hautM,
+          article_datacenter: datacenter,
+          article_hors_norme: horsNorme,
+          peremption: peremption,
+          matiere_dangereuse: matDang,
+          categorie_md: toUpperNoAccents(catMd),
+          code_onu: toUpperNoAccents(codeOnu),
+          catalogue_consommables: catConsoFlag,
+          categorie_consommables: toUpperNoAccents(catConso),
+          sous_categorie_consommables: toUpperNoAccents(sousCatConso),
+          retour_production: retourProd,
+          prix_previsionnel: prixPrev,
+          criticite: crit,
+          mnemonique: toUpperNoAccents(mnemo).slice(0, 20),
+          fabricant: toUpperNoAccents(fabricant),
+          reference_fabricant: toUpperNoAccents(refFab).slice(0, 31),
+        };
+
+        return [row];
+      }
+
+      function updateCreationFormMdVisibility() {
+        const sel = document.getElementById("creation-form-mat-dang");
+        const details = document.getElementById("creation-form-md-details");
+        const cat = document.getElementById("creation-form-cat-md");
+        const onu = document.getElementById("creation-form-code-onu");
+        if (!sel || !details || !cat || !onu) return;
+
+        const onuByCat = {
+          "Liquide inflammable (peintures, solvants…)": "1263",
+          "Aérosol inflammable": "1950",
+          "Piles/Batteries Plomb": "2794",
+          "Piles/Batteries Plomb étanche": "2800",
+          "Pile/Batterie Métal seule": "3090",
+          "Pile/Batterie Métal avec/dans équipement": "3091",
+          "Pile/Batterie Ionique seule": "3480",
+          "Pile/Batterie Ionique avec/dans équipement": "3481",
+          "Pile/Batterie Nickel": "3496",
+          "Matière dangereuse du point de vue de l'environnement (solide)": "3077",
+        };
+
+        const show = isYes(sel.value);
+        details.style.display = show ? "flex" : "none";
+        cat.required = show;
+        onu.required = show;
+        const catVal = norm(cat.value);
+        const isOther = show && catVal === "Autres (à préciser)";
+
+        const onuMapped = onuByCat[catVal];
+        if (show && onuMapped) {
+          onu.value = onuMapped;
+          onu.readOnly = true;
+        } else {
+          onu.readOnly = false;
+          if (!isOther) {
+            // si la catégorie est vide ou non mappée (hors "Autres"), on ne force rien
+          }
+        }
+
+        if (!show) {
+          cat.value = "";
+          onu.value = "";
+        }
+      }
+
+      function updateCreationFormConsoVisibility() {
+        const sel = document.getElementById("creation-form-cat-conso-flag");
+        const details = document.getElementById("creation-form-conso-details");
+        const cat = document.getElementById("creation-form-cat-conso");
+        const sous = document.getElementById("creation-form-sous-cat-conso");
+        if (!sel || !details || !cat || !sous) return;
+
+        const show = isYes(sel.value);
+        details.style.display = show ? "flex" : "none";
+        cat.required = show;
+        sous.required = show;
+        if (!show) {
+          cat.value = "";
+          sous.value = "";
+        }
+      }
+
+      function updateCreationFormMnemoVisibility() {
+        const typeSel = document.getElementById("creation-form-type");
+        const wrap = document.getElementById("creation-form-mnemo-wrap");
+        const inp = document.getElementById("creation-form-mnemo");
+        if (!typeSel || !wrap || !inp) return;
+
+        const typeVal = norm(typeSel.value);
+        const show = !!typeVal && typeVal !== "COMPOS";
+        wrap.style.display = show ? "" : "none";
+        inp.required = show;
+        if (!show) {
+          inp.value = "";
+        }
+      }
+
+      function getCreationRowsFromTable() {
+        const rows = [];
+        if (!creationTbody) return rows;
+        creationTbody.querySelectorAll("tr").forEach((tr) => {
+          const v = (n, sel) => norm(tr.querySelector(`td:nth-child(${n}) ${sel}`)?.value || "");
+          const article = v(1, "select");
+          const feuille = v(2, "select");
+          const libCourt = v(3, "input");
+          const libLong = v(4, "input");
+          const typeArticle = v(5, "select");
+          const cycleProd = v(6, "select");
+          const statut = v(7, "select");
+          const cycleAchat = v(8, "select");
+          const commTech = v(9, "input");
+          const poids = v(10, "input");
+          const longM = v(11, "input");
+          const largM = v(12, "input");
+          const hautM = v(13, "input");
+          const datacenter = v(14, "select");
+          const horsNorme = v(15, "select");
+          const peremption = v(16, "select");
+          const matDang = v(17, "select");
+          const catMd = v(18, "input");
+          const codeOnu = v(19, "input");
+          const catConsoFlag = v(20, "select");
+          const catConso = v(21, "input");
+          const sousCatConso = v(22, "input");
+          const retourProd = v(23, "select");
+          const prixPrev = v(24, "input");
+          const crit = v(25, "select");
+          const mnemo = v(26, "input");
+          const fabricant = v(27, "input");
+          const refFab = v(28, "input");
+
+          if (!article && !feuille && !libCourt && !libLong && !typeArticle) return;
+
+          rows.push({
+            article_tdf_clt: norm(article),
+            feuille_du_catalogue: norm(feuille),
+            libelle_court: toUpperNoAccents(libCourt).slice(0, 120),
+            libelle_long: toUpperNoAccents(libLong).slice(0, 240),
+            type_article: norm(typeArticle),
+            cycle_vie_production: norm(cycleProd),
+            statut_article: norm(statut),
+            cycle_vie_achat: norm(cycleAchat),
+            commentaire_technique: norm(commTech),
+            poids_kg: norm(poids),
+            long_m: norm(longM),
+            larg_m: norm(largM),
+            haut_m: norm(hautM),
+            article_datacenter: norm(datacenter),
+            article_hors_norme: norm(horsNorme),
+            peremption: norm(peremption),
+            matiere_dangereuse: norm(matDang),
+            categorie_md: norm(catMd),
+            code_onu: norm(codeOnu),
+            catalogue_consommables: norm(catConsoFlag),
+            categorie_consommables: norm(catConso),
+            sous_categorie_consommables: norm(sousCatConso),
+            retour_production: norm(retourProd),
+            prix_previsionnel: norm(prixPrev),
+            criticite: norm(crit),
+            mnemonique: toUpperNoAccents(mnemo).slice(0, 20),
+            fabricant: toUpperNoAccents(fabricant),
+            reference_fabricant: toUpperNoAccents(refFab).slice(0, 31),
+          });
+        });
+        return rows;
+      }
+
+      function validateCreationRows(rows) {
+        const missingBase = rows.some((r) => !r.article_tdf_clt || !r.feuille_du_catalogue || !r.libelle_court || !r.libelle_long || !r.type_article || !r.cycle_vie_production || !r.statut_article || !r.cycle_vie_achat || !r.criticite || !r.fabricant || !r.reference_fabricant);
+        if (missingBase) return "Veuillez renseigner au moins une ligne complète (article TDF/CLT, feuille du catalogue, libellés, type, cycles, statut, criticité, fabricant, référence fabricant).";
+
+        const mnemoMissing = rows.some((r) => norm(r.type_article) && norm(r.type_article) !== "COMPOS" && !r.mnemonique);
+        if (mnemoMissing) return "Si 'Type article' ≠ COMPOS, alors 'Mnémonique' est obligatoire.";
+
+        const libCourtTooLong = rows.some((r) => String(r.libelle_court || "").length > 120);
+        const libLongTooLong = rows.some((r) => String(r.libelle_long || "").length > 240);
+        const mnemoTooLong = rows.some((r) => String(r.mnemonique || "").length > 20);
+        const refTooLong = rows.some((r) => String(r.reference_fabricant || "").length > 31);
+        if (libCourtTooLong || libLongTooLong || mnemoTooLong || refTooLong) {
+          return "Un ou plusieurs champs dépassent la longueur maximale (libellés / mnémonique / référence fabricant).";
+        }
+
+        const mdMissing = rows.some((r) => isYes(r.matiere_dangereuse) && (!r.categorie_md || !r.code_onu));
+        if (mdMissing) return "Si 'Matière dangereuse' = OUI, alors Catégories MD et Codes ONU sont obligatoires.";
+
+        const consoMissing = rows.some((r) => isYes(r.catalogue_consommables) && (!r.categorie_consommables || !r.sous_categorie_consommables));
+        if (consoMissing) return "Si 'Catalogue des consommables' = OUI, alors Catégorie et Sous-catégorie consommables sont obligatoires.";
+
+        return "";
+      }
+
+      if (creationValidateBtn) {
+        creationValidateBtn.addEventListener("click", async () => {
+          const showCreation = select.value === "creation_articles" && hasRequester();
+          if (!showCreation) {
+            if (creationFeedback) {
+              creationFeedback.textContent = "Veuillez sélectionner 'Création d'article(s)' et renseigner prénom/nom.";
+            }
+            return;
+          }
+
+          const useExcel = creationModeExcel && creationModeExcel.checked;
+          const rows = useExcel ? getCreationRowsFromTable() : getCreationRowsFromForm();
+
+          if (rows.length === 0) {
+            if (creationFeedback) creationFeedback.textContent = "Veuillez renseigner au moins une ligne.";
+            return;
+          }
+
+          const error = validateCreationRows(rows);
+          if (error) {
+            if (creationFeedback) creationFeedback.textContent = error;
+            return;
+          }
+
+          const now = new Date();
+          const dateStr = toIsoLocal(now);
+          const requesterFirstname = norm(firstname.value);
+          const requesterLastname = norm(lastname.value);
+          const requester = `${requesterFirstname} ${requesterLastname}`.trim();
+          const subject = `[DDE MODIF ARTICLE] - Création article(s) - ${requester} - ${dateStr}`;
+          const to = "referentiel_logistique@tdf.fr";
+
+          let savedInfo = null;
+          if (typeof API === "function") {
+            try {
+              if (creationFeedback) {
+                creationFeedback.textContent = "Sauvegarde Excel en cours...";
+              }
+              const resp = await fetch(API("/downloads/demandes/creation_articles_xlsx"), {
+                method: "POST",
+                credentials: "include",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  date_demande: dateStr,
+                  demandeur: requester,
+                  type_demande: "Création d'article(s)",
+                  rows,
+                }),
+              });
+              const data = await resp.json().catch(() => null);
+              if (resp.ok && data && data.ok) {
+                savedInfo = data;
+              } else {
+                savedInfo = null;
+              }
+            } catch (e) {
+              savedInfo = null;
+            }
+          }
+
+          const columns = [
+            "article_tdf_clt",
+            "feuille_du_catalogue",
+            "libelle_court",
+            "libelle_long",
+            "type_article",
+            "cycle_vie_production",
+            "statut_article",
+            "cycle_vie_achat",
+            "commentaire_technique",
+            "poids_kg",
+            "long_m",
+            "larg_m",
+            "haut_m",
+            "article_datacenter",
+            "article_hors_norme",
+            "peremption",
+            "matiere_dangereuse",
+            "categorie_md",
+            "code_onu",
+            "catalogue_consommables",
+            "categorie_consommables",
+            "sous_categorie_consommables",
+            "retour_production",
+            "prix_previsionnel",
+            "criticite",
+            "mnemonique",
+            "fabricant",
+            "reference_fabricant",
+          ];
+
+          const header = [
+            "Demande : Création d'article(s)",
+            `Demandeur : ${requester}`,
+            `Date : ${dateStr}`,
+            savedInfo && savedInfo.dir ? `Répertoire de sauvegarde : ${savedInfo.dir}` : "Répertoire de sauvegarde : (non disponible)",
+            savedInfo && savedInfo.path ? `Fichier Excel sauvegardé : ${savedInfo.path}` : "Fichier Excel non sauvegardé (API/accès partage).",
+            "",
+            columns.join("\t"),
+          ];
+
+          const safeText = (v) => String(v || "").replace(/\s+/g, " ").trim();
+          const lines = rows.map((r) => columns.map((c) => safeText(r[c])).join("\t"));
+          const body = header.concat(lines).join("\n");
+          const mailtoUrl = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+          if (creationFeedback) {
+            creationFeedback.textContent = savedInfo && savedInfo.path
+              ? "Fichier Excel sauvegardé. Ouverture du mail..."
+              : "Impossible de sauvegarder le fichier Excel. Ouverture du mail quand même.";
+          }
+          window.location.href = mailtoUrl;
         });
       }
 
