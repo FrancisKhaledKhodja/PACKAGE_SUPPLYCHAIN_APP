@@ -1,6 +1,7 @@
-# SupplyChainApp – Spécification des usages et besoins métiers (version 1.5.0)
 
-> Cette version de la spécification correspond à l’application **SupplyChainApp 1.5.0**.
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.6.0)
+
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.6.0**.
 
 ## 1. Contexte et objectifs
 
@@ -104,6 +105,14 @@ L’objectif métier est de **faciliter la décision opérationnelle** (gestion 
   - l’onglet **Stock détaillé** pour le même article ;
   - l’onglet **info_article** pour la fiche complète ;
   - les **statistiques de sorties** (par année / motif).
+
+Règles d'affichage du tableau "Stock" (synthèse) :
+
+- Colonnes (ordre) : `flag_stock_d_m`, `type_de_depot`, `GOOD`, `BAD`, `BLOQG`, `BLOQB`.
+- Tri des lignes :
+  - `flag_stock_d_m` : `M` puis `D` ;
+  - pour une même valeur de `flag_stock_d_m`, `type_de_depot` est trié selon l'ordre métier suivant :
+    - `NATIONAL`, `LOCAL`, `RESERVE`, `END`, `FOURNISSEUR`, `REO`, `EMBARQUE`, `EXPERT DPR`, `EXPERT DTE`, `PIED DE SITE`, `DIVERS`, `LABORATOIRE`, `FILIALE`, `DATACENTER`, `REPARATEUR INTERNE`, `REPARATEUR EXTERNE`, `DTOM`.
 
 #### 2.2.2. Besoins métiers
 
@@ -314,6 +323,118 @@ L'écran `article_request.html` couvre les demandes suivantes :
 - **Modification du statut achetable / non achetable**
 - **Déclaration d'une équivalence**
 - **Demande de passage en REBUT**
+
+#### 2.10.2.b. Création d'article(s) – règles métiers et contrôles
+
+Cette section décrit les règles métiers appliquées dans l'écran **Demande création / modification article** (`article_request.html`) lorsque le type de demande est **Création d'article(s)**.
+
+Contexte technique d'exécution :
+
+- le **frontend** est servi en statique sur `http://127.0.0.1:8000/`.
+- l'**API** est servie par Flask sur `http://127.0.0.1:5001/api/*` et est appelée en AJAX depuis le frontend.
+
+Règles de saisie (UX / contrôles côté page) :
+
+- Bloc **REFERENCE FABRICANT** :
+  - L'utilisateur renseigne : **Fabricant**, **Référence fabricant**, **Prix prévisionnel**.
+  - Un encart d'aide « Étape 1 » guide explicitement la saisie.
+- Normalisation des champs texte :
+  - Par défaut, les saisies texte sont normalisées en **MAJUSCULES** et **sans accents** lors de la sortie du champ (blur).
+  - Exception explicite : le champ **Commentaire technique** ne subit **aucune contrainte** (majuscules et accents conservés).
+- Contraintes de longueur (prévention des demandes non conformes) :
+  - **Libellé court** : limité à **120 caractères** (textarea) avec compteur.
+  - **Libellé long** : limité à **240 caractères** (textarea) avec compteur.
+  - **Référence fabricant** : compteur indicatif sur **31 caractères conseillés**.
+
+Contrôle anti-doublon « Référence fabricant » (PIM) :
+
+- Déclenchement : à la sortie du champ **Référence fabricant** (blur).
+- Objectif : éviter la création d'un article déjà existant dans le PIM.
+- Endpoint : `GET /api/items/pim/check_reference_fabricant?reference=<REF>`.
+- Source de données : parquet `manufacturer.parquet` ou `manufacturers.parquet` (selon disponibilité sur le poste).
+- Colonne métier de référence : `reference_article_fabricant`.
+- Normalisation de comparaison :
+  - suppression des accents + comparaison en majuscules,
+  - normalisation des espaces (espaces multiples et NBSP) pour éviter les faux négatifs.
+- Retour utilisateur :
+  - si une correspondance est trouvée, le message indique qu'un article est potentiellement déjà créé,
+  - un lien « Lien » est affiché et ouvre `items.html?ref_fab=<REF>` afin d'afficher la liste des articles correspondant à la référence fabricant.
+
+---
+
+### 2.11. Onglet `Catalogue consommables` (`catalogue_consommables.html`)
+
+#### 2.11.1. Objectif
+
+- Mettre à disposition des techniciens (notamment sur smartphone) une liste d'articles **commandables** sous forme de catalogue.
+- Permettre une mise à jour **très simple** de l'offre (potentiellement quotidienne) sans modifier le code de l'application.
+
+#### 2.11.2. Usages
+
+- Consulter l'offre du moment.
+- Rechercher un consommable par texte libre (ex : code article, libellé, catégorie).
+- Filtrer par **catégorie**.
+- Pour chaque article, ouvrir :
+  - la fiche article (`items.html?code=<CODE>`),
+  - les photos (`photos.html?code=<CODE>`) si disponibles.
+
+#### 2.11.3. Administration de l'offre (règles)
+
+L'offre est décrite par un fichier Excel déposé dans un dossier d'administration.
+
+- Dossier d'offre par défaut : `D:\Datan\supply_chain_app\offre_consommables`
+- Surcharge par variable d'environnement : `SCAPP_CONSO_OFFER_DIR`
+- Règle de sélection : l'application charge le fichier d'offre **le plus récent** (date de modification / mtime), en privilégiant les fichiers dont le nom commence par `offre_consommable` / `offre_consommables`.
+  - Convention recommandée : un fichier par jour, daté, ex : `offre_consommables_YYYYMMDD.xlsx`.
+  - L'administration se résume à déposer le nouveau fichier (ou remplacer le fichier du jour) dans le dossier.
+
+Règles de structure du fichier :
+
+- La première ligne contient les en-têtes.
+- Une ligne = un article de l'offre.
+- Colonnes recommandées (les noms exacts sont recommandés ; l'interface est tolérante via des alias) :
+  - `code_article`
+  - `libelle`
+  - `categorie`
+  - `sous_categorie` (optionnel)
+  - `prix` (optionnel)
+  - `unite` (optionnel)
+  - `commentaire` (optionnel)
+
+Comportements en cas d'incident :
+
+- Si le dossier n'existe pas / aucun fichier trouvé : l'onglet affiche "Aucune offre disponible".
+- Si le fichier est illisible : l'onglet affiche une offre indisponible (erreur de lecture).
+
+#### 2.11.4. API associée
+
+- Endpoint : `GET /api/consommables/offer`
+- Sortie :
+  - `available` (bool)
+  - `file` (nom du fichier chargé)
+  - `mtime_iso` (date de mise à jour)
+  - `columns` (liste)
+  - `rows` (liste de dictionnaires)
+
+#### 2.11.5. Enrichissements métiers (stock / sorties / catégorie)
+
+Le catalogue consommables peut être enrichi automatiquement côté backend pour chaque `code_article` :
+
+- Stock filtré **MPLC / flag_stock_d_m = M / qualité GOOD** :
+  - source : `stock_554.parquet`
+  - champ exposé : `stock_mplc_good_m`
+  - règle : somme des `qte_stock` pour le code article, après filtres.
+
+- Sorties consommation (historique) :
+  - source : `stats_exit.parquet`
+  - champ exposé : `sorties_conso_total`
+  - règle : somme de `qte_mvt` pour le motif `SORTIE CONSOMMATION` **toutes années**.
+
+- Catégorie sans sortie (affichage dans le catalogue) :
+  - source : `items_without_exit_final.parquet`
+  - colonne métier : `categorie_sans_sortie`
+  - champ exposé dans le catalogue : `categorie_sortie` (alias de `categorie_sans_sortie`)
+  - affichage : badge coloré selon les mêmes couleurs que l'onglet stock.
 
 #### 2.10.3. Auto-remplissage des champs article
 

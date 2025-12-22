@@ -1,4 +1,6 @@
-from flask import request, jsonify
+import os
+
+from flask import request, jsonify, session
 
 from . import bp
 from supplychain_app.services.pudo_service import (
@@ -14,6 +16,31 @@ from supplychain_app.services.pudo_service import (
     get_ol_stores,
     search_ol_igs,
 )
+
+
+def _ol_allowed_logins() -> set[str]:
+    raw = (os.environ.get("SCAPP_OL_ALLOWED_LOGINS") or "").strip()
+    if not raw:
+        return set()
+    return {
+        x.strip().casefold()
+        for x in raw.split(",")
+        if x is not None and str(x).strip() != ""
+    }
+
+
+def _require_ol_access():
+    allowed = _ol_allowed_logins()
+    if not allowed:
+        return None
+
+    login = session.get("proxy_login")
+    login_norm = str(login or "").strip().casefold()
+    if not login_norm:
+        return jsonify({"error": "forbidden", "reason": "login_required"}), 403
+    if login_norm not in allowed:
+        return jsonify({"error": "forbidden", "reason": "not_allowed"}), 403
+    return None
 
 
 @bp.get("/contacts")
@@ -184,6 +211,9 @@ def technician_pr_overrides_post(code: str):
 
 @bp.get("/ol_technicians")
 def ol_technicians_list():
+    denied = _require_ol_access()
+    if denied is not None:
+        return denied
     """Liste des techniciens éligibles pour l'OL mode dégradé.
 
     Les données proviennent de stores.parquet, filtrées sur les
@@ -195,6 +225,9 @@ def ol_technicians_list():
 
 @bp.get("/ol_pudo_address/<code_pr>")
 def ol_pudo_address(code_pr: str):
+    denied = _require_ol_access()
+    if denied is not None:
+        return denied
     """Adresse postale du point relais choisi pour l'OL mode dégradé."""
     code_pr = (code_pr or "").strip()
     if not code_pr:
@@ -207,6 +240,9 @@ def ol_pudo_address(code_pr: str):
 
 @bp.get("/ol_igs")
 def ol_igs_list():
+    denied = _require_ol_access()
+    if denied is not None:
+        return denied
     """Liste des codes IG disponibles pour l'OL mode dégradé."""
     rows = get_ol_igs() or []
     return jsonify({"igs": rows})
@@ -214,6 +250,9 @@ def ol_igs_list():
 
 @bp.get("/ol_igs_search")
 def ol_igs_search():
+    denied = _require_ol_access()
+    if denied is not None:
+        return denied
     """Recherche filtrée de codes IG pour l'OL mode dégradé.
 
     Query params :
@@ -231,6 +270,9 @@ def ol_igs_search():
 
 @bp.get("/ol_stores")
 def ol_stores_list():
+    denied = _require_ol_access()
+    if denied is not None:
+        return denied
     """Liste des magasins NATIONAL / LOCAL utilisables pour l'expédition OL."""
     rows = get_ol_stores() or []
     return jsonify({"stores": rows})

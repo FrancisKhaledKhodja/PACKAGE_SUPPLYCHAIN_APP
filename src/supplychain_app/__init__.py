@@ -9,10 +9,13 @@ from .blueprints.stores import bp as stores_bp
 from .blueprints.technicians import bp as technicians_bp
 from .blueprints.helios import bp as helios_bp
 from .blueprints.assistant import bp as assistant_bp
+from .blueprints.consommables import bp as consommables_bp
+import importlib.metadata
 import threading
 import time
 import os
 import sys
+import re
 from supplychain_app.data.pudo_etl import update_data, get_last_update_summary
 
 
@@ -39,6 +42,7 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     app.register_blueprint(technicians_bp, url_prefix="/api/technicians")
     app.register_blueprint(helios_bp, url_prefix="/api/helios")
     app.register_blueprint(assistant_bp, url_prefix="/api/assistant")
+    app.register_blueprint(consommables_bp, url_prefix="/api/consommables")
 
     @app.get("/api/health")
     def health():
@@ -54,8 +58,27 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         force_show_llm_rag = os.environ.get("SCAPP_FORCE_SHOW_LLM_RAG", "0").lower() in ("1", "true", "yes")
         hide_llm_rag_env = os.environ.get("SCAPP_HIDE_LLM_RAG", "0").lower() in ("1", "true", "yes")
         hide_llm_rag = hide_llm_rag_env or (is_frozen and not force_show_llm_rag)
+
+        version = ""
+        if is_frozen:
+            try:
+                exe_name = os.path.splitext(os.path.basename(sys.executable or ""))[0]
+                m = re.search(r"v(?P<ver>\d+(?:\.\d+)*)", exe_name, flags=re.IGNORECASE)
+                if m:
+                    version = (m.group("ver") or "").strip()
+            except Exception:
+                version = ""
+
+        if not version:
+            version = (os.environ.get("SCAPP_VERSION") or "").strip()
+        if not version:
+            try:
+                version = importlib.metadata.version("supplychain-app")
+            except Exception:
+                version = "dev"
         return {
             "is_frozen": is_frozen,
+            "version": version,
             "hide_llm_rag": hide_llm_rag,
             "force_show_llm_rag": force_show_llm_rag,
             "hide_llm_rag_env": hide_llm_rag_env,

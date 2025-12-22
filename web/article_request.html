@@ -6,6 +6,18 @@
   <link rel="stylesheet" href="css/style.css">
   <script src="js/api.js?v=3" defer></script>
   <style>
+    .help-tip {
+      font-size: 0.85rem;
+      max-width: 100%;
+    }
+    .help-tip-content {
+      padding: 0.4rem 0.6rem;
+      border-radius: 0.5rem;
+    }
+    .help-tip-text {
+      line-height: 1.4;
+    }
+
     .scapp-excel-wrap {
       overflow: auto;
       border: 1px solid var(--border);
@@ -15,26 +27,27 @@
 
     .scapp-creation-form-grid {
       display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 320px));
+      grid-template-columns: repeat(4, minmax(220px, 1fr));
       gap: 0.75rem 1.25rem;
       margin-top: 0.75rem;
       justify-content: start;
-      max-width: 1360px;
+      width: 100%;
+      max-width: none;
     }
 
     .scapp-creation-form-field {
       display: flex;
       flex-direction: column;
       gap: 0.35rem;
-      max-width: 320px;
+      max-width: none;
     }
 
     .scapp-creation-form-field.scapp-field-narrow {
-      max-width: 240px;
+      max-width: none;
     }
 
     .scapp-creation-form-field.scapp-field-wide {
-      max-width: 520px;
+      max-width: none;
     }
 
     .scapp-creation-form-section {
@@ -80,6 +93,19 @@
       flex: 1 1 0;
     }
 
+    #creation-form-ref-fab-section .scapp-creation-form-inline {
+      align-items: flex-start;
+      flex-wrap: nowrap;
+    }
+
+    #creation-form-ref-fab-section .scapp-creation-form-inline .scapp-creation-form-field {
+      flex: 1 1 0;
+    }
+
+    #creation-form-ref-fab-counter {
+      margin-top: 0.15rem;
+    }
+
     .scapp-creation-form-subgrid {
       display: grid;
       grid-template-columns: inherit;
@@ -109,32 +135,30 @@
       width: 100%;
     }
 
+    .scapp-creation-form-field textarea {
+      min-width: 0;
+      max-width: 100%;
+      width: 100%;
+    }
+
     @media (max-width: 1360px) {
       .scapp-creation-form-grid {
-        grid-template-columns: repeat(3, minmax(240px, 360px));
-        max-width: 1120px;
-      }
-
-      .scapp-creation-form-field {
-        max-width: 360px;
+        grid-template-columns: repeat(3, minmax(240px, 1fr));
+        max-width: none;
       }
     }
 
     @media (max-width: 1120px) {
       .scapp-creation-form-grid {
-        grid-template-columns: repeat(2, minmax(280px, 420px));
-        max-width: 980px;
-      }
-
-      .scapp-creation-form-field {
-        max-width: 420px;
+        grid-template-columns: repeat(2, minmax(280px, 1fr));
+        max-width: none;
       }
     }
 
     @media (max-width: 980px) {
       .scapp-creation-form-grid {
         grid-template-columns: 1fr;
-        max-width: 520px;
+        max-width: none;
       }
 
       .scapp-creation-form-row-2 {
@@ -230,9 +254,9 @@
   <div id="scapp-header"></div>
 
   <div class="card">
-    <h2 style="margin:0 0 8px; color:var(--muted)">Demande création ou modification article</h2>
-    <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap;">
-      <label for="request-type" class="muted" style="min-width:220px;">Type de demande</label>
+    <h2 style="margin:0 0 4px; color:var(--muted)">Demande création ou modification article</h2>
+    <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap;">
+      <label for="request-type" class="muted" style="min-width:180px;">Type de demande</label>
       <select id="request-type" name="request_type" style="min-width:420px; max-width:100%;">
         <option value="" selected disabled>Choisir un type de demande...</option>
         <option value="creation_articles">Création d'article(s)</option>
@@ -243,13 +267,13 @@
       </select>
     </div>
 
-    <div id="requester-section" class="section" style="display:none; margin-top:1rem;">
-      <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap;">
-        <label for="requester-firstname" class="muted" style="min-width:220px;">Prénom</label>
+    <div id="requester-section" class="section" style="display:none; margin-top:0.5rem;">
+      <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap;">
+        <label for="requester-firstname" class="muted" style="min-width:180px;">Prénom</label>
         <input id="requester-firstname" name="requester_firstname" type="text" placeholder="Saisir votre prénom" style="min-width:420px; max-width:100%;" />
       </div>
-      <div class="row" style="gap:0.75rem; align-items:center; flex-wrap:wrap; margin-top:0.75rem;">
-        <label for="requester-lastname" class="muted" style="min-width:220px;">Nom</label>
+      <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
+        <label for="requester-lastname" class="muted" style="min-width:180px;">Nom</label>
         <input id="requester-lastname" name="requester_lastname" type="text" placeholder="Saisir votre nom" style="min-width:420px; max-width:100%;" />
       </div>
     </div>
@@ -273,6 +297,14 @@
         <button id="creation-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
       </div>
 
+      <div id="creation-excel-import" class="row" style="display:none; justify-content:flex-end; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+        <button id="creation-template-download" type="button">Télécharger le modèle</button>
+        <label class="muted" style="display:flex; align-items:center; gap:0.5rem;">
+          Importer un fichier Excel
+          <input id="creation-import-file" type="file" accept=".xlsx,.xlsm" />
+        </label>
+      </div>
+
       <div id="creation-feedback" class="muted" style="margin-top:0.5rem;"></div>
 
       <div id="creation-form" style="display:block; margin-top:0.75rem;">
@@ -280,25 +312,45 @@
           <div class="scapp-creation-form-row-2">
             <div class="scapp-creation-form-section" id="creation-form-ref-fab-section">
               <div class="scapp-creation-form-section-title">REFERENCE FABRICANT</div>
+              <div class="help-tip" style="margin-bottom:0.5rem;">
+                <div class="help-tip-content">
+                  <div class="help-tip-text">
+                    <strong>Étape 1 :</strong> renseigner le <strong>fournisseur</strong>, la <strong>référence fabricant</strong> (référence exacte du matériel chez le fournisseur) et le <strong>prix prévisionnel</strong> de l'article.
+                  </div>
+                </div>
+              </div>
               <div class="scapp-creation-form-inline">
                 <div class="scapp-creation-form-field">
                   <label class="muted">Fabricant</label>
-                  <input id="creation-form-fabricant" type="text" placeholder="Fabricant" list="creation-form-fabricant-list" />
+                  <input id="creation-form-fabricant" type="text" placeholder="Fabricant" list="creation-form-fabricant-list" required />
                   <datalist id="creation-form-fabricant-list"></datalist>
                   <div id="creation-form-fabricant-new" style="display:none; color:#dc2626; font-weight:600;">nouveau fournisseur</div>
                 </div>
                 <div class="scapp-creation-form-field">
                   <label class="muted">Référence fabricant</label>
-                  <input id="creation-form-ref-fab" type="text" placeholder="31 caractères max" />
+                  <input id="creation-form-ref-fab" type="text" placeholder="Référence fabricant (31 caractères conseillés)" required />
+                  <div id="creation-form-ref-fab-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
+                  <div id="creation-form-ref-fab-check" class="muted" style="font-size:0.85rem; line-height:1.2; margin-top:0.15rem;"></div>
+                </div>
+                <div class="scapp-creation-form-field scapp-field-narrow">
+                  <label class="muted">Prix prévisionnel</label>
+                  <input id="creation-form-prix-prev" type="number" step="0.01" min="0" placeholder="ex: 12.50" required />
                 </div>
               </div>
             </div>
             <div class="scapp-creation-form-section" id="creation-form-famille-section">
               <div class="scapp-creation-form-section-title">FAMILLE ARTICLE</div>
+              <div class="help-tip" style="margin-bottom:0.5rem;">
+                <div class="help-tip-content">
+                  <div class="help-tip-text">
+                    <strong>Étape 2 :</strong> choisir <strong>TDF</strong> (le matériel est acheté par TDF) ou <strong>CLT</strong> (le matériel est mis à disposition de TDF par le client).
+                  </div>
+                </div>
+              </div>
               <div class="scapp-creation-form-inline">
                 <div class="scapp-creation-form-field">
                   <label class="muted">Article TDF ou CLT</label>
-                  <select id="creation-form-article">
+                  <select id="creation-form-article" required>
                     <option value="" selected disabled>Choisir...</option>
                     <option value="TDF">TDF</option>
                     <option value="CLT">CLT</option>
@@ -306,7 +358,7 @@
                 </div>
                 <div class="scapp-creation-form-field">
                   <label class="muted">Feuille de catalogue</label>
-                  <select id="creation-form-feuille">
+                  <select id="creation-form-feuille" required>
                     <option value="" selected disabled>Choisir...</option>
                   </select>
                 </div>
@@ -318,11 +370,13 @@
             <div class="scapp-creation-form-inline">
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Libellé court</label>
-                <input id="creation-form-libelle-court" type="text" placeholder="MAJUSCULES sans accents (120 car. max)" />
+                <textarea id="creation-form-libelle-court" maxlength="120" rows="2" placeholder="MAJUSCULES sans accents (120 car. max)" required></textarea>
+                <div id="creation-form-libelle-court-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
               </div>
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Libellé long</label>
-                <input id="creation-form-libelle-long" type="text" placeholder="MAJUSCULES sans accents (240 car. max)" />
+                <textarea id="creation-form-libelle-long" maxlength="240" rows="3" placeholder="MAJUSCULES sans accents (240 car. max)" required></textarea>
+                <div id="creation-form-libelle-long-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
               </div>
             </div>
           </div>
@@ -331,7 +385,7 @@
             <div class="scapp-creation-form-inline">
               <div class="scapp-creation-form-field">
                 <label class="muted">Type article</label>
-                <select id="creation-form-type">
+                <select id="creation-form-type" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="VAREQ">VAREQ</option>
                   <option value="SOUSEN">SOUSEN</option>
@@ -344,7 +398,7 @@
               </div>
               <div class="scapp-creation-form-field">
                 <label class="muted">Cycle de vie production</label>
-                <select id="creation-form-cycle-prod">
+                <select id="creation-form-cycle-prod" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="EXPERTISE">EXPERTISE</option>
                   <option value="INSTALLABLE AVEC RESERVE">INSTALLABLE AVEC RESERVE</option>
@@ -353,7 +407,7 @@
               </div>
               <div class="scapp-creation-form-field">
                 <label class="muted">Cycle de vie achat</label>
-                <select id="creation-form-cycle-achat">
+                <select id="creation-form-cycle-achat" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="ACHETABLE">ACHETABLE</option>
                   <option value="NON ACHETABLE">NON ACHETABLE</option>
@@ -361,7 +415,7 @@
               </div>
               <div class="scapp-creation-form-field">
                 <label class="muted">Statut d'article</label>
-                <select id="creation-form-statut">
+                <select id="creation-form-statut" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="N.Stk.Ach.">N.Stk.Ach.</option>
                   <option value="N.StkN.Ach">N.StkN.Ach</option>
@@ -371,7 +425,7 @@
               </div>
               <div class="scapp-creation-form-field scapp-field-narrow">
                 <label class="muted">Criticité</label>
-                <select id="creation-form-criticite">
+                <select id="creation-form-criticite" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="0">0</option>
                   <option value="2">2</option>
@@ -380,11 +434,7 @@
               </div>
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Commentaire technique</label>
-                <input id="creation-form-comm-tech" type="text" placeholder="Commentaire technique" />
-              </div>
-              <div class="scapp-creation-form-field scapp-field-narrow">
-                <label class="muted">Prix prévisionnel</label>
-                <input id="creation-form-prix-prev" type="number" step="0.01" min="0" placeholder="ex: 12.50" />
+                <textarea id="creation-form-comm-tech" rows="2" placeholder="Commentaire technique"></textarea>
               </div>
             </div>
           </div>
@@ -410,7 +460,7 @@
               </div>
               <div class="scapp-creation-form-field scapp-field-narrow">
                 <label class="muted">Article datacenter</label>
-                <select id="creation-form-datacenter">
+                <select id="creation-form-datacenter" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="OUI">OUI</option>
                   <option value="NON">NON</option>
@@ -426,7 +476,7 @@
               </div>
               <div class="scapp-creation-form-field scapp-field-narrow">
                 <label class="muted">Péremption</label>
-                <select id="creation-form-peremption">
+                <select id="creation-form-peremption" required>
                   <option value="" selected disabled>Choisir...</option>
                   <option value="OUI">OUI</option>
                   <option value="NON">NON</option>
@@ -448,7 +498,7 @@
               <div class="scapp-creation-form-inline">
                 <div class="scapp-creation-form-field scapp-field-narrow">
                   <label class="muted">Matière dangereuse</label>
-                  <select id="creation-form-mat-dang">
+                  <select id="creation-form-mat-dang" required>
                     <option value="" selected disabled>Choisir...</option>
                     <option value="OUI">OUI</option>
                     <option value="NON">NON</option>
@@ -565,14 +615,19 @@
         <div class="scapp-excel-wrap">
           <table id="creation-table" class="scapp-excel">
             <colgroup>
+              <col style="width:220px;" />
+              <col style="width:220px;" />
+              <col style="width:140px;" />
               <col style="width:140px;" />
               <col style="width:150px;" />
               <col style="width:360px;" />
               <col style="width:520px;" />
               <col style="width:140px;" />
-              <col style="width:240px;" />
-              <col style="width:150px;" />
               <col style="width:160px;" />
+              <col style="width:240px;" />
+              <col style="width:160px;" />
+              <col style="width:150px;" />
+              <col style="width:110px;" />
               <col style="width:360px;" />
               <col style="width:110px;" />
               <col style="width:110px;" />
@@ -582,49 +637,44 @@
               <col style="width:150px;" />
               <col style="width:130px;" />
               <col style="width:170px;" />
+              <col style="width:170px;" />
               <col style="width:220px;" />
               <col style="width:140px;" />
               <col style="width:200px;" />
               <col style="width:240px;" />
-              <col style="width:170px;" />
-              <col style="width:160px;" />
-              <col style="width:140px;" />
-              <col style="width:110px;" />
-              <col style="width:160px;" />
-              <col style="width:220px;" />
-              <col style="width:220px;" />
+              <col style="width:240px;" />
               <col style="width:110px;" />
             </colgroup>
             <thead>
               <tr>
+                <th style="text-align:left; padding:8px;">fabricant</th>
+                <th style="text-align:left; padding:8px;">reference_fabricant</th>
+                <th style="text-align:left; padding:8px;">prix_previsionnel</th>
                 <th style="text-align:left; padding:8px;">article_tdf_clt</th>
-                <th style="text-align:left; padding:8px;">feuille_catalogue</th>
+                <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
                 <th style="text-align:left; padding:8px;">libelle_court</th>
                 <th style="text-align:left; padding:8px;">libelle_long</th>
                 <th style="text-align:left; padding:8px;">type_article</th>
+                <th style="text-align:left; padding:8px;">mnemonique</th>
                 <th style="text-align:left; padding:8px;">cycle_vie_production</th>
-                <th style="text-align:left; padding:8px;">statut_article</th>
                 <th style="text-align:left; padding:8px;">cycle_vie_achat</th>
+                <th style="text-align:left; padding:8px;">statut_article</th>
+                <th style="text-align:left; padding:8px;">criticite</th>
                 <th style="text-align:left; padding:8px;">commentaire_technique</th>
                 <th style="text-align:left; padding:8px;">poids_kg</th>
                 <th style="text-align:left; padding:8px;">long_m</th>
                 <th style="text-align:left; padding:8px;">larg_m</th>
                 <th style="text-align:left; padding:8px;">haut_m</th>
-                <th style="text-align:left; padding:8px;">datacenter</th>
-                <th style="text-align:left; padding:8px;">hors_norme</th>
+                <th style="text-align:left; padding:8px;">article_datacenter</th>
+                <th style="text-align:left; padding:8px;">article_hors_norme</th>
                 <th style="text-align:left; padding:8px;">peremption</th>
+                <th style="text-align:left; padding:8px;">retour_production</th>
                 <th style="text-align:left; padding:8px;">matiere_dangereuse</th>
                 <th style="text-align:left; padding:8px;">categorie_md</th>
                 <th style="text-align:left; padding:8px;">code_onu</th>
                 <th style="text-align:left; padding:8px;">catalogue_consommables</th>
                 <th style="text-align:left; padding:8px;">categorie_consommables</th>
                 <th style="text-align:left; padding:8px;">sous_categorie_consommables</th>
-                <th style="text-align:left; padding:8px;">retour_production</th>
-                <th style="text-align:left; padding:8px;">prix_previsionnel</th>
-                <th style="text-align:left; padding:8px;">criticite</th>
-                <th style="text-align:left; padding:8px;">mnemonique</th>
-                <th style="text-align:left; padding:8px;">fabricant</th>
-                <th style="text-align:left; padding:8px;">reference_fabricant</th>
                 <th style="text-align:left; padding:8px;">statut</th>
               </tr>
             </thead>
@@ -812,6 +862,9 @@
       const creationAddRowBtn = document.getElementById("creation-add-row");
       const creationValidateBtn = document.getElementById("creation-validate");
       const creationFeedback = document.getElementById("creation-feedback");
+      const creationExcelImport = document.getElementById("creation-excel-import");
+      const creationTemplateDownloadBtn = document.getElementById("creation-template-download");
+      const creationImportFileInp = document.getElementById("creation-import-file");
 
       const achetableSection = document.getElementById("achetable-section");
       const achetableTbody = document.getElementById("achetable-tbody");
@@ -866,11 +919,142 @@
         const m = mode === "excel" ? "excel" : "form";
         creationForm.style.display = m === "form" ? "block" : "none";
         creationExcel.style.display = m === "excel" ? "block" : "none";
+        if (creationExcelImport) {
+          creationExcelImport.style.display = m === "excel" ? "flex" : "none";
+        }
         if (m === "excel") {
           ensureOneCreationRow();
         } else {
           updateCreationFormMdVisibility();
           updateCreationFormConsoVisibility();
+        }
+      }
+
+      function _ensureSelectOption(sel, value) {
+        if (!sel) return;
+        const v = norm(value);
+        if (!v) return;
+        const has = Array.from(sel.options || []).some((o) => String(o.value) === v);
+        if (!has) {
+          const opt = document.createElement("option");
+          opt.value = v;
+          opt.textContent = v;
+          sel.appendChild(opt);
+        }
+      }
+
+      async function importCreationRowsFromXlsx(file) {
+        if (!file) return;
+        if (typeof API !== "function") return;
+        if (!creationTbody) return;
+
+        if (creationFeedback) {
+          creationFeedback.textContent = "Import Excel en cours...";
+        }
+
+        try {
+          const fd = new FormData();
+          fd.append("file", file);
+          const resp = await fetch(API("/downloads/demandes/creation_articles_parse_xlsx"), {
+            method: "POST",
+            credentials: "include",
+            body: fd,
+          });
+          const data = await resp.json().catch(() => null);
+          if (!resp.ok || !data || !data.ok) {
+            const err = data && data.error ? String(data.error) : "import_failed";
+            if (creationFeedback) creationFeedback.textContent = "Erreur import Excel: " + err;
+            return;
+          }
+
+          const rows = Array.isArray(data.rows) ? data.rows : [];
+          if (!rows.length) {
+            if (creationFeedback) creationFeedback.textContent = "Aucune ligne trouvée dans le fichier.";
+            return;
+          }
+
+          creationTbody.innerHTML = "";
+
+          for (const r of rows) {
+            const row = createCreationRow();
+
+            row.fabricant.inp.value = toUpperNoAccents(r.fabricant || "");
+            row.refFab.inp.value = toUpperNoAccents(r.reference_fabricant || "");
+            row.prixPrev.inp.value = String(r.prix_previsionnel || "");
+
+            _ensureSelectOption(row.article.sel, r.article_tdf_clt);
+            row.article.sel.value = norm(r.article_tdf_clt);
+
+            _ensureSelectOption(row.feuille.sel, r.feuille_du_catalogue);
+            row.feuille.sel.value = norm(r.feuille_du_catalogue);
+
+            row.libCourt.inp.value = toUpperNoAccents(r.libelle_court || "").slice(0, 120);
+            row.libLong.inp.value = toUpperNoAccents(r.libelle_long || "").slice(0, 240);
+
+            _ensureSelectOption(row.typeArticle.sel, r.type_article);
+            row.typeArticle.sel.value = norm(r.type_article);
+
+            row.mnemo.inp.value = toUpperNoAccents(r.mnemonique || "").slice(0, 20);
+
+            _ensureSelectOption(row.cycleProd.sel, r.cycle_vie_production);
+            row.cycleProd.sel.value = norm(r.cycle_vie_production);
+
+            _ensureSelectOption(row.cycleAchat.sel, r.cycle_vie_achat);
+            row.cycleAchat.sel.value = norm(r.cycle_vie_achat);
+
+            _ensureSelectOption(row.statut.sel, r.statut_article);
+            row.statut.sel.value = norm(r.statut_article);
+
+            _ensureSelectOption(row.criticite.sel, r.criticite);
+            row.criticite.sel.value = norm(r.criticite);
+
+            row.commTech.inp.value = String(r.commentaire_technique || "");
+            row.poids.inp.value = String(r.poids_kg || "");
+            row.longM.inp.value = String(r.long_m || "");
+            row.largM.inp.value = String(r.larg_m || "");
+            row.hautM.inp.value = String(r.haut_m || "");
+
+            _ensureSelectOption(row.datacenter.sel, r.article_datacenter);
+            row.datacenter.sel.value = norm(r.article_datacenter);
+
+            _ensureSelectOption(row.horsNorme.sel, r.article_hors_norme);
+            row.horsNorme.sel.value = norm(r.article_hors_norme);
+
+            _ensureSelectOption(row.peremption.sel, r.peremption);
+            row.peremption.sel.value = norm(r.peremption);
+
+            _ensureSelectOption(row.retourProd.sel, r.retour_production);
+            row.retourProd.sel.value = norm(r.retour_production);
+
+            _ensureSelectOption(row.matDang.sel, r.matiere_dangereuse);
+            row.matDang.sel.value = norm(r.matiere_dangereuse);
+
+            _ensureSelectOption(row.catMd.sel, r.categorie_md);
+            row.catMd.sel.value = norm(r.categorie_md);
+            row.codeOnu.inp.value = toUpperNoAccents(r.code_onu || "");
+
+            _ensureSelectOption(row.catConsoFlag.sel, r.catalogue_consommables);
+            row.catConsoFlag.sel.value = norm(r.catalogue_consommables);
+
+            _ensureSelectOption(row.catConso.sel, r.categorie_consommables);
+            row.catConso.sel.value = norm(r.categorie_consommables);
+
+            _ensureSelectOption(row.sousCatConso.sel, r.sous_categorie_consommables);
+            row.sousCatConso.sel.value = norm(r.sous_categorie_consommables);
+
+            creationTbody.appendChild(row.tr);
+
+            row.typeArticle.sel.dispatchEvent(new Event("change", { bubbles: true }));
+            row.matDang.sel.dispatchEvent(new Event("change", { bubbles: true }));
+            row.catMd.sel.dispatchEvent(new Event("change", { bubbles: true }));
+            row.catConsoFlag.sel.dispatchEvent(new Event("change", { bubbles: true }));
+          }
+
+          if (creationFeedback) {
+            creationFeedback.textContent = `${rows.length} ligne(s) importée(s).`;
+          }
+        } catch (e) {
+          if (creationFeedback) creationFeedback.textContent = "Erreur import Excel.";
         }
       }
 
@@ -1681,6 +1865,10 @@
           return { td, sel };
         };
 
+        const fabricant = makeTdInput({ placeholder: "Fabricant", required: true });
+        const refFab = makeTdInput({ placeholder: "Réf fabricant", required: true });
+        const prixPrev = makeTdInput({ type: "number", step: "0.01", min: "0", required: true });
+
         const article = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="TDF">TDF</option>
@@ -1697,11 +1885,17 @@
           <option value="SOUSEN">SOUSEN</option>
           <option value="COMPOS">COMPOS</option>
         ` });
+        const mnemo = makeTdInput({ placeholder: "Mnémonique", maxLen: 20 });
         const cycleProd = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="EXPERTISE">EXPERTISE</option>
           <option value="INSTALLABLE AVEC RESERVE">INSTALLABLE AVEC RESERVE</option>
           <option value="INSTALLABLE SANS RESERVE">INSTALLABLE SANS RESERVE</option>
+        ` });
+        const cycleAchat = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="ACHETABLE">ACHETABLE</option>
+          <option value="NON ACHETABLE">NON ACHETABLE</option>
         ` });
         const statut = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
@@ -1710,17 +1904,18 @@
           <option value="Stk. Ach.">Stk. Ach.</option>
           <option value="Stk. N.Ach">Stk. N.Ach</option>
         ` });
-        const cycleAchat = makeTdSelect({ required: true, html: `
+        const criticite = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
-          <option value="ACHETABLE">ACHETABLE</option>
-          <option value="NON ACHETABLE">NON ACHETABLE</option>
+          <option value="0">0</option>
+          <option value="2">2</option>
+          <option value="10">10</option>
         ` });
         const commTech = makeTdInput({ placeholder: "Commentaire technique" });
         const poids = makeTdInput({ type: "number", step: "0.001", min: "0" });
         const longM = makeTdInput({ type: "number", step: "0.001", min: "0" });
         const largM = makeTdInput({ type: "number", step: "0.001", min: "0" });
         const hautM = makeTdInput({ type: "number", step: "0.001", min: "0" });
-        const datacenter = makeTdSelect({ html: `
+        const datacenter = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="OUI">OUI</option>
           <option value="NON">NON</option>
@@ -1730,40 +1925,100 @@
           <option value="OUI">OUI</option>
           <option value="NON">NON</option>
         ` });
-        const peremption = makeTdSelect({ html: `
+        const peremption = makeTdSelect({ required: true, html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="OUI">OUI</option>
           <option value="NON">NON</option>
         ` });
-        const matDang = makeTdSelect({ html: `
+        const retourProd = makeTdSelect({ html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="OUI">OUI</option>
           <option value="NON">NON</option>
         ` });
-        const catMd = makeTdInput({ placeholder: "Catégorie MD" });
+        const matDang = makeTdSelect({ required: true, html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="OUI">OUI</option>
+          <option value="NON">NON</option>
+        ` });
+        const catMd = makeTdSelect({ html: `
+          <option value="" selected disabled>Choisir...</option>
+          <option value="Liquide inflammable (peintures, solvants…)">Liquide inflammable (peintures, solvants…)</option>
+          <option value="Aérosol inflammable">Aérosol inflammable</option>
+          <option value="Piles/Batteries Plomb">Piles/Batteries Plomb</option>
+          <option value="Piles/Batteries Plomb étanche">Piles/Batteries Plomb étanche</option>
+          <option value="Pile/Batterie Métal seule">Pile/Batterie Métal seule</option>
+          <option value="Pile/Batterie Métal avec/dans équipement">Pile/Batterie Métal avec/dans équipement</option>
+          <option value="Pile/Batterie Ionique seule">Pile/Batterie Ionique seule</option>
+          <option value="Pile/Batterie Ionique avec/dans équipement">Pile/Batterie Ionique avec/dans équipement</option>
+          <option value="Pile/Batterie Nickel">Pile/Batterie Nickel</option>
+          <option value="Matière dangereuse du point de vue de l'environnement (solide)">Matière dangereuse du point de vue de l'environnement (solide)</option>
+          <option value="Autres (à préciser)">Autres (à préciser)</option>
+        ` });
         const codeOnu = makeTdInput({ placeholder: "Code ONU" });
         const catConsoFlag = makeTdSelect({ html: `
           <option value="" selected disabled>Choisir...</option>
           <option value="OUI">OUI</option>
           <option value="NON">NON</option>
         ` });
-        const catConso = makeTdInput({ placeholder: "Catégorie consommables" });
-        const sousCatConso = makeTdInput({ placeholder: "Sous catégorie" });
-        const retourProd = makeTdSelect({ html: `
+        const catConso = makeTdSelect({ html: `
           <option value="" selected disabled>Choisir...</option>
-          <option value="OUI">OUI</option>
-          <option value="NON">NON</option>
+          <option value="BASSE FREQ/COURANTS FAIBLES">BASSE FREQ/COURANTS FAIBLES</option>
+          <option value="CHAUFFAGE/VENTIL/CLIM">CHAUFFAGE/VENTIL/CLIM</option>
+          <option value="ENERGIE">ENERGIE</option>
+          <option value="HYGIENE/SECURITE">HYGIENE/SECURITE</option>
+          <option value="INFORMATIQUE">INFORMATIQUE</option>
+          <option value="KIT">KIT</option>
+          <option value="OPTIQUE">OPTIQUE</option>
+          <option value="OUTILLAGE/FOURNITURES">OUTILLAGE/FOURNITURES</option>
+          <option value="PYLONE/AERIEN">PYLONE/AERIEN</option>
+          <option value="RF">RF</option>
         ` });
-        const prixPrev = makeTdInput({ type: "number", step: "0.01", min: "0" });
-        const criticite = makeTdSelect({ required: true, html: `
+        const sousCatConso = makeTdSelect({ html: `
           <option value="" selected disabled>Choisir...</option>
-          <option value="0">0</option>
-          <option value="2">2</option>
-          <option value="10">10</option>
+          <option value="CABLE/CORDON">CABLE/CORDON</option>
+          <option value="CONNECTEUR">CONNECTEUR</option>
+          <option value="ADAPTATEUR/TRANSITION">ADAPTATEUR/TRANSITION</option>
+          <option value="VENTILATEUR">VENTILATEUR</option>
+          <option value="ALIM/CHARGEUR">ALIM/CHARGEUR</option>
+          <option value="MONTAGE">MONTAGE</option>
+          <option value="SOUND">SOUND</option>
+          <option value="FILTRE">FILTRE</option>
+          <option value="PILES/BATTERIES/ALIM">PILES/BATTERIES/ALIM</option>
+          <option value="CONTACTEUR/DECLENCHEUR">CONTACTEUR/DECLENCHEUR</option>
+          <option value="PROTECTION">PROTECTION</option>
+          <option value="RACCORDEMENT">RACCORDEMENT</option>
+          <option value="ECLAIRAGE">ECLAIRAGE</option>
+          <option value="MISE A LA TERRE">MISE A LA TERRE</option>
+          <option value="IDENTIFICATION">IDENTIFICATION</option>
+          <option value="OUTILS">OUTILS</option>
+          <option value="ETANCHEITE/PROTECTION">ETANCHEITE/PROTECTION</option>
+          <option value="SECURITE/IDENTIFICATION">SECURITE/IDENTIFICATION</option>
+          <option value="FIXATION">FIXATION</option>
+          <option value="HYGIENE">HYGIENE</option>
+          <option value="ENERGIE">ENERGIE</option>
+          <option value="OUTIL ISOLE">OUTIL ISOLE</option>
+          <option value="ACCES">ACCES</option>
+          <option value="OPTIQUE">OPTIQUE</option>
+          <option value="CHAUFFAGE/VENTIL/CLIM">CHAUFFAGE/VENTIL/CLIM</option>
+          <option value="BATIMENT/ESPACESVERTS">BATIMENT/ESPACESVERTS</option>
+          <option value="IDENTIFICATION/SECURITE">IDENTIFICATION/SECURITE</option>
+          <option value="VISSERIE">VISSERIE</option>
+          <option value="MEMOIRES">MEMOIRES</option>
+          <option value="ROUTEUR/MODEM">ROUTEUR/MODEM</option>
+          <option value="EMETTEUR HARRIS">EMETTEUR HARRIS</option>
+          <option value="INTERFACE/RACCORD">INTERFACE/RACCORD</option>
+          <option value="JARRETIERE">JARRETIERE</option>
+          <option value="ATTENUATEUR">ATTENUATEUR</option>
+          <option value="SPLITTER">SPLITTER</option>
+          <option value="CONDITIONNEMENT/EMBALLAGE">CONDITIONNEMENT/EMBALLAGE</option>
+          <option value="INFORMATIQUE">INFORMATIQUE</option>
+          <option value="RF">RF</option>
+          <option value="AERIEN">AERIEN</option>
+          <option value="RECEPTIONSAT">RECEPTIONSAT</option>
+          <option value="CHARGE">CHARGE</option>
+          <option value="BRETELLES">BRETELLES</option>
+          <option value="REPARTITEUR">REPARTITEUR</option>
         ` });
-        const mnemo = makeTdInput({ placeholder: "Mnémonique", required: true, maxLen: 20 });
-        const fabricant = makeTdInput({ placeholder: "Fabricant", required: true });
-        const refFab = makeTdInput({ placeholder: "Réf fabricant", required: true, maxLen: 31 });
 
         const tdStatus = document.createElement("td");
         tdStatus.style.padding = "6px";
@@ -1772,14 +2027,19 @@
         status.textContent = "";
         tdStatus.appendChild(status);
 
+        tr.appendChild(fabricant.td);
+        tr.appendChild(refFab.td);
+        tr.appendChild(prixPrev.td);
         tr.appendChild(article.td);
         tr.appendChild(feuille.td);
         tr.appendChild(libCourt.td);
         tr.appendChild(libLong.td);
         tr.appendChild(typeArticle.td);
+        tr.appendChild(mnemo.td);
         tr.appendChild(cycleProd.td);
-        tr.appendChild(statut.td);
         tr.appendChild(cycleAchat.td);
+        tr.appendChild(statut.td);
+        tr.appendChild(criticite.td);
         tr.appendChild(commTech.td);
         tr.appendChild(poids.td);
         tr.appendChild(longM.td);
@@ -1788,18 +2048,13 @@
         tr.appendChild(datacenter.td);
         tr.appendChild(horsNorme.td);
         tr.appendChild(peremption.td);
+        tr.appendChild(retourProd.td);
         tr.appendChild(matDang.td);
         tr.appendChild(catMd.td);
         tr.appendChild(codeOnu.td);
         tr.appendChild(catConsoFlag.td);
         tr.appendChild(catConso.td);
         tr.appendChild(sousCatConso.td);
-        tr.appendChild(retourProd.td);
-        tr.appendChild(prixPrev.td);
-        tr.appendChild(criticite.td);
-        tr.appendChild(mnemo.td);
-        tr.appendChild(fabricant.td);
-        tr.appendChild(refFab.td);
         tr.appendChild(tdStatus);
 
         function enforceTextRules() {
@@ -1807,25 +2062,73 @@
           libLong.inp.value = toUpperNoAccents(libLong.inp.value).slice(0, 240);
           mnemo.inp.value = toUpperNoAccents(mnemo.inp.value).slice(0, 20);
           fabricant.inp.value = toUpperNoAccents(fabricant.inp.value);
-          refFab.inp.value = toUpperNoAccents(refFab.inp.value).slice(0, 31);
+          refFab.inp.value = toUpperNoAccents(refFab.inp.value);
+        }
+
+        function applyMnemoRequired() {
+          const t = norm(typeArticle.sel.value);
+          const req = !!t && t !== "COMPOS";
+          mnemo.inp.required = req;
+          if (!req) {
+            mnemo.inp.value = "";
+          }
         }
 
         function applyConditionalRequired() {
           const mdYes = isYes(matDang.sel.value);
-          catMd.inp.required = mdYes;
+          catMd.sel.required = mdYes;
           codeOnu.inp.required = mdYes;
           const consoYes = isYes(catConsoFlag.sel.value);
-          catConso.inp.required = consoYes;
-          sousCatConso.inp.required = consoYes;
+          catConso.sel.required = consoYes;
+          sousCatConso.sel.required = consoYes;
+        }
+
+        function applyMdOnuMapping() {
+          const onuByCat = {
+            "Liquide inflammable (peintures, solvants…)": "1263",
+            "Aérosol inflammable": "1950",
+            "Piles/Batteries Plomb": "2794",
+            "Piles/Batteries Plomb étanche": "2800",
+            "Pile/Batterie Métal seule": "3090",
+            "Pile/Batterie Métal avec/dans équipement": "3091",
+            "Pile/Batterie Ionique seule": "3480",
+            "Pile/Batterie Ionique avec/dans équipement": "3481",
+            "Pile/Batterie Nickel": "3496",
+            "Matière dangereuse du point de vue de l'environnement (solide)": "3077",
+          };
+
+          const mdYes = isYes(matDang.sel.value);
+          if (!mdYes) {
+            codeOnu.inp.value = "";
+            codeOnu.inp.readOnly = false;
+            return;
+          }
+
+          const catVal = norm(catMd.sel.value);
+          const onuMapped = onuByCat[catVal];
+          if (onuMapped) {
+            codeOnu.inp.value = onuMapped;
+            codeOnu.inp.readOnly = true;
+          } else {
+            codeOnu.inp.readOnly = false;
+            if (!catVal) {
+              codeOnu.inp.value = "";
+            }
+          }
         }
 
         [libCourt.inp, libLong.inp, mnemo.inp, fabricant.inp, refFab.inp].forEach((inp) => {
           inp.addEventListener("blur", enforceTextRules);
         });
+        typeArticle.sel.addEventListener("change", applyMnemoRequired);
         matDang.sel.addEventListener("change", applyConditionalRequired);
+        matDang.sel.addEventListener("change", applyMdOnuMapping);
+        catMd.sel.addEventListener("change", applyMdOnuMapping);
         catConsoFlag.sel.addEventListener("change", applyConditionalRequired);
 
         applyConditionalRequired();
+        applyMnemoRequired();
+        applyMdOnuMapping();
 
         return {
           tr,
@@ -2066,6 +2369,21 @@
         creationModeExcel.addEventListener("change", () => setCreationMode("excel"));
       }
 
+      if (creationTemplateDownloadBtn) {
+        creationTemplateDownloadBtn.addEventListener("click", () => {
+          if (typeof API !== "function") return;
+          window.open(API("/downloads/demandes/creation_articles_template_xlsx"), "_blank", "noopener,noreferrer");
+        });
+      }
+
+      if (creationImportFileInp) {
+        creationImportFileInp.addEventListener("change", async () => {
+          const f = creationImportFileInp.files && creationImportFileInp.files[0] ? creationImportFileInp.files[0] : null;
+          await importCreationRowsFromXlsx(f);
+          creationImportFileInp.value = "";
+        });
+      }
+
       // Charger les valeurs possibles de feuille_du_catalogue depuis items.parquet
       loadFeuillesDuCatalogueOptions();
       loadFabricantsOptions();
@@ -2093,11 +2411,159 @@
       }
       updateCreationFormMnemoVisibility();
 
+      const creationFormLibCourt = document.getElementById("creation-form-libelle-court");
+      const creationFormLibLong = document.getElementById("creation-form-libelle-long");
+      const creationFormLibCourtCounter = document.getElementById("creation-form-libelle-court-counter");
+      const creationFormLibLongCounter = document.getElementById("creation-form-libelle-long-counter");
+      const LIB_COURT_LIMIT = 120;
+      const LIB_LONG_LIMIT = 240;
+
+      function updateCreationLibCounter(inp, counterEl, limit) {
+        if (!inp || !counterEl) return;
+        const n = String(inp.value || "").length;
+        const remaining = limit - n;
+        if (remaining >= 0) {
+          counterEl.textContent = `${remaining} caractère(s) restant(s) (sur ${limit} max)`;
+          counterEl.style.color = "";
+          counterEl.style.fontWeight = "";
+        } else {
+          counterEl.textContent = `${Math.abs(remaining)} caractère(s) en trop (au-delà de ${limit} max)`;
+          counterEl.style.color = "#dc2626";
+          counterEl.style.fontWeight = "600";
+        }
+      }
+
+      function updateCreationLibCounters() {
+        updateCreationLibCounter(creationFormLibCourt, creationFormLibCourtCounter, LIB_COURT_LIMIT);
+        updateCreationLibCounter(creationFormLibLong, creationFormLibLongCounter, LIB_LONG_LIMIT);
+      }
+
+      if (creationFormLibCourt) {
+        const onBlur = () => {
+          creationFormLibCourt.value = toUpperNoAccents(creationFormLibCourt.value || "").slice(0, LIB_COURT_LIMIT);
+          updateCreationLibCounters();
+        };
+        creationFormLibCourt.addEventListener("input", updateCreationLibCounters);
+        creationFormLibCourt.addEventListener("change", updateCreationLibCounters);
+        creationFormLibCourt.addEventListener("blur", onBlur);
+      }
+      if (creationFormLibLong) {
+        const onBlur = () => {
+          creationFormLibLong.value = toUpperNoAccents(creationFormLibLong.value || "").slice(0, LIB_LONG_LIMIT);
+          updateCreationLibCounters();
+        };
+        creationFormLibLong.addEventListener("input", updateCreationLibCounters);
+        creationFormLibLong.addEventListener("change", updateCreationLibCounters);
+        creationFormLibLong.addEventListener("blur", onBlur);
+      }
+      updateCreationLibCounters();
+
+      const creationFormRefFab = document.getElementById("creation-form-ref-fab");
+      const creationFormRefFabCounter = document.getElementById("creation-form-ref-fab-counter");
+      const creationFormRefFabCheck = document.getElementById("creation-form-ref-fab-check");
+      const REF_FAB_SOFT_LIMIT = 31;
+      function updateCreationRefFabCounter() {
+        if (!creationFormRefFabCounter || !creationFormRefFab) return;
+        const n = String(creationFormRefFab.value || "").length;
+        const remaining = REF_FAB_SOFT_LIMIT - n;
+        if (remaining >= 0) {
+          creationFormRefFabCounter.textContent = `${remaining} caractère(s) restant(s) (sur ${REF_FAB_SOFT_LIMIT} conseillés)`;
+          creationFormRefFabCounter.style.color = "";
+          creationFormRefFabCounter.style.fontWeight = "";
+        } else {
+          creationFormRefFabCounter.textContent = `${Math.abs(remaining)} caractère(s) en trop (au-delà des ${REF_FAB_SOFT_LIMIT} conseillés)`;
+          creationFormRefFabCounter.style.color = "#dc2626";
+          creationFormRefFabCounter.style.fontWeight = "600";
+        }
+      }
+
+      let _refFabCheckSeq = 0;
+      async function checkRefFabAlreadyExists() {
+        if (!creationFormRefFab || !creationFormRefFabCheck) return;
+        const refFab = norm(creationFormRefFab.value || "");
+        if (!refFab) {
+          creationFormRefFabCheck.textContent = "";
+          creationFormRefFabCheck.style.color = "";
+          creationFormRefFabCheck.style.fontWeight = "";
+          return;
+        }
+
+        const fabricant = norm(document.getElementById("creation-form-fabricant")?.value || "");
+        const seq = ++_refFabCheckSeq;
+        creationFormRefFabCheck.textContent = "Vérification PIM en cours...";
+        creationFormRefFabCheck.style.color = "";
+        creationFormRefFabCheck.style.fontWeight = "";
+
+        if (typeof API !== "function") {
+          creationFormRefFabCheck.textContent = "";
+          return;
+        }
+
+        try {
+          const qs = new URLSearchParams({ reference: refFab });
+          if (fabricant) qs.set("fabricant", fabricant);
+          const resp = await fetch(API(`/items/pim/check_reference_fabricant?${qs.toString()}`), {
+            method: "GET",
+            credentials: "include",
+          });
+          const data = await resp.json().catch(() => null);
+          if (seq !== _refFabCheckSeq) return;
+          if (!resp.ok || !data) {
+            creationFormRefFabCheck.textContent = "";
+            return;
+          }
+
+          if (data.exists) {
+            const url = `items.html?ref_fab=${encodeURIComponent(refFab)}`;
+            creationFormRefFabCheck.innerHTML = `Référence déjà présente dans le PIM (article potentiellement déjà créé). <a href="${url}" target="_blank" rel="noopener noreferrer">Lien</a>`;
+            creationFormRefFabCheck.style.color = "#dc2626";
+            creationFormRefFabCheck.style.fontWeight = "600";
+          } else {
+            creationFormRefFabCheck.textContent = "Aucune correspondance trouvée dans le PIM.";
+            creationFormRefFabCheck.style.color = "#16a34a";
+            creationFormRefFabCheck.style.fontWeight = "600";
+          }
+        } catch (e) {
+          if (seq !== _refFabCheckSeq) return;
+          creationFormRefFabCheck.textContent = "";
+        }
+      }
+      if (creationFormRefFab) {
+        creationFormRefFab.addEventListener("input", updateCreationRefFabCounter);
+        creationFormRefFab.addEventListener("change", updateCreationRefFabCounter);
+        creationFormRefFab.addEventListener("blur", () => {
+          creationFormRefFab.value = toUpperNoAccents(creationFormRefFab.value || "");
+          updateCreationRefFabCounter();
+          checkRefFabAlreadyExists();
+        });
+      }
+      updateCreationRefFabCounter();
+
       const creationFormFabricant = document.getElementById("creation-form-fabricant");
       if (creationFormFabricant) {
+        const openFabricantDatalist = () => {
+          const dl = document.getElementById("creation-form-fabricant-list");
+          const hasOptions = !!(dl && dl.options && dl.options.length);
+          if (!hasOptions) return;
+
+          // Astuce : certains navigateurs n'affichent la datalist qu'après un "input" ou une touche.
+          creationFormFabricant.dispatchEvent(new Event("input", { bubbles: true }));
+          window.requestAnimationFrame(() => {
+            try {
+              creationFormFabricant.dispatchEvent(
+                new KeyboardEvent("keydown", { key: "ArrowDown", code: "ArrowDown", bubbles: true })
+              );
+            } catch (e) {
+              // ignore
+            }
+          });
+        };
+
         creationFormFabricant.addEventListener("input", updateCreationFabricantIsNew);
         creationFormFabricant.addEventListener("change", updateCreationFabricantIsNew);
         creationFormFabricant.addEventListener("blur", updateCreationFabricantIsNew);
+        creationFormFabricant.addEventListener("focus", openFabricantDatalist);
+        creationFormFabricant.addEventListener("click", openFabricantDatalist);
       }
 
       if (creationAddRowBtn && creationTbody) {
@@ -2147,7 +2613,7 @@
           cycle_vie_production: cycleProd,
           statut_article: statut,
           cycle_vie_achat: cycleAchat,
-          commentaire_technique: toUpperNoAccents(commTech),
+          commentaire_technique: commTech,
           poids_kg: poids,
           long_m: longM,
           larg_m: largM,
@@ -2166,7 +2632,7 @@
           criticite: crit,
           mnemonique: toUpperNoAccents(mnemo).slice(0, 20),
           fabricant: toUpperNoAccents(fabricant),
-          reference_fabricant: toUpperNoAccents(refFab).slice(0, 31),
+          reference_fabricant: toUpperNoAccents(refFab),
         };
 
         return [row];
@@ -2253,34 +2719,34 @@
         if (!creationTbody) return rows;
         creationTbody.querySelectorAll("tr").forEach((tr) => {
           const v = (n, sel) => norm(tr.querySelector(`td:nth-child(${n}) ${sel}`)?.value || "");
-          const article = v(1, "select");
-          const feuille = v(2, "select");
-          const libCourt = v(3, "input");
-          const libLong = v(4, "input");
-          const typeArticle = v(5, "select");
-          const cycleProd = v(6, "select");
-          const statut = v(7, "select");
-          const cycleAchat = v(8, "select");
-          const commTech = v(9, "input");
-          const poids = v(10, "input");
-          const longM = v(11, "input");
-          const largM = v(12, "input");
-          const hautM = v(13, "input");
-          const datacenter = v(14, "select");
-          const horsNorme = v(15, "select");
-          const peremption = v(16, "select");
-          const matDang = v(17, "select");
-          const catMd = v(18, "input");
-          const codeOnu = v(19, "input");
-          const catConsoFlag = v(20, "select");
-          const catConso = v(21, "input");
-          const sousCatConso = v(22, "input");
-          const retourProd = v(23, "select");
-          const prixPrev = v(24, "input");
-          const crit = v(25, "select");
-          const mnemo = v(26, "input");
-          const fabricant = v(27, "input");
-          const refFab = v(28, "input");
+          const fabricant = v(1, "input");
+          const refFab = v(2, "input");
+          const prixPrev = v(3, "input");
+          const article = v(4, "select");
+          const feuille = v(5, "select");
+          const libCourt = v(6, "input");
+          const libLong = v(7, "input");
+          const typeArticle = v(8, "select");
+          const mnemo = v(9, "input");
+          const cycleProd = v(10, "select");
+          const cycleAchat = v(11, "select");
+          const statut = v(12, "select");
+          const crit = v(13, "select");
+          const commTech = v(14, "input");
+          const poids = v(15, "input");
+          const longM = v(16, "input");
+          const largM = v(17, "input");
+          const hautM = v(18, "input");
+          const datacenter = v(19, "select");
+          const horsNorme = v(20, "select");
+          const peremption = v(21, "select");
+          const retourProd = v(22, "select");
+          const matDang = v(23, "select");
+          const catMd = v(24, "select");
+          const codeOnu = v(25, "input");
+          const catConsoFlag = v(26, "select");
+          const catConso = v(27, "select");
+          const sousCatConso = v(28, "select");
 
           if (!article && !feuille && !libCourt && !libLong && !typeArticle) return;
 
@@ -2302,25 +2768,61 @@
             article_hors_norme: norm(horsNorme),
             peremption: norm(peremption),
             matiere_dangereuse: norm(matDang),
-            categorie_md: norm(catMd),
-            code_onu: norm(codeOnu),
+            categorie_md: toUpperNoAccents(catMd),
+            code_onu: toUpperNoAccents(codeOnu),
             catalogue_consommables: norm(catConsoFlag),
-            categorie_consommables: norm(catConso),
-            sous_categorie_consommables: norm(sousCatConso),
+            categorie_consommables: toUpperNoAccents(catConso),
+            sous_categorie_consommables: toUpperNoAccents(sousCatConso),
             retour_production: norm(retourProd),
             prix_previsionnel: norm(prixPrev),
             criticite: norm(crit),
             mnemonique: toUpperNoAccents(mnemo).slice(0, 20),
             fabricant: toUpperNoAccents(fabricant),
-            reference_fabricant: toUpperNoAccents(refFab).slice(0, 31),
+            reference_fabricant: toUpperNoAccents(refFab),
           });
         });
         return rows;
       }
 
       function validateCreationRows(rows) {
-        const missingBase = rows.some((r) => !r.article_tdf_clt || !r.feuille_du_catalogue || !r.libelle_court || !r.libelle_long || !r.type_article || !r.cycle_vie_production || !r.statut_article || !r.cycle_vie_achat || !r.criticite || !r.fabricant || !r.reference_fabricant);
-        if (missingBase) return "Veuillez renseigner au moins une ligne complète (article TDF/CLT, feuille du catalogue, libellés, type, cycles, statut, criticité, fabricant, référence fabricant).";
+        const missingRow = (rows || []).find((r) => {
+          if (!r) return true;
+          return !r.article_tdf_clt
+            || !r.feuille_du_catalogue
+            || !r.libelle_court
+            || !r.libelle_long
+            || !r.type_article
+            || !r.cycle_vie_production
+            || !r.cycle_vie_achat
+            || !r.statut_article
+            || !r.criticite
+            || !r.fabricant
+            || !r.reference_fabricant
+            || !r.prix_previsionnel
+            || !r.article_datacenter
+            || !r.peremption
+            || !r.matiere_dangereuse;
+        });
+
+        if (missingRow) {
+          const missing = [];
+          if (!missingRow.article_tdf_clt) missing.push("Article TDF/CLT");
+          if (!missingRow.feuille_du_catalogue) missing.push("Feuille du catalogue");
+          if (!missingRow.fabricant) missing.push("Fabricant");
+          if (!missingRow.reference_fabricant) missing.push("Référence fabricant");
+          if (!missingRow.prix_previsionnel) missing.push("Prix prévisionnel");
+          if (!missingRow.libelle_court) missing.push("Libellé court");
+          if (!missingRow.libelle_long) missing.push("Libellé long");
+          if (!missingRow.type_article) missing.push("Type article");
+          if (!missingRow.cycle_vie_production) missing.push("Cycle de vie production");
+          if (!missingRow.cycle_vie_achat) missing.push("Cycle de vie achat");
+          if (!missingRow.statut_article) missing.push("Statut d'article");
+          if (!missingRow.criticite) missing.push("Criticité");
+          if (!missingRow.article_datacenter) missing.push("Article datacenter");
+          if (!missingRow.peremption) missing.push("Péremption");
+          if (!missingRow.matiere_dangereuse) missing.push("Matière dangereuse");
+          return "Champs obligatoires manquants : " + missing.join(", ") + ".";
+        }
 
         const mnemoMissing = rows.some((r) => norm(r.type_article) && norm(r.type_article) !== "COMPOS" && !r.mnemonique);
         if (mnemoMissing) return "Si 'Type article' ≠ COMPOS, alors 'Mnémonique' est obligatoire.";
@@ -2328,9 +2830,8 @@
         const libCourtTooLong = rows.some((r) => String(r.libelle_court || "").length > 120);
         const libLongTooLong = rows.some((r) => String(r.libelle_long || "").length > 240);
         const mnemoTooLong = rows.some((r) => String(r.mnemonique || "").length > 20);
-        const refTooLong = rows.some((r) => String(r.reference_fabricant || "").length > 31);
-        if (libCourtTooLong || libLongTooLong || mnemoTooLong || refTooLong) {
-          return "Un ou plusieurs champs dépassent la longueur maximale (libellés / mnémonique / référence fabricant).";
+        if (libCourtTooLong || libLongTooLong || mnemoTooLong) {
+          return "Un ou plusieurs champs dépassent la longueur maximale (libellés / mnémonique).";
         }
 
         const mdMissing = rows.some((r) => isYes(r.matiere_dangereuse) && (!r.categorie_md || !r.code_onu));
@@ -2403,14 +2904,19 @@
           }
 
           const columns = [
+            "fabricant",
+            "reference_fabricant",
+            "prix_previsionnel",
             "article_tdf_clt",
             "feuille_du_catalogue",
             "libelle_court",
             "libelle_long",
             "type_article",
+            "mnemonique",
             "cycle_vie_production",
-            "statut_article",
             "cycle_vie_achat",
+            "statut_article",
+            "criticite",
             "commentaire_technique",
             "poids_kg",
             "long_m",
@@ -2419,18 +2925,13 @@
             "article_datacenter",
             "article_hors_norme",
             "peremption",
+            "retour_production",
             "matiere_dangereuse",
             "categorie_md",
             "code_onu",
             "catalogue_consommables",
             "categorie_consommables",
             "sous_categorie_consommables",
-            "retour_production",
-            "prix_previsionnel",
-            "criticite",
-            "mnemonique",
-            "fabricant",
-            "reference_fabricant",
           ];
 
           const header = [

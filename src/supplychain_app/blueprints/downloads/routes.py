@@ -5,6 +5,7 @@ from datetime import datetime
 import polars as pl
 from flask import jsonify, send_file, request
 from openpyxl import Workbook
+from openpyxl import load_workbook
 
 from . import bp
 from supplychain_app.constants import path_r, folder_gestion_pr, path_lmline, path_datan, folder_name_app
@@ -15,6 +16,104 @@ CHRONO_FUSION_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Dat
 
 
 ARTICLE_REQUESTS_DEMANDES_DIR = r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES"
+
+
+def _norm_header(h: str) -> str:
+    s = "" if h is None else str(h)
+    s = s.strip().lower()
+    s = s.replace("\u00A0", " ")
+    s = "_".join(s.split())
+    s = s.replace("-", "_")
+    return s
+
+
+def _s(v):
+    return "" if v is None else str(v)
+
+
+def _parse_creation_articles_xlsx(file_path: str) -> list[dict]:
+    wb = load_workbook(file_path, data_only=True)
+    ws = wb.active
+    rows = list(ws.iter_rows(values_only=True))
+    if not rows:
+        return []
+
+    header_row = rows[0]
+    headers = [_norm_header(h) for h in header_row]
+    idx_by_key = {k: i for i, k in enumerate(headers) if k}
+
+    aliases = {
+        "feuille_catalogue": "feuille_du_catalogue",
+        "feuille_de_catalogue": "feuille_du_catalogue",
+        "ref_fabricant": "reference_fabricant",
+        "reference_fab": "reference_fabricant",
+        "ref_fab": "reference_fabricant",
+        "prix_prev": "prix_previsionnel",
+        "prix_previsionnel_eur": "prix_previsionnel",
+        "cat_md": "categorie_md",
+        "onu": "code_onu",
+        "code_onu_adr": "code_onu",
+        "conso": "catalogue_consommables",
+        "categorie_conso": "categorie_consommables",
+        "sous_categorie_conso": "sous_categorie_consommables",
+        "mnemo": "mnemonique",
+    }
+    idx = {}
+    for k, i in idx_by_key.items():
+        idx[aliases.get(k, k)] = i
+
+    wanted = [
+        "fabricant",
+        "reference_fabricant",
+        "prix_previsionnel",
+        "article_tdf_clt",
+        "feuille_du_catalogue",
+        "libelle_court",
+        "libelle_long",
+        "type_article",
+        "mnemonique",
+        "cycle_vie_production",
+        "cycle_vie_achat",
+        "statut_article",
+        "criticite",
+        "commentaire_technique",
+        "poids_kg",
+        "long_m",
+        "larg_m",
+        "haut_m",
+        "article_datacenter",
+        "article_hors_norme",
+        "peremption",
+        "retour_production",
+        "matiere_dangereuse",
+        "categorie_md",
+        "code_onu",
+        "catalogue_consommables",
+        "categorie_consommables",
+        "sous_categorie_consommables",
+    ]
+
+    out: list[dict] = []
+    for r in rows[1:]:
+        if r is None:
+            continue
+
+        is_empty = True
+        row_obj: dict = {}
+        for key in wanted:
+            j = idx.get(key)
+            val = r[j] if j is not None and j < len(r) else None
+            sval = _s(val).strip()
+            if sval:
+                is_empty = False
+            row_obj[key] = sval
+
+        if is_empty:
+            continue
+
+        out.append(row_obj)
+
+    return out
 
 
 def _latest_file_in_dir(directory: str, pattern_ext: tuple = (".xlsx", ".xls", ".csv")):
@@ -197,6 +296,89 @@ def save_demande_modif_criticite_xlsx():
         "path": out_path,
         "dir": ARTICLE_REQUESTS_DEMANDES_DIR,
     })
+
+
+@bp.get("/demandes/creation_articles_template_xlsx")
+def download_demande_creation_articles_template_xlsx():
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "modele"
+
+    headers = [
+        "fabricant",
+        "reference_fabricant",
+        "prix_previsionnel",
+        "article_tdf_clt",
+        "feuille_du_catalogue",
+        "libelle_court",
+        "libelle_long",
+        "type_article",
+        "mnemonique",
+        "cycle_vie_production",
+        "cycle_vie_achat",
+        "statut_article",
+        "criticite",
+        "commentaire_technique",
+        "poids_kg",
+        "long_m",
+        "larg_m",
+        "haut_m",
+        "article_datacenter",
+        "article_hors_norme",
+        "peremption",
+        "retour_production",
+        "matiere_dangereuse",
+        "categorie_md",
+        "code_onu",
+        "catalogue_consommables",
+        "categorie_consommables",
+        "sous_categorie_consommables",
+    ]
+    ws.append(headers)
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+    tmp_path = tmp.name
+    tmp.close()
+
+    try:
+        wb.save(tmp_path)
+    except Exception:
+        return jsonify({"error": "write_failed"}), 500
+
+    return send_file(
+        tmp_path,
+        as_attachment=True,
+        download_name="modele_creation_articles.xlsx",
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+
+
+@bp.post("/demandes/creation_articles_parse_xlsx")
+def parse_demande_creation_articles_xlsx():
+    if "file" not in request.files:
+        return jsonify({"error": "file_required"}), 400
+    f = request.files["file"]
+    if not f or not getattr(f, "filename", ""):
+        return jsonify({"error": "file_required"}), 400
+    name = str(f.filename).lower()
+    if not (name.endswith(".xlsx") or name.endswith(".xlsm")):
+        return jsonify({"error": "invalid_extension"}), 400
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".xlsx", delete=False)
+    tmp_path = tmp.name
+    tmp.close()
+    try:
+        f.save(tmp_path)
+        rows = _parse_creation_articles_xlsx(tmp_path)
+    except Exception as e:
+        return jsonify({"error": f"parse_failed: {e.__class__.__name__}", "message": str(e)}), 400
+    finally:
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
+
+    return jsonify({"ok": True, "rows": rows})
 
 
 @bp.post("/demandes/creation_articles_xlsx")

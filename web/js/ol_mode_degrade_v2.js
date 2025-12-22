@@ -229,8 +229,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const res = await fetch(API(`/technicians/ol_pudo_address/${encodeURIComponent(codePr)}`));
+      const res = await fetch(API(`/technicians/ol_pudo_address/${encodeURIComponent(codePr)}`), {
+        method: "GET",
+        credentials: "include",
+      });
       if (!res.ok) {
+        if (res.status === 403) {
+          if (olStatusDiv) {
+            olStatusDiv.textContent = "Accès OL mode dégradé interdit (non autorisé).";
+          }
+          if (validateBtn) validateBtn.disabled = true;
+        }
         currentPrAddress = "";
         if (destPrAddressEl) destPrAddressEl.textContent = "";
         updateDestinationSummary();
@@ -265,8 +274,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadStores() {
     try {
-      const res = await fetch(API("/technicians/ol_stores"));
-      if (!res.ok) return;
+      const res = await fetch(API("/technicians/ol_stores"), {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        if (res.status === 403) {
+          if (olStatusDiv) {
+            olStatusDiv.textContent = "Accès OL mode dégradé interdit (non autorisé).";
+          }
+          if (validateBtn) validateBtn.disabled = true;
+        }
+        return;
+      }
       const data = await res.json();
       const stores = data.stores || [];
       stores
@@ -523,8 +543,18 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     try {
-      const res = await fetch(API(`/technicians/ol_igs_search?q=${encodeURIComponent(q)}&limit=50`));
-      if (!res.ok) return;
+      const res = await fetch(API(`/technicians/ol_igs_search?q=${encodeURIComponent(q)}&limit=50`), {
+        method: "GET",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        if (res.status === 403) {
+          if (olStatusDiv) {
+            olStatusDiv.textContent = "Accès OL mode dégradé interdit (non autorisé).";
+          }
+        }
+        return;
+      }
       const data = await res.json();
       const igs = data.igs || [];
       igByCode = {};
@@ -561,8 +591,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function loadTechnicians() {
     try {
-      const res = await fetch(API("/technicians/ol_technicians"));
+      const res = await fetch(API("/technicians/ol_technicians"), {
+        method: "GET",
+        credentials: "include",
+      });
       if (!res.ok) {
+        if (res.status === 403) {
+          if (olStatusDiv) {
+            olStatusDiv.textContent = "Accès OL mode dégradé interdit (non autorisé).";
+          }
+          if (validateBtn) validateBtn.disabled = true;
+        }
         return;
       }
       const data = await res.json();

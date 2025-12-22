@@ -285,15 +285,63 @@ document.addEventListener("DOMContentLoaded", () => {
     const first = rows[0] || {};
     let cols = Object.keys(first);
 
-    const ordered = [];
-    if (cols.includes("type_de_depot")) ordered.push("type_de_depot");
-    if (cols.includes("flag_stock_d_m")) ordered.push("flag_stock_d_m");
-    const remaining = cols.filter(c => !ordered.includes(c));
+    const desiredOrder = [
+      "flag_stock_d_m",
+      "type_de_depot",
+      "GOOD",
+      "BAD",
+      "BLOQG",
+      "BLOQB",
+    ];
+
+    const ordered = desiredOrder.filter((c) => cols.includes(c));
+    const remaining = cols.filter((c) => !ordered.includes(c));
     cols = [...ordered, ...remaining];
 
     theadStock.innerHTML = cols.map(c => `<th style="text-align:left;">${c}</th>`).join("");
 
-    rows.forEach(r => {
+    const flagRank = { "M": 0, "D": 1 };
+    const depotOrder = [
+      "NATIONAL",
+      "LOCAL",
+      "RESERVE",
+      "END",
+      "FOURNISSEUR",
+      "REO",
+      "EMBARQUE",
+      "EXPERT DPR",
+      "EXPERT DTE",
+      "PIED DE SITE",
+      "DIVERS",
+      "LABORATOIRE",
+      "FILIALE",
+      "DATACENTER",
+      "REPARATEUR INTERNE",
+      "REPARATEUR EXTERNE",
+      "DTOM",
+    ];
+    const depotRank = Object.fromEntries(depotOrder.map((v, i) => [v, i]));
+
+    const sortedRows = [...rows].sort((a, b) => {
+      const af = String(a?.flag_stock_d_m ?? "").trim().toUpperCase();
+      const bf = String(b?.flag_stock_d_m ?? "").trim().toUpperCase();
+      const arf = Object.prototype.hasOwnProperty.call(flagRank, af) ? flagRank[af] : 99;
+      const brf = Object.prototype.hasOwnProperty.call(flagRank, bf) ? flagRank[bf] : 99;
+      if (arf !== brf) return arf - brf;
+
+      const ad = String(a?.type_de_depot ?? "").trim().toUpperCase();
+      const bd = String(b?.type_de_depot ?? "").trim().toUpperCase();
+      const ard = Object.prototype.hasOwnProperty.call(depotRank, ad) ? depotRank[ad] : 999;
+      const brd = Object.prototype.hasOwnProperty.call(depotRank, bd) ? depotRank[bd] : 999;
+      if (ard !== brd) return ard - brd;
+
+      if (ad && bd) return ad.localeCompare(bd, "fr", { sensitivity: "base" });
+      if (ad) return -1;
+      if (bd) return 1;
+      return 0;
+    });
+
+    sortedRows.forEach(r => {
       const tr = document.createElement("tr");
       cols.forEach(c => {
         const td = document.createElement("td");

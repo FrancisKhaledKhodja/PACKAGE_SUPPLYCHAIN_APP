@@ -71,6 +71,7 @@ body.dark-theme .muted {
 /* Formulaire et boutons */
 input[type="text"],
 input[type="search"],
+input[type="number"],
 select {
   border: 1px solid #d1d5db;
   border-radius: 0.5rem;
@@ -81,6 +82,7 @@ select {
 
 body.dark-theme input[type="text"],
 body.dark-theme input[type="search"],
+body.dark-theme input[type="number"],
 body.dark-theme select {
   background-color: #020617;
   border-color: #4b5563;
@@ -216,6 +218,19 @@ header nav a:hover {
 .logo-scapp .logo-part-app {
   color: #22c55e;
   font-weight: 500;
+}
+
+.scapp-app-version {
+  display: inline-block;
+  margin-left: 0.6rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  line-height: 1.2;
+  color: #e5e7eb;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  vertical-align: middle;
 }
 
 /* Aide anime9e (tips) */

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CATALOGUE CONSOMMABLES</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=3" defer></script>
+  <script src="js/catalogue_consommables.js" defer></script>
+  <style>
+    .conso-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .conso-toolbar .left {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+      flex: 1 1 0;
+    }
+    .conso-toolbar input, .conso-toolbar select {
+      min-width: 220px;
+      max-width: 100%;
+    }
+    .conso-meta {
+      font-size: 0.85rem;
+    }
+    .conso-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.75rem;
+    }
+    .conso-help {
+      margin: 0.75rem 0;
+      padding: 0.75rem 0.9rem;
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      background: #f8fafc;
+    }
+    body.dark-theme .conso-help {
+      border-color: #1f2937;
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .conso-help h3 {
+      margin: 0;
+      font-size: 0.95rem;
+    }
+    .conso-help .help-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 0.5rem 1rem;
+      margin-top: 0.5rem;
+    }
+    .conso-help .help-item {
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+    .conso-help .help-item .k {
+      font-weight: 700;
+    }
+    .conso-card {
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      background: #fff;
+      padding: 0.9rem;
+    }
+    body.dark-theme .conso-card {
+      border-color: #1f2937;
+      background: #0b1220;
+    }
+    .conso-title {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+    .conso-sub {
+      margin: 0.25rem 0 0;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+    body.dark-theme .conso-sub {
+      color: #9ca3af;
+    }
+    .conso-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-top: 0.5rem;
+    }
+    .conso-tag {
+      display: inline-block;
+      padding: 0.12rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e3a8a;
+    }
+    body.dark-theme .conso-tag {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: rgba(59, 130, 246, 0.25);
+      color: #bfdbfe;
+    }
+    .conso-details {
+      margin-top: 0.65rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.35rem;
+      font-size: 0.9rem;
+    }
+    .conso-details .row {
+      gap: 0.5rem;
+      align-items: baseline;
+    }
+    .conso-details .k {
+      color: #6b7280;
+      min-width: 120px;
+    }
+    body.dark-theme .conso-details .k {
+      color: #9ca3af;
+    }
+    .conso-details .v {
+      font-weight: 600;
+      word-break: break-word;
+    }
+    .conso-empty {
+      text-align: center;
+      padding: 1.5rem;
+      color: #6b7280;
+    }
+    body.dark-theme .conso-empty {
+      color: #9ca3af;
+    }
+  </style>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <main class="scapp-p-2rem">
+    <div class="card">
+      <h2 class="scapp-mt-0" style="margin-bottom:0.25rem;">Catalogue consommables</h2>
+      <div id="conso-meta" class="muted conso-meta"></div>
+
+      <div class="conso-help">
+        <h3>Comment lire les informations de l'offre catalogue</h3>
+        <div class="help-grid">
+          <div class="help-item"><span class="k">Libellé article</span> : nom affiché de l’article (désignation). C’est le texte principal de la carte.</div>
+          <div class="help-item"><span class="k">Code article</span> : identifiant de référence à utiliser pour la recherche, la commande et l’ouverture de la fiche article.</div>
+          <div class="help-item"><span class="k">Famille consommable</span> : catégorie fonctionnelle de l’article (permet de filtrer l’offre).</div>
+          <div class="help-item"><span class="k">Catégorie sans sortie</span> : indicateur d’ancienneté/absence de consommation (plus la catégorie est élevée, plus l’article a peu de sorties).</div>
+          <div class="help-item"><span class="k">Stock disponible plateforme centrale</span> : stock "MPLC" en qualité "GOOD" avec flag "M" (stock utilisable sur la plateforme centrale).</div>
+          <div class="help-item"><span class="k">Sorties conso</span> : volume total des mouvements "SORTIE CONSOMMATION" (toutes années).</div>
+        </div>
+      </div>
+
+      <div class="conso-toolbar section">
+        <div class="left">
+          <input type="search" id="conso-search" placeholder="Rechercher (code, libellé, catégorie...)" />
+          <select id="conso-category">
+            <option value="">Toutes les catégories</option>
+          </select>
+        </div>
+        <div>
+          <button id="conso-refresh" type="button">Rafraîchir</button>
+        </div>
+      </div>
+
+      <div id="conso-status" class="muted"></div>
+      <div id="conso-grid" class="conso-grid"></div>
+    </div>
+  </main>
+</body>
+</html>

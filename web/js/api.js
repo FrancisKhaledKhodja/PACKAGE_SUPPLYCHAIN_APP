@@ -79,6 +79,8 @@ async function scappRenderHeader() {
 
   const appInfo = await scappFetchAppInfo();
   const hideLlmRag = !!(appInfo && appInfo.hide_llm_rag);
+  const version = appInfo && appInfo.version ? String(appInfo.version).trim() : "";
+  const versionHtml = version ? `<span class="scapp-app-version">v${version}</span>` : "";
 
   const llmRagLink = hideLlmRag
     ? ""
@@ -92,6 +94,7 @@ async function scappRenderHeader() {
         <span class="logo-part-chain">Chain</span>
         <span class="logo-part-app">App</span>
       </span>
+      ${versionHtml}
     </h1>
     <div style="display:flex; flex-direction:column; gap:0.35rem; align-items:flex-end;">
       <nav>
@@ -121,6 +124,7 @@ async function scappRenderHeader() {
             <a href="stores.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE PR ET MAGASINS PROCHES D'UNE ADRESSE</a>
             <a href="technician_assignments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION PR TECHNICIEN</a>
             <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ADMINISTRATION PR</a>
+            <a href="pudo_directory.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ANNUAIRE POINTS RELAIS</a>
           </div>
         </div>
 
@@ -128,6 +132,7 @@ async function scappRenderHeader() {
           <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">APPLICATIONS / OUTILS ▾</button>
           <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:280px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
             <a href="helios.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">PARC HELIOS</a>
+            <a href="catalogue_consommables.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CATALOGUE CONSOMMABLES</a>
             <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">OL MODE DÉGRADÉ</a>
             <a href="downloads.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TÉLÉCHARGEMENTS</a>
           </div>

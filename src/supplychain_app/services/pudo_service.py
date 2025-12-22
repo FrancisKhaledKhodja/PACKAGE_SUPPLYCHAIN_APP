@@ -687,9 +687,28 @@ def get_pudo_directory() -> list[dict]:
         return []
 
     cols = []
-    for c in ["code_point_relais", "enseigne", "ville", "adresse_1", "code_postal", "statut"]:
+    for c in [
+        "code_point_relais",
+        "enseigne",
+        "ville",
+        "adresse_1",
+        "code_postal",
+        "statut",
+        "categorie_pr_chronopost",
+        "nom_prestataire",
+        "latitude",
+        "longitude",
+    ]:
         if c in pudos.columns:
             cols.append(c)
+
+    try:
+        extra_cols = [c for c in pudos.columns if "fermet" in str(c).lower()]
+        for c in extra_cols:
+            if c not in cols:
+                cols.append(c)
+    except Exception:
+        pass
     df = pudos.select(cols)
 
     rows: list[dict] = []

@@ -5,7 +5,9 @@ from supplychain_app.constants import (path_r,
                                             folder_gestion_pr,  
                                             path_exit_parquet,
                                             path_datan, 
-                                            folder_name_app)
+                                            folder_name_app,
+                                            CONSO_OFFER_SRC_DIR,
+                                            CONSO_OFFER_PARQUET_DIR)
 import polars as pl
 from supplychain_app.excel_csv_to_dataframe import read_excel
 from supplychain_app.my_loguru import logger
@@ -14,6 +16,54 @@ SRC_STOCK_554_SUPPLYCHAIN_APP = r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\S
 NAME_FILE_554 = "554 - (STK SPD TPS REEL) - STOCK TEMPS REEL SUPPLYCHAIN_APP.xlsx"
 
 last_update_summary: dict | None = None
+
+
+def _latest_excel_in_dir(directory: str) -> str | None:
+    try:
+        names = [
+            f for f in os.listdir(directory)
+            if f.lower().endswith((".xlsx", ".xls"))
+        ]
+        if not names:
+            return None
+
+        preferred = [
+            f for f in names
+            if f.lower().startswith(("offre_consommable", "offre_consommables"))
+        ]
+        candidates = preferred if preferred else names
+
+        def _key(fname: str):
+            try:
+                mtime = os.path.getmtime(os.path.join(directory, fname))
+            except Exception:
+                mtime = 0
+            return (mtime, fname.lower())
+
+        best = max(candidates, key=_key)
+        return os.path.join(directory, best)
+    except Exception:
+        return None
+
+
+def _atomic_write_parquet(df: pl.DataFrame, dst_path: str) -> None:
+    dst_dir = os.path.dirname(dst_path)
+    os.makedirs(dst_dir, exist_ok=True)
+    tmp_path = dst_path + ".tmp"
+    try:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
+        df.write_parquet(tmp_path)
+        os.replace(tmp_path, dst_path)
+    finally:
+        if os.path.exists(tmp_path):
+            try:
+                os.remove(tmp_path)
+            except Exception:
+                pass
 
 def _ensure_app_folder():
     folders_list = os.listdir(path_datan)
@@ -70,6 +120,13 @@ def get_update_status():
 
     src_stock_final = os.path.join(path_exit_parquet, "stock_final.parquet")
     dst_stock_final = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
+
+    conso_src_dir = (CONSO_OFFER_SRC_DIR or "").strip()
+    conso_dst_dir = (CONSO_OFFER_PARQUET_DIR or "").strip()
+    conso_src = None
+    if conso_src_dir and os.path.isdir(conso_src_dir):
+        conso_src = _latest_excel_in_dir(conso_src_dir)
+    conso_dst = os.path.join(conso_dst_dir, "offre_consommables.parquet") if conso_dst_dir else None
 
     items = []
     if src_annuaire:
@@ -165,6 +222,15 @@ def get_update_status():
         "dst_mtime": _mtime(dst_stock_final),
     })
 
+    if conso_src or conso_dst:
+        items.append({
+            "key": "conso_offer",
+            "src": conso_src,
+            "dst": conso_dst,
+            "src_mtime": _mtime(conso_src) if conso_src else None,
+            "dst_mtime": _mtime(conso_dst) if conso_dst else None,
+        })
+
     for it in items:
         sm = it.get("src_mtime")
         dm = it.get("dst_mtime")
@@ -257,6 +323,15 @@ def update_data():
     stock_final_info = next((x for x in status if x["key"] == "stock_final"), None)
     if stock_final_info and stock_final_info["src_mtime"] is not None and stock_final_info["needs_update"]:
         shutil.copy(stock_final_info["src"], stock_final_info["dst"])
+
+    conso_info = next((x for x in status if x["key"] == "conso_offer"), None)
+    if conso_info and conso_info.get("src") and conso_info.get("dst") and conso_info.get("needs_update"):
+        try:
+            src_path = str(conso_info["src"])
+            df_offer = read_excel(os.path.dirname(src_path), os.path.basename(src_path))
+            _atomic_write_parquet(df_offer, str(conso_info["dst"]))
+        except Exception:
+            raise
 
     # Recompute after updates to report final state
     status_after = get_update_status()

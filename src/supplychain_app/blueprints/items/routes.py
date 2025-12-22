@@ -1,5 +1,6 @@
 import os
 import polars as pl
+import unicodedata
 
 from flask import request, jsonify
 
@@ -60,6 +61,210 @@ def list_fabricants():
         return jsonify({"values": values})
     except Exception:
         return jsonify({"values": []})
+
+
+def _norm_txt(v: str) -> str:
+    s = (v or "").strip()
+    if not s:
+        return ""
+    try:
+        s = unicodedata.normalize("NFKD", s)
+        s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    except Exception:
+        pass
+    # normaliser les espaces (NBSP, tabulations, multiples)
+    try:
+        s = s.replace("\u00A0", " ")
+        s = " ".join(s.split())
+    except Exception:
+        pass
+    return s.upper()
+
+
+def _norm_expr(col_name: str) -> pl.Expr:
+    """Normalisation côté Polars (alignée avec _norm_txt) pour comparaison robuste."""
+    # Remarque : on réduit les espaces multiples, y compris NBSP.
+    return (
+        pl.col(col_name)
+        .cast(pl.Utf8, strict=False)
+        .str.replace_all("\u00A0", " ")
+        .str.replace_all(r"\s+", " ")
+        .str.strip_chars()
+        .str.to_uppercase()
+    )
+
+
+@bp.get("/pim/check_reference_fabricant")
+def pim_check_reference_fabricant():
+    """Vérifie si une référence fabricant existe déjà dans le parquet manufacturers (PIM).
+
+    Query params:
+      - reference: référence fabricant saisie (obligatoire)
+      - fabricant: nom du fabricant/fournisseur (optionnel)
+
+    Retour:
+      { exists: bool, matches: int, samples: [..] }
+    """
+    debug = str(request.args.get("debug", "")).strip() in {"1", "true", "True", "yes", "YES"}
+    strict_fabricant = str(request.args.get("strict_fabricant", "")).strip() in {"1", "true", "True", "yes", "YES"}
+
+    ref = _norm_txt(request.args.get("reference", ""))
+    fabricant = _norm_txt(request.args.get("fabricant", ""))
+    if not ref:
+        payload = {"exists": False, "matches": 0, "samples": []}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "reason": "empty_reference",
+                }
+            )
+        return jsonify(payload)
+
+    parquet_path = os.path.join(path_datan, folder_name_app, "manufacturer.parquet")
+    if not os.path.exists(parquet_path):
+        parquet_path = os.path.join(path_datan, folder_name_app, "manufacturers.parquet")
+        if not os.path.exists(parquet_path):
+            payload = {"exists": False, "matches": 0, "samples": []}
+            if debug:
+                payload.update(
+                    {
+                        "debug": True,
+                        "reason": "parquet_not_found",
+                        "tried": [
+                            os.path.join(path_datan, folder_name_app, "manufacturer.parquet"),
+                            os.path.join(path_datan, folder_name_app, "manufacturers.parquet"),
+                        ],
+                    }
+                )
+            return jsonify(payload)
+
+    try:
+        df = pl.read_parquet(parquet_path)
+    except Exception as e:
+        payload = {"exists": False, "matches": 0, "samples": []}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "reason": "parquet_read_error",
+                    "parquet_path": parquet_path,
+                    "error": str(e),
+                }
+            )
+        return jsonify(payload)
+
+    if df.is_empty():
+        payload = {"exists": False, "matches": 0, "samples": []}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "reason": "parquet_empty",
+                    "parquet_path": parquet_path,
+                }
+            )
+        return jsonify(payload)
+
+    ref_candidates = [
+        "reference_article_fabricant",
+        "reference_fabricant",
+        "ref_fabricant",
+        "reference",
+        "ref",
+        "ref_fournisseur",
+        "reference_fournisseur",
+    ]
+    fab_candidates = [
+        "fabricant",
+        "nom_fournisseur",
+        "fournisseur",
+        "manufacturer",
+    ]
+
+    # 1) colonnes candidates explicites
+    ref_cols = [c for c in ref_candidates if c in df.columns]
+    # 2) fallback : colonnes contenant ref/reference dans le nom
+    if not ref_cols:
+        ref_cols = [
+            c for c in df.columns
+            if ("ref" in c.lower() or "reference" in c.lower())
+        ]
+    # 3) fallback ultime : toutes les colonnes texte
+    if not ref_cols:
+        try:
+            ref_cols = [c for c, t in df.schema.items() if t == pl.Utf8]
+        except Exception:
+            ref_cols = []
+    if not ref_cols:
+        payload = {"exists": False, "matches": 0, "samples": []}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "reason": "no_reference_columns",
+                    "parquet_path": parquet_path,
+                    "columns": df.columns,
+                }
+            )
+        return jsonify(payload)
+    fab_cols = [c for c in fab_candidates if c in df.columns]
+
+    try:
+        cond_ref = None
+        for c in ref_cols:
+            ccond = _norm_expr(c) == ref
+            cond_ref = ccond if cond_ref is None else (cond_ref | ccond)
+
+        cond = cond_ref
+        # Par défaut, ne pas filtrer par fabricant: c'est trop fragile et provoque des faux négatifs.
+        # Activer le filtre seulement si strict_fabricant=1.
+        if strict_fabricant and fabricant and fab_cols:
+            cond_fab = None
+            for c in fab_cols:
+                ccond = _norm_expr(c) == fabricant
+                cond_fab = ccond if cond_fab is None else (cond_fab | ccond)
+            cond = cond_ref & cond_fab
+
+        sub = df.filter(cond)
+        n = int(sub.height)
+        samples = []
+        if n:
+            wanted_cols = [c for c in [*fab_cols[:1], *ref_cols[:1], "code_article", "code_article_tdf", "code"] if c in sub.columns]
+            if not wanted_cols:
+                wanted_cols = sub.columns[:6]
+            samples = [r for r in sub.select(wanted_cols).head(5).iter_rows(named=True)]
+
+        payload = {"exists": bool(n), "matches": n, "samples": samples}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "parquet_path": parquet_path,
+                    "reference_norm": ref,
+                    "fabricant_norm": fabricant,
+                    "strict_fabricant": strict_fabricant,
+                    "ref_cols_used": ref_cols,
+                    "fab_cols_used": fab_cols,
+                    "df_height": int(df.height),
+                }
+            )
+        return jsonify(payload)
+    except Exception as e:
+        payload = {"exists": False, "matches": 0, "samples": []}
+        if debug:
+            payload.update(
+                {
+                    "debug": True,
+                    "reason": "filter_error",
+                    "parquet_path": parquet_path,
+                    "reference_norm": ref,
+                    "fabricant_norm": fabricant,
+                    "strict_fabricant": strict_fabricant,
+                    "error": str(e),
+                }
+            )
+        return jsonify(payload)
 
 @bp.post("/search")
 def items_search():

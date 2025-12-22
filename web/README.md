@@ -15,3 +15,9 @@ Entry points:
 - `stores.html` (magasins & points relais)
 - `downloads.html` (téléchargements)
 - `ol_mode_degrade.html` (ordre de livraison en mode dégradé pour les techniciens, génération d'e-mails DAHER / LM2S)
+
+URL parameters (deep links):
+
+- `items.html?code=<CODE_ARTICLE>`: opens and focuses an item code.
+- `items.html?q=<TEXTE_LIBRE>`: pre-fills the search and auto-runs.
+- `items.html?ref_fab=<REFERENCE_FABRICANT>`: pre-fills the search with a manufacturer reference and auto-runs.

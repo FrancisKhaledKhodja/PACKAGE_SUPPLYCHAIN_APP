@@ -1,7 +1,10 @@
 $ErrorActionPreference = 'Stop'
 
 # Build single EXE
-py -m PyInstaller --clean --noconfirm --onefile --name SupplyChainApp `
+$Version = '1.6'
+$ExeName = "SUPPLYCHAIN_APP_v$Version"
+
+py -m PyInstaller --clean --noconfirm --onefile --name $ExeName `
   --paths "src" `
   --add-data "web;web" `
   --collect-submodules "supplychain_app.blueprints.assistant" `

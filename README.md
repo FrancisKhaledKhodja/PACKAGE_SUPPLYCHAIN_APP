@@ -236,7 +236,7 @@ Depuis la racine du projet, avec `.venv` activé :
 Ce script génère un exécutable nommé selon le modèle :
 
 ```text
-dist\SUPPLYCHAIN_APP_v1.5.0.exe
+dist\SUPPLYCHAIN_APP_v1.6.exe
 ```
 
 ### 2.3. Résultat
@@ -246,7 +246,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SupplyChainApp.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.6.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -324,6 +324,10 @@ Navigation (header) :
   - bouton d’**export Excel** permettant de récupérer un fichier CSV (`localisation_stock.csv`) basé sur `stock_final.parquet`, respectant les filtres courants, uniquement si des résultats existent.
 - **Téléchargements (`downloads.html`)** :
   - accès aux exports générés (stock détaillé, statistiques de sorties, PUDO, etc.).
+- **Catalogue consommables (`catalogue_consommables.html`)** :
+  - liste d'une **offre de consommables** (consultable sur smartphone) construite à partir d'un fichier Excel,
+  - recherche texte + filtre par catégorie,
+  - l'offre peut être mise à jour quotidiennement par simple dépôt d'un nouveau fichier.
 - **Demande création / modification article (`article_request.html`)** :
   - saisie d'une demande via un tableau multi-lignes :
     - **Création d'article(s)** (mode formulaire ou feuille multi-lignes)
@@ -331,6 +335,24 @@ Navigation (header) :
     - **Modification du statut achetable / non achetable**
     - **Déclaration d'une équivalence**
     - **Demande de passage en REBUT**
+  - règles métiers & contrôles (création d'article) :
+    - la page est servie par le **frontend** sur `http://127.0.0.1:8000/` (fichiers statiques `web/`) ;
+    - les contrôles et exports s'appuient sur l'**API Flask** sur `http://127.0.0.1:5001/api/*`.
+    - bloc **REFERENCE FABRICANT** :
+      - l'utilisateur renseigne **Fabricant**, **Référence fabricant**, **Prix prévisionnel**.
+      - un encart d'aide (Étape 1) guide la saisie.
+    - normalisation des saisies texte (comportement UI) :
+      - les champs texte (ex: référence fabricant, libellés, etc.) sont normalisés en **MAJUSCULES** et **sans accents** à la sortie du champ (blur).
+      - exception : **Commentaire technique** n'est pas contraint (pas de conversion automatique, accents autorisés).
+    - contraintes de longueur :
+      - **Libellé court** : `120` caractères max, affichage en **textarea** + compteur.
+      - **Libellé long** : `240` caractères max, affichage en **textarea** + compteur.
+      - **Référence fabricant** : compteur indicatif sur `31` caractères conseillés.
+    - contrôle anti-doublon sur la **référence fabricant** (PIM) :
+      - au blur, l'application appelle `GET /api/items/pim/check_reference_fabricant?reference=...`.
+      - la recherche se fait dans `manufacturers.parquet` / `manufacturer(s).parquet` sur la colonne `reference_article_fabricant`.
+      - la comparaison normalise majuscules/sans accents et gère les espaces multiples / NBSP.
+      - si une correspondance est trouvée, un **lien** est affiché : il ouvre `items.html` pré-filtré sur la référence (`items.html?ref_fab=...`) pour afficher la liste des articles correspondants.
   - auto-remplissage de champs article à partir du code article (appel API `/api/items/<code>/details`),
   - génération d'un email via `mailto:` vers `referentiel_logistique@tdf.fr` (objet standardisé + corps en TSV),
   - génération serveur d'un fichier Excel de demande et **sauvegarde automatique sur un partage réseau**,
@@ -520,7 +542,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ## 5. Livraison / déploiement de l'exécutable
 
-- **Fichier à livrer** : `dist/SupplyChainApp.exe`.
+- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.6.exe`.
 - **Public cible** : postes Windows internes ne disposant pas forcément de Python.
 
 ### 5.1. Prérequis côté utilisateur
@@ -531,7 +553,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ### 5.2. Mode opératoire recommandé
 
-1. Copier `SupplyChainApp.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+1. Copier `SUPPLYCHAIN_APP_v1.6.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
 2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
 3. Double-cliquer sur l'exécutable :
    - une console s'ouvre avec les logs,
@@ -580,3 +602,43 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
   - Packaging :
     - exécutable NoLLM livré sous la forme `SUPPLYCHAIN_APP_v1.5.0.exe` (script `scripts/build_exe_no_llm.ps1`).
+
+  - Nouvel onglet **Catalogue consommables** :
+    - page frontend : `catalogue_consommables.html`
+    - endpoint : `GET /api/consommables/offer`
+    - administration simplifiée : dépôt d'un fichier Excel dans un dossier d'offre (voir ci-dessous)
+
+- **1.6.0**
+  - Catalogue consommables : enrichissements côté backend + affichage :
+    - stock filtré **MPLC / flag_stock_d_m = M / code_qualite = GOOD** depuis `stock_554.parquet` (`stock_mplc_good_m`),
+    - sorties consommation **somme toutes années** depuis `stats_exit.parquet` (`sorties_conso_total`),
+    - affichage de la **catégorie sans sortie** sous forme de badge (`categorie_sortie`, basé sur `categorie_sans_sortie`) avec code couleur.
+  - Onglet **RECHERCHE_STOCK** (`stock.html`) : amélioration de la lisibilité du tableau "Stock" :
+    - ordre des colonnes : `flag_stock_d_m`, `type_de_depot`, `GOOD`, `BAD`, `BLOQG`, `BLOQB` ;
+    - tri des lignes : `flag_stock_d_m` (`M` puis `D`), puis `type_de_depot` selon un ordre métier prédéfini.
+  - Version affichée dans le header : la version est alignée sur le **nom de l'exécutable** (si l'app tourne en mode EXE) et affichée à côté du logo.
+  - Sécurité OL MODE DÉGRADÉ V2 : verrouillage possible par liste blanche de logins via `SCAPP_OL_ALLOWED_LOGINS`.
+
+### 6.1. Administration : offre "Catalogue consommables"
+
+L'offre de consommables est pilotée par un fichier Excel :
+
+- Dossier d'offre (par défaut) : `D:\Datan\supply_chain_app\offre_consommables`
+- Surcharge via variable d'environnement : `SCAPP_CONSO_OFFER_DIR`
+- Règle de sélection : l'application charge le fichier d'offre **le plus récent** (date de modification / mtime), en privilégiant les fichiers dont le nom commence par `offre_consommable` / `offre_consommables`.
+  - Convention recommandée : fichiers datés type `offre_consommables_YYYYMMDD.xlsx`.
+
+Format de colonnes recommandé (tolérant côté frontend : plusieurs alias sont acceptés) :
+
+- `code_article`
+- `libelle`
+- `categorie`
+- `sous_categorie` (optionnel)
+- `prix` (optionnel)
+- `unite` (optionnel)
+- `commentaire` (optionnel)
+
+Dans l'onglet :
+
+- un lien "Voir la fiche article" est affiché pour chaque ligne (ouvre `items.html?code=<CODE>`),
+- un lien "Voir les photos" est affiché uniquement si des photos existent pour le code article.

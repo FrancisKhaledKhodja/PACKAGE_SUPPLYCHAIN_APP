@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>ANNUAIRE POINTS RELAIS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=3" defer></script>
+  <script src="js/pudo_directory.js" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="layout scapp-text-1rem scapp-layout-cols-20vw">
+    <aside class="card">
+      <h2 class="scapp-mt-0" style="color:var(--muted)">Filtres</h2>
+
+      <div class="section scapp-flex-col scapp-gap-075">
+        <label class="muted" for="pr-search">Recherche (mot-clé)</label>
+        <input type="search" id="pr-search" placeholder="Ex: enseigne, ville, adresse, code PR..." />
+
+        <label class="muted" for="pr-enseigne">Enseigne</label>
+        <input type="text" id="pr-enseigne" placeholder="Ex: Chronopost, Relais..." />
+
+        <label class="muted" for="pr-ville">Ville</label>
+        <input type="text" id="pr-ville" placeholder="Ex: Lille" />
+
+        <label class="muted" for="pr-cp">Code postal</label>
+        <input type="text" id="pr-cp" placeholder="Ex: 59000" />
+
+        <label class="muted" for="pr-type">Type de PR</label>
+        <select id="pr-type">
+          <option value="">Tous</option>
+          <option value="chronopost">Chronopost</option>
+          <option value="lm2s">LM2S</option>
+          <option value="tdf">TDF</option>
+          <option value="autre">Autre</option>
+        </select>
+
+        <div class="row scapp-justify-between scapp-items-center">
+          <button id="btn-pr-refresh" type="button">Rafraîchir</button>
+          <button id="btn-pr-clear" type="button" style="background-color:#6b7280">Réinitialiser</button>
+        </div>
+
+        <div id="pr-status" class="muted"></div>
+      </div>
+    </aside>
+
+    <main class="card">
+      <div class="row scapp-justify-between scapp-items-center scapp-mb-05">
+        <div>
+          <h2 class="scapp-mt-0" style="margin-bottom:0;">Annuaire des points relais</h2>
+          <div id="pr-count" class="muted"></div>
+        </div>
+        <button id="export-pr-csv" type="button">Exporter (CSV)</button>
+      </div>
+
+      <div class="scapp-overflow-auto" style="max-height:70vh;">
+        <table id="tbl-pr">
+          <thead><tr id="pr-thead-row"></tr></thead>
+          <tbody id="pr-tbody-rows"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

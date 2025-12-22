@@ -5,6 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const tbodyRows = document.getElementById("tbody-rows");
   const resultsCount = document.getElementById("results-count");
   const detailsDiv = document.getElementById("details");
+  const stockLinkWrapperItems = document.getElementById("stock-link-wrapper-items");
   const photosLinkWrapperItems = document.getElementById("photos-link-wrapper-items");
 
   function escapeHtml(str) {
@@ -14,6 +15,14 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#39;");
+  }
+
+  function updateStockLinkItems(code) {
+    if (!stockLinkWrapperItems) return;
+    stockLinkWrapperItems.innerHTML = "";
+    if (!code) return;
+    const url = `stock.html?code=${encodeURIComponent(code)}`;
+    stockLinkWrapperItems.innerHTML = `<a href="${url}" target="_blank" rel="noopener noreferrer">Voir le stock pour cet article</a>`;
   }
 
   function renderKeyValueTable(obj) {
@@ -402,6 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
         detailsDiv.innerHTML = renderKeyValueTable(full);
       }
       if (photosLinkWrapperItems) photosLinkWrapperItems.innerHTML = "";
+      updateStockLinkItems("");
       return;
     }
 
@@ -447,6 +457,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsDiv) {
         detailsDiv.innerHTML = html;
       }
+      updateStockLinkItems(code);
       updatePhotosLinkItems(code);
     } catch (e) {
       if (detailsDiv) {
@@ -456,6 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         detailsDiv.innerHTML = themed;
       }
+      updateStockLinkItems(code);
       updatePhotosLinkItems(code);
     }
   }
@@ -464,10 +476,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const code = (codeParam || "").toString().trim();
     if (!code) {
       if (photosLinkWrapperItems) photosLinkWrapperItems.innerHTML = "";
+      updateStockLinkItems("");
       return;
     }
     if (detailsDiv) {
-      detailsDiv.innerHTML = "Chargement des détails de l'article...";
+      detailsDiv.innerHTML = `<div class="card"><div class="muted" style="padding:8px 12px;">Chargement des détails pour ${escapeHtml(code)}...</div></div>`;
     }
 
     try {
@@ -511,10 +524,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (detailsDiv) {
         detailsDiv.innerHTML = html;
       }
+      updateStockLinkItems(code);
+      updatePhotosLinkItems(code);
     } catch (e) {
       if (detailsDiv) {
         detailsDiv.innerHTML = `<div class="card"><div class="muted" style="padding:8px 12px;">Impossible de charger les détails pour le code ${code}.</div></div>`;
       }
+      updateStockLinkItems(code);
       updatePhotosLinkItems(code);
     }
   }
@@ -524,6 +540,17 @@ document.addEventListener("DOMContentLoaded", () => {
       ev.preventDefault();
       searchItems();
     });
+  }
+
+  try {
+    const params = new URLSearchParams(window.location.search || "");
+    const q = (params.get("q") || params.get("ref_fab") || "").trim();
+    if (q && qInput) {
+      qInput.value = q;
+      searchItems();
+    }
+  } catch (e) {
+    // ignore
   }
 
   if (tbodyRows) {
