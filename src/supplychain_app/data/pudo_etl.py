@@ -135,6 +135,9 @@ def get_update_status():
     src_stock_final = os.path.join(path_exit_parquet, "stock_final.parquet")
     dst_stock_final = os.path.join(path_datan, folder_name_app, "stock_final.parquet")
 
+    src_distance_tech_pr = os.path.join(path_exit_parquet, "distance_tech_pr.parquet")
+    dst_distance_tech_pr = os.path.join(path_datan, folder_name_app, "distance_tech_pr.parquet")
+
     conso_src_dir = (CONSO_OFFER_SRC_DIR or "").strip()
     conso_dst_dir = (CONSO_OFFER_PARQUET_DIR or "").strip()
     conso_src = None
@@ -234,6 +237,13 @@ def get_update_status():
         "dst": dst_stock_final,
         "src_mtime": _mtime(src_stock_final),
         "dst_mtime": _mtime(dst_stock_final),
+    })
+    items.append({
+        "key": "distance_tech_pr",
+        "src": src_distance_tech_pr,
+        "dst": dst_distance_tech_pr,
+        "src_mtime": _mtime(src_distance_tech_pr),
+        "dst_mtime": _mtime(dst_distance_tech_pr),
     })
 
     if conso_src or conso_dst:
@@ -337,6 +347,10 @@ def update_data():
     stock_final_info = next((x for x in status if x["key"] == "stock_final"), None)
     if stock_final_info and stock_final_info["src_mtime"] is not None and stock_final_info["needs_update"]:
         shutil.copy(stock_final_info["src"], stock_final_info["dst"])
+
+    distance_tech_pr_info = next((x for x in status if x["key"] == "distance_tech_pr"), None)
+    if distance_tech_pr_info and distance_tech_pr_info["src_mtime"] is not None and distance_tech_pr_info["needs_update"]:
+        shutil.copy(distance_tech_pr_info["src"], distance_tech_pr_info["dst"])
 
     conso_info = next((x for x in status if x["key"] == "conso_offer"), None)
     if conso_info and conso_info.get("src") and conso_info.get("dst") and conso_info.get("needs_update"):

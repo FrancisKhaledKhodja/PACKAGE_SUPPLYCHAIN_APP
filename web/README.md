@@ -13,8 +13,14 @@ Entry points:
 - `stock.html`, `stock_detailed.html` (stocks agrégés et détaillés)
 - `helios.html` (parc installé)
 - `stores.html` (magasins & points relais)
+- `technician.html`, `technician_admin.html` (consultation magasin technicien + PR, distance/durée)
+- `technician_assignments.html` (affectations technicien ↔ PR, distance/durée)
 - `downloads.html` (téléchargements)
 - `ol_mode_degrade.html` (ordre de livraison en mode dégradé pour les techniciens, génération d'e-mails DAHER / LM2S)
+
+Technicians / PR:
+
+- The pages use `GET /api/technicians/<code_magasin>/distances_pr` to display drive distance (meters → km) and duration (seconds → minutes).
 
 URL parameters (deep links):
 

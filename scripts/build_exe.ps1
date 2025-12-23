@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 
 # Build single EXE
-$Version = '1.6'
+$Version = '1.6.0'
 $ExeName = "SUPPLYCHAIN_APP_v$Version"
 
 py -m PyInstaller --clean --noconfirm --onefile --name $ExeName `

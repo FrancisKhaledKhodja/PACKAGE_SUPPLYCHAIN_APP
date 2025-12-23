@@ -258,7 +258,7 @@ Depuis la racine du projet, avec `.venv` activé :
 Ce script génère un exécutable nommé selon le modèle :
 
 ```text
-dist\SUPPLYCHAIN_APP_v1.6.exe
+dist\SUPPLYCHAIN_APP_v1.6.0.exe
 ```
 
 ### 2.3. Résultat
@@ -268,7 +268,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.6.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.6.0.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -381,6 +381,7 @@ Navigation (header) :
   - limitation connue : `mailto:` ne permet pas d'attacher automatiquement un fichier (pièce jointe).
 - **Écrans techniciens / affectations technicien ↔️ PUDO** :
   - écrans dédiés au suivi des techniciens, de leurs magasins de rattachement et de leurs PUDO (principal / backup / hors normes).
+  - affichage optionnel de la **distance** (mètres → km) et de la **durée** (secondes → minutes) entre le magasin et ses PR (source : `distance_tech_pr.parquet`).
 
 ### 3.5. Demande de modification article (criticité)
 
@@ -564,7 +565,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ## 5. Livraison / déploiement de l'exécutable
 
-- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.6.exe`.
+- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.6.0.exe`.
 - **Public cible** : postes Windows internes ne disposant pas forcément de Python.
 
 ### 5.1. Prérequis côté utilisateur
@@ -575,7 +576,7 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
 
 ### 5.2. Mode opératoire recommandé
 
-1. Copier `SUPPLYCHAIN_APP_v1.6.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+1. Copier `SUPPLYCHAIN_APP_v1.6.0.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
 2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
 3. Double-cliquer sur l'exécutable :
    - une console s'ouvre avec les logs,
@@ -640,6 +641,12 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
     - tri des lignes : `flag_stock_d_m` (`M` puis `D`), puis `type_de_depot` selon un ordre métier prédéfini.
   - Version affichée dans le header : la version est alignée sur le **nom de l'exécutable** (si l'app tourne en mode EXE) et affichée à côté du logo.
   - Sécurité OL MODE DÉGRADÉ V2 : verrouillage possible par liste blanche de logins via `SCAPP_OL_ALLOWED_LOGINS`.
+
+- **1.6.x**
+  - Techniciens / PR : ajout de l’affichage **distance + durée (voiture)** entre un magasin et ses points relais.
+  - Nouvelle API : `GET /api/technicians/<code_magasin>/distances_pr`.
+  - Écrans concernés : `technician.html`, `technician_admin.html`, `technician_assignments.html`.
+  - Décision d’architecture : `docs/adr/0003-distance-technicien-pr.md`.
 
 ### 6.1. Administration : offre "Catalogue consommables"
 

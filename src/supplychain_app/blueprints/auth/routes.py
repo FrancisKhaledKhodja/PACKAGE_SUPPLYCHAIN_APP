@@ -50,6 +50,13 @@ def list_article_photos(code_article):
     return jsonify({"code_article": code_article, "files": files})
 
 
+@bp.get("/photos/local/<code_article>")
+def list_article_photos_local_only(code_article):
+    pattern_local = os.path.join(path_photos_local, f"*{code_article}*.webp")
+    files = [os.path.basename(p) for p in glob.glob(pattern_local)]
+    return jsonify({"code_article": code_article, "files": files})
+
+
 @bp.get("/photos/stats")
 def photos_stats():
     pattern_network = os.path.join(path_photos_network, "*.webp")

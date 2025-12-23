@@ -5,6 +5,8 @@ from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from supplychain_app.constants import (
     path_datan,
+    folder_bdd_python,
+    folder_pudo,
     folder_name_app,
     CHOIX_PR_TECH_DIR,
     CHOIX_PR_TECH_FILE,
@@ -72,6 +74,9 @@ dico_helios = {row["code_ig"]: row for row in helios.iter_rows(named=True)} if '
 # Cache en mémoire pour certaines listes calculées une fois
 _ol_igs_cache: list[dict] | None = None
 
+_distance_tech_pr_df: pl.DataFrame | None = None
+_distance_tech_pr_mtime: float | None = None
+
 
 def haversine_distance(lat1, lon1, lat2, lon2):
     R = 6371.0
@@ -84,6 +89,89 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
     c = 2 * atan2(sqrt(a), sqrt(1 - a))
     return R * c
+
+
+def _get_col_name(df: pl.DataFrame, candidates: list[str]) -> str | None:
+    if df is None:
+        return None
+    cols = list(df.columns)
+    lower_map = {str(c).strip().lower(): str(c) for c in cols}
+    for cand in candidates:
+        key = str(cand).strip().lower()
+        if key in lower_map:
+            return lower_map[key]
+    return None
+
+
+def _load_distance_tech_pr_df(force: bool = False) -> pl.DataFrame | None:
+    global _distance_tech_pr_df, _distance_tech_pr_mtime
+    path = os.path.join(path_datan, folder_name_app, "distance_tech_pr.parquet")
+    if not os.path.exists(path):
+        alt = os.path.join(path_datan, folder_bdd_python, folder_pudo, "GESTION_PR", "ANALYSES", "distance_tech_pr.parquet")
+        if os.path.exists(alt):
+            path = alt
+    try:
+        mtime = os.path.getmtime(path)
+    except OSError:
+        _distance_tech_pr_df = pl.DataFrame()
+        _distance_tech_pr_mtime = None
+        return _distance_tech_pr_df
+
+    if (not force) and _distance_tech_pr_df is not None and _distance_tech_pr_mtime == mtime:
+        return _distance_tech_pr_df
+
+    try:
+        _distance_tech_pr_df = pl.read_parquet(path)
+        _distance_tech_pr_mtime = mtime
+        return _distance_tech_pr_df
+    except Exception:
+        _distance_tech_pr_df = pl.DataFrame()
+        _distance_tech_pr_mtime = mtime
+        return _distance_tech_pr_df
+
+
+def get_distance_tech_pr_for_store(code_magasin: str, code_pr: str | None = None, limit: int | None = None) -> pl.DataFrame:
+    df = _load_distance_tech_pr_df(force=False)
+    if df is None or df.is_empty():
+        return pl.DataFrame()
+
+    store_col = _get_col_name(df, ["code_magasin", "store", "magasin", "code_store", "code_tech", "technicien", "tech"])
+    if not store_col:
+        return pl.DataFrame()
+
+    sub = df
+    try:
+        sub = sub.filter(pl.col(store_col).cast(pl.Utf8).str.strip_chars() == str(code_magasin).strip())
+    except Exception:
+        return pl.DataFrame()
+
+    if code_pr:
+        pr_col = _get_col_name(df, ["code_point_relais", "code_pr", "pr", "code_pudo", "code_pointrelais"])
+        if pr_col:
+            try:
+                sub = sub.filter(pl.col(pr_col).cast(pl.Utf8).str.strip_chars() == str(code_pr).strip())
+            except Exception:
+                pass
+
+    sort_col = _get_col_name(sub, ["distance", "distance_m", "distance_km", "distance_kilometres", "km"])
+    if sort_col:
+        try:
+            sub = sub.sort(pl.col(sort_col).cast(pl.Float64), descending=False, nulls_last=True)
+        except Exception:
+            try:
+                sub = sub.sort(pl.col(sort_col), descending=False)
+            except Exception:
+                pass
+
+    if limit is not None:
+        try:
+            lim = int(limit)
+        except Exception:
+            lim = None
+        if lim is not None and lim > 0:
+            sub = sub.head(lim)
+
+    return sub
 
 
 def get_available_pudo(lat, long, radius, enseignes: list[str] | None = None):

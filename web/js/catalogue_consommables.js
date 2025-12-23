@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         photosLink.style.display = "none";
         links.appendChild(photosLink);
 
-        fetch(API(`/auth/photos/${encodeURIComponent(code)}`), {
+        fetch(API(`/auth/photos/local/${encodeURIComponent(code)}`), {
           method: "GET",
           credentials: "include",
         })
@@ -210,6 +210,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!hay.includes(q)) return false;
       }
       return true;
+    });
+
+    filtered.sort((a, b) => {
+      const libA = String(pick(a, ["libelle", "libelle_article", "designation", "nom", "libelle_court_article"]) || "").trim();
+      const libB = String(pick(b, ["libelle", "libelle_article", "designation", "nom", "libelle_court_article"]) || "").trim();
+
+      if (libA && libB) return libA.localeCompare(libB, "fr", { sensitivity: "base" });
+      if (libA) return -1;
+      if (libB) return 1;
+
+      const codeA = String(pick(a, ["code_article", "code", "article", "sku"]) || "").trim();
+      const codeB = String(pick(b, ["code_article", "code", "article", "sku"]) || "").trim();
+      return codeA.localeCompare(codeB, "fr", { sensitivity: "base" });
     });
 
     if (statusDiv) {

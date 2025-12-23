@@ -25,6 +25,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const prPrincipalMeta = document.getElementById("pr-principal-meta");
   const prPrincipalStatut = document.getElementById("pr-principal-statut");
   const prPrincipalCodeStore = document.getElementById("pr-principal-code-store");
+  const prPrincipalDrive = document.getElementById("pr-principal-drive");
 
   const prBackupCode = document.getElementById("pr-backup-code");
   const prBackupEns = document.getElementById("pr-backup-enseigne");
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const prBackupMeta = document.getElementById("pr-backup-meta");
   const prBackupStatut = document.getElementById("pr-backup-statut");
   const prBackupCodeStore = document.getElementById("pr-backup-code-store");
+  const prBackupDrive = document.getElementById("pr-backup-drive");
 
   const prHnCode = document.getElementById("pr-hn-code");
   const prHnEns = document.getElementById("pr-hn-enseigne");
@@ -39,6 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const prHnMeta = document.getElementById("pr-hn-meta");
   const prHnStatut = document.getElementById("pr-hn-statut");
   const prHnCodeStore = document.getElementById("pr-hn-code-store");
+  const prHnDrive = document.getElementById("pr-hn-drive");
 
   let currentTypes = [];
 
@@ -63,7 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const url = API("/technicians/contacts") + (params.toString() ? "?" + params.toString() : "");
     try {
       const res = await fetch(url);
-      if (!res.ok) return;
+      if (!res.ok) {
+        if (emptyMsg) {
+          emptyMsg.textContent = `Erreur API (${res.status}) lors du chargement des contacts.`;
+        }
+        console.error("loadContacts failed", res.status, url);
+        return;
+      }
       const data = await res.json();
       const contacts = data.contacts || [];
       const storeTypes = data.store_types || [];
@@ -116,7 +125,10 @@ document.addEventListener("DOMContentLoaded", () => {
         initialQuery = "";
       }
     } catch (e) {
-      // ignore
+      if (emptyMsg) {
+        emptyMsg.textContent = "Erreur lors du chargement des contacts (voir console).";
+      }
+      console.error("loadContacts error", e);
     }
   }
 
@@ -125,10 +137,36 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!code) return;
     try {
       const res = await fetch(API(`/technicians/${encodeURIComponent(code)}`));
-      if (!res.ok) return;
+      if (!res.ok) {
+        if (emptyMsg) {
+          emptyMsg.textContent = `Erreur API (${res.status}) lors du chargement du magasin ${code}.`;
+          emptyMsg.style.display = "block";
+        }
+        if (detailsContent) detailsContent.style.display = "none";
+        console.error("loadDetails failed", res.status, code);
+        return;
+      }
       const data = await res.json();
       const d = data.details || {};
       const pr = data.pr_details || {};
+
+      // Préparer la lookup table distance/durée par code PR (si dispo)
+      const distanceByPr = {};
+      try {
+        const resDist = await fetch(API(`/technicians/${encodeURIComponent(code)}/distances_pr`));
+        if (resDist.ok) {
+          const distData = await resDist.json();
+          const rows = distData && distData.rows ? distData.rows : [];
+          rows.forEach(r => {
+            if (!r) return;
+            const prKey = (r.code_point_relais || r.code_pr || r.pr || "").toString().trim();
+            if (!prKey) return;
+            distanceByPr[prKey] = r;
+          });
+        }
+      } catch (e) {
+        console.error("loadDetails distances_pr error", e);
+      }
 
       codeMagasin.textContent = d.code_magasin || "";
       libelleMagasin.textContent = d.libelle_magasin || "";
@@ -145,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3ème ligne : adresse IG
       adresseIg.textContent = d.adresse_ig || "";
 
-      function renderPr(prData, codeEl, codeStoreEl, ensEl, adrEl, metaEl, statutEl) {
+      function renderPr(prData, codeEl, codeStoreEl, ensEl, adrEl, metaEl, statutEl, driveEl) {
         if (!codeEl || !prData) {
           if (codeEl) codeEl.textContent = "";
           if (codeStoreEl) codeStoreEl.textContent = "";
@@ -153,17 +191,19 @@ document.addEventListener("DOMContentLoaded", () => {
           if (adrEl) adrEl.textContent = "";
           if (metaEl) metaEl.textContent = "";
           if (statutEl) statutEl.textContent = "";
+          if (driveEl) driveEl.textContent = "";
           return;
         }
         const code = prData.code_point_relais || "";
         const codeStore = prData.code_point_relais_store || "";
+        const displayCode = code || codeStore;
         const enseigne = prData.enseigne || "";
         const adr = prData.adresse_postale || "";
         const categoriePr = prData.categorie || "";
         const prestataire = prData.prestataire || "";
         const statut = prData.statut || "";
 
-        codeEl.textContent = code;
+        codeEl.textContent = displayCode;
         if (codeStoreEl) {
           codeStoreEl.textContent = codeStore ? `Code PR (SPEED): ${codeStore}` : "";
         }
@@ -197,16 +237,46 @@ document.addEventListener("DOMContentLoaded", () => {
             statutEl.innerHTML = "";
           }
         }
+
+        if (driveEl) {
+          const row = distanceByPr[displayCode] || distanceByPr[codeStore] || null;
+          if (!row) {
+            driveEl.textContent = "Distance/durée indisponibles";
+          } else {
+            const parts = [];
+
+            const distM = row.distance;
+            const distMNum = distM === null || distM === undefined || String(distM) === "" ? null : Number(distM);
+            if (distMNum !== null && Number.isFinite(distMNum)) {
+              const km = distMNum / 1000;
+              parts.push(`Distance: ${km.toFixed(1)} km`);
+            }
+
+            const durS = row.duration;
+            const durSNum = durS === null || durS === undefined || String(durS) === "" ? null : Number(durS);
+            if (durSNum !== null && Number.isFinite(durSNum)) {
+              const mins = Math.round(durSNum / 60);
+              parts.push(`Durée: ${mins} min`);
+            }
+
+            driveEl.textContent = parts.length ? parts.join(" • ") : "Distance/durée indisponibles";
+          }
+        }
       }
 
-      renderPr(pr.principal, prPrincipalCode, prPrincipalCodeStore, prPrincipalEns, prPrincipalAdr, prPrincipalMeta, prPrincipalStatut);
-      renderPr(pr.backup, prBackupCode, prBackupCodeStore, prBackupEns, prBackupAdr, prBackupMeta, prBackupStatut);
-      renderPr(pr.hors_normes, prHnCode, prHnCodeStore, prHnEns, prHnAdr, prHnMeta, prHnStatut);
+      renderPr(pr.principal, prPrincipalCode, prPrincipalCodeStore, prPrincipalEns, prPrincipalAdr, prPrincipalMeta, prPrincipalStatut, prPrincipalDrive);
+      renderPr(pr.backup, prBackupCode, prBackupCodeStore, prBackupEns, prBackupAdr, prBackupMeta, prBackupStatut, prBackupDrive);
+      renderPr(pr.hors_normes, prHnCode, prHnCodeStore, prHnEns, prHnAdr, prHnMeta, prHnStatut, prHnDrive);
 
       if (emptyMsg) emptyMsg.style.display = "none";
       if (detailsContent) detailsContent.style.display = "block";
     } catch (e) {
-      // ignore
+      if (emptyMsg) {
+        emptyMsg.textContent = "Erreur lors du chargement du magasin (voir console).";
+        emptyMsg.style.display = "block";
+      }
+      if (detailsContent) detailsContent.style.display = "none";
+      console.error("loadDetails error", e);
     }
   }
 

@@ -8,6 +8,7 @@ from supplychain_app.services.pudo_service import (
     get_store_types,
     get_store_details,
     list_technician_pudo_assignments,
+    get_distance_tech_pr_for_store,
     get_pr_overrides_for_store,
     save_pr_overrides_for_store,
     get_ol_technicians,
@@ -122,6 +123,32 @@ def technician_details(code: str):
             pr_details[role]["code_point_relais_store"] = str(store_code_pr)
 
     return jsonify({"details": details, "pr_details": pr_details})
+
+
+@bp.get("/<code>/distances_pr")
+def technician_distances_pr_api(code: str):
+    """Retourne les distances/durées (voiture) entre un technicien et ses PR.
+
+    Source : distance_tech_pr.parquet (copié dans Datan via l'update_data).
+
+    Query params:
+      - pr: filtre exact sur le code point relais
+      - limit: limite le nombre de lignes (triées par distance si possible)
+    """
+    code = (code or "").strip()
+    if not code:
+        return jsonify({"error": "code is required"}), 400
+
+    pr_code = (request.args.get("pr") or "").strip() or None
+    limit = request.args.get("limit")
+
+    df = get_distance_tech_pr_for_store(code_magasin=code, code_pr=pr_code, limit=limit)
+    rows = [r for r in df.iter_rows(named=True)] if df is not None else []
+    return jsonify({
+        "code_magasin": code,
+        "pr": pr_code,
+        "rows": rows,
+    })
 
 
 @bp.get("/assignments")

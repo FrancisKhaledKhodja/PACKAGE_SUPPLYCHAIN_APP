@@ -63,6 +63,7 @@ function initAdminPRLogic() {
   const prPrincipalAdr = document.getElementById("pr-principal-adresse");
   const prPrincipalMeta = document.getElementById("pr-principal-meta");
   const prPrincipalStatut = document.getElementById("pr-principal-statut");
+  const prPrincipalDrive = document.getElementById("pr-principal-drive");
 
   const prBackupCode = document.getElementById("pr-backup-code");
   const prBackupCodeStore = document.getElementById("pr-backup-code-store");
@@ -70,6 +71,7 @@ function initAdminPRLogic() {
   const prBackupAdr = document.getElementById("pr-backup-adresse");
   const prBackupMeta = document.getElementById("pr-backup-meta");
   const prBackupStatut = document.getElementById("pr-backup-statut");
+  const prBackupDrive = document.getElementById("pr-backup-drive");
 
   const prHnCode = document.getElementById("pr-hn-code");
   const prHnCodeStore = document.getElementById("pr-hn-code-store");
@@ -77,6 +79,7 @@ function initAdminPRLogic() {
   const prHnAdr = document.getElementById("pr-hn-adresse");
   const prHnMeta = document.getElementById("pr-hn-meta");
   const prHnStatut = document.getElementById("pr-hn-statut");
+  const prHnDrive = document.getElementById("pr-hn-drive");
 
   const prPrincipalSelect = document.getElementById("pr-principal-admin-select");
   const prPrincipalComment = document.getElementById("pr-principal-admin-comment");
@@ -105,7 +108,7 @@ function initAdminPRLogic() {
     });
   }
 
-  function renderPr(prData, codeEl, codeStoreEl, ensEl, adrEl, metaEl, statutEl) {
+  function renderPr(prData, codeEl, codeStoreEl, ensEl, adrEl, metaEl, statutEl, driveEl, distanceByPr) {
     if (!codeEl || !prData) {
       if (codeEl) codeEl.textContent = "";
       if (codeStoreEl) codeStoreEl.textContent = "";
@@ -113,17 +116,19 @@ function initAdminPRLogic() {
       if (adrEl) adrEl.textContent = "";
       if (metaEl) metaEl.textContent = "";
       if (statutEl) statutEl.textContent = "";
+      if (driveEl) driveEl.textContent = "";
       return;
     }
     const code = prData.code_point_relais || "";
     const codeStore = prData.code_point_relais_store || "";
+    const displayCode = code || codeStore;
     const enseigne = prData.enseigne || "";
     const adr = prData.adresse_postale || "";
     const categoriePr = prData.categorie || "";
     const prestataire = prData.prestataire || "";
     const statut = prData.statut || "";
 
-    codeEl.textContent = code;
+    codeEl.textContent = displayCode;
     if (codeStoreEl) {
       codeStoreEl.textContent = codeStore ? `Code PR (SPEED): ${codeStore}` : "";
     }
@@ -150,32 +155,31 @@ function initAdminPRLogic() {
         ? `<span style="display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; font-weight:600; background:${bg}; color:${fg};">Statut: ${statut}</span>`
         : "";
     }
-  }
 
-  async function loadPudoDirectory() {
-    try {
-      const res = await fetch(API("/pudo/directory"));
-      if (!res.ok) return;
-      const data = await res.json();
-      pudoDirectory = data.rows || [];
-      const opts = [{ value: "", label: "" }].concat(
-        pudoDirectory.map(r => ({
-          value: String(r.code_point_relais || ""),
-          label: String(r.label || r.code_point_relais || ""),
-        }))
-      );
-      [prPrincipalSelect, prBackupSelect, prHnSelect].forEach(sel => {
-        if (!sel) return;
-        sel.innerHTML = "";
-        opts.forEach(o => {
-          const opt = document.createElement("option");
-          opt.value = o.value;
-          opt.textContent = o.label;
-          sel.appendChild(opt);
-        });
-      });
-    } catch (e) {
-      // ignore
+    if (driveEl) {
+      const map = distanceByPr || {};
+      const row = map[displayCode] || map[codeStore] || null;
+      if (!row) {
+        driveEl.textContent = "Distance/durée indisponibles";
+      } else {
+        const parts = [];
+
+        const distM = row.distance;
+        const distMNum = distM === null || distM === undefined || String(distM) === "" ? null : Number(distM);
+        if (distMNum !== null && Number.isFinite(distMNum)) {
+          const km = distMNum / 1000;
+          parts.push(`Distance: ${km.toFixed(1)} km`);
+        }
+
+        const durS = row.duration;
+        const durSNum = durS === null || durS === undefined || String(durS) === "" ? null : Number(durS);
+        if (durSNum !== null && Number.isFinite(durSNum)) {
+          const mins = Math.round(durSNum / 60);
+          parts.push(`Durée: ${mins} min`);
+        }
+
+        driveEl.textContent = parts.length ? parts.join(" • ") : "Distance/durée indisponibles";
+      }
     }
   }
 
@@ -262,6 +266,23 @@ function initAdminPRLogic() {
       const d = data.details || {};
       const pr = data.pr_details || {};
 
+      const distanceByPr = {};
+      try {
+        const resDist = await fetch(API(`/technicians/${encodeURIComponent(code)}/distances_pr`));
+        if (resDist.ok) {
+          const distData = await resDist.json();
+          const rows = distData && distData.rows ? distData.rows : [];
+          rows.forEach(r => {
+            if (!r) return;
+            const prKey = (r.code_point_relais || r.code_pr || r.pr || "").toString().trim();
+            if (!prKey) return;
+            distanceByPr[prKey] = r;
+          });
+        }
+      } catch (e) {
+        // ignore
+      }
+
       codeMagasin.textContent = d.code_magasin || "";
       libelleMagasin.textContent = d.libelle_magasin || "";
       equipe.textContent = d.equipe || "";
@@ -274,9 +295,9 @@ function initAdminPRLogic() {
       if (libelleLongIg) libelleLongIg.textContent = d.libelle_long_ig || "";
       adresseIg.textContent = d.adresse_ig || "";
 
-      renderPr(pr.principal, prPrincipalCode, prPrincipalCodeStore, prPrincipalEns, prPrincipalAdr, prPrincipalMeta, prPrincipalStatut);
-      renderPr(pr.backup, prBackupCode, prBackupCodeStore, prBackupEns, prBackupAdr, prBackupMeta, prBackupStatut);
-      renderPr(pr.hors_normes, prHnCode, prHnCodeStore, prHnEns, prHnAdr, prHnMeta, prHnStatut);
+      renderPr(pr.principal, prPrincipalCode, prPrincipalCodeStore, prPrincipalEns, prPrincipalAdr, prPrincipalMeta, prPrincipalStatut, prPrincipalDrive, distanceByPr);
+      renderPr(pr.backup, prBackupCode, prBackupCodeStore, prBackupEns, prBackupAdr, prBackupMeta, prBackupStatut, prBackupDrive, distanceByPr);
+      renderPr(pr.hors_normes, prHnCode, prHnCodeStore, prHnEns, prHnAdr, prHnMeta, prHnStatut, prHnDrive, distanceByPr);
 
       await loadOverrides(code);
 

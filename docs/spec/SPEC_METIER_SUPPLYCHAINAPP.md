@@ -509,6 +509,10 @@ Notes d’UX :
   - ses PUDO principal / backup / hors normes,
   - leurs coordonnées et adresses.
 
+- Visualiser, pour chaque point relais rattaché, des indicateurs opérationnels :
+  - **distance routière** (voiture) entre le magasin et le PR,
+  - **durée de trajet** (voiture) associée.
+
 #### 2.7.2. Règle métier : source du point relais affiché (CONSULTATION MAGASIN)
 
 Dans l’écran **CONSULTATION MAGASIN** (`technician.html`), le **code de point relais affiché** pour chaque rôle (principal / backup / hors normes) suit la règle :
@@ -530,6 +534,37 @@ Cette règle garantit que :
 
 - le PR affiché à l’utilisateur est **celui validé métier** via le référentiel CHOIX_PR_TECH,
 - tout en conservant des **informations d’annuaire cohérentes** via `pudo_directory.parquet`.
+
+#### 2.7.3. Distance et durée technicien ↔ point relais (voiture)
+
+L’application peut afficher, sous chaque PR, la **distance** et la **durée de trajet** entre le magasin du technicien (`code_magasin`) et le point relais.
+
+Source de données :
+
+- Fichier parquet : `distance_tech_pr.parquet`
+- Colonnes attendues :
+  - `code_magasin`
+  - `code_pr`
+  - `distance` (en **mètres**)
+  - `duration` (en **secondes**)
+
+API associée :
+
+- `GET /api/technicians/<code_magasin>/distances_pr`
+  - retourne les lignes de `distance_tech_pr.parquet` filtrées sur `code_magasin`.
+
+Règles d’affichage (UI) :
+
+- Conversion unités :
+  - `distance` : mètres → kilomètres (km)
+  - `duration` : secondes → minutes
+- Si aucune donnée n’est disponible pour le PR affiché, l’UI affiche : **“Distance/durée indisponibles”**.
+
+Écrans concernés :
+
+- `technician.html`
+- `technician_admin.html`
+- `technician_assignments.html`
 
 #### 2.6.2. Besoins métiers
 

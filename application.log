@@ -3799,3 +3799,5 @@ FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\
 2025-12-21 22:10:00.019 | INFO     | supplychain_app.data.pudo_etl:update_data:263 - Data updated successfully
 2025-12-22 08:55:42.796 | INFO     | supplychain_app.data.pudo_etl:update_data:243 - Update data
 2025-12-22 08:55:56.224 | INFO     | supplychain_app.data.pudo_etl:update_data:338 - Data updated successfully
+2025-12-23 03:22:24.762 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 03:23:23.092 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully

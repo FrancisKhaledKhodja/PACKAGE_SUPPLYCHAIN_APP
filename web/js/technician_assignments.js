@@ -13,6 +13,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const countDiv = document.getElementById("assign-count");
 
   let currentRows = [];
+  let distancesByStore = {};
+
+  function formatDistanceDuration(row) {
+    if (!row) {
+      return { distanceText: "indisponible", durationText: "indisponible" };
+    }
+    const distMNum = row.distance === null || row.distance === undefined || String(row.distance) === "" ? null : Number(row.distance);
+    const durSNum = row.duration === null || row.duration === undefined || String(row.duration) === "" ? null : Number(row.duration);
+
+    const distanceText = distMNum !== null && Number.isFinite(distMNum) ? `${(distMNum / 1000).toFixed(1)} km` : "indisponible";
+    const durationText = durSNum !== null && Number.isFinite(durSNum) ? `${Math.round(durSNum / 60)} min` : "indisponible";
+
+    return { distanceText, durationText };
+  }
 
   // Pré-remplissage depuis l'URL (appelé par l'assistant)
   try {
@@ -85,6 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
         "pr_role",
         "code_point_relais",
         "code_point_relais_store",
+        "_distance_km",
+        "_duration_min",
         "enseigne",
         "adresse_postale",
         "statut",
@@ -94,6 +110,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const td = document.createElement("td");
         if (col === "code_point_relais_store") {
           td.classList.add("muted");
+        }
+        if (col === "_distance_km" || col === "_duration_min") {
+          td.classList.add("muted");
+          const store = String(r.code_magasin || "").trim();
+          const prCode = String(r.code_point_relais || "").trim();
+          const prStore = String(r.code_point_relais_store || "").trim();
+          const key = prCode || prStore;
+
+          const storeMap = distancesByStore && store ? distancesByStore[store] : null;
+          const distRow = storeMap && key ? (storeMap[key] || null) : null;
+          const formatted = formatDistanceDuration(distRow);
+          td.textContent = col === "_distance_km" ? formatted.distanceText : formatted.durationText;
+          tr.appendChild(td);
+          return;
         }
         if (col === "statut") {
           const statut = r[col];
@@ -114,6 +144,32 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       tbody.appendChild(tr);
     });
+  }
+
+  async function loadDistancesForStores(stores) {
+    const uniqueStores = Array.from(new Set((stores || []).map(s => String(s || "").trim()).filter(Boolean)));
+    const map = {};
+    for (const store of uniqueStores) {
+      try {
+        const res = await fetch(API(`/technicians/${encodeURIComponent(store)}/distances_pr`));
+        if (!res.ok) {
+          continue;
+        }
+        const data = await res.json().catch(() => null);
+        const rows = data && data.rows ? data.rows : [];
+        const prMap = {};
+        rows.forEach(rr => {
+          if (!rr) return;
+          const prKey = (rr.code_point_relais || rr.code_pr || rr.pr || "").toString().trim();
+          if (!prKey) return;
+          prMap[prKey] = rr;
+        });
+        map[store] = prMap;
+      } catch (e) {
+        // ignore
+      }
+    }
+    distancesByStore = map;
   }
 
   function updateTeamOptions(rows) {
@@ -183,6 +239,9 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       const rows = data.rows || [];
       currentRows = rows;
+
+      // Charger les distances/durées pour les magasins présents dans les résultats
+      await loadDistancesForStores(rows.map(r => r.code_magasin));
 
       if (countDiv) {
         countDiv.textContent = rows.length ? `${rows.length} affectation(s)` : "Aucune affectation";
