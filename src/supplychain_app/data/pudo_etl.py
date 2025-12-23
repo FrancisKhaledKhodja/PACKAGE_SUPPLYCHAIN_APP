@@ -80,8 +80,22 @@ def _mtime(path: str):
 
 def get_update_status():
     annuaire_dir = os.path.join(path_r, folder_gestion_pr, "ANNUAIRE_PR")
-    last_file_annuaire = os.listdir(annuaire_dir)[-1]
-    src_annuaire = os.path.join(annuaire_dir, last_file_annuaire)
+
+    src_annuaire = None
+    try:
+        if os.path.isdir(annuaire_dir):
+            names = [n for n in os.listdir(annuaire_dir) if n and not n.startswith("~$")]
+            if names:
+                def _ann_key(fname: str):
+                    try:
+                        return os.path.getmtime(os.path.join(annuaire_dir, fname))
+                    except Exception:
+                        return 0
+
+                last_file_annuaire = max(names, key=_ann_key)
+                src_annuaire = os.path.join(annuaire_dir, last_file_annuaire)
+    except Exception:
+        src_annuaire = None
     dst_annuaire_parquet = os.path.join(path_datan, folder_name_app, "pudo_directory.parquet")
 
     src_stores = os.path.join(path_exit_parquet, "stores_final.parquet")

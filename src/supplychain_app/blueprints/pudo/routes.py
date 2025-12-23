@@ -54,25 +54,32 @@ def pudo_directory_api():
 
 @bp.get("/update-status")
 def pudo_update_status_api():
-    status = get_update_status()
+    try:
+        status = get_update_status()
 
-    def _fmt(ts):
-        import datetime
-        if ts is None:
-            return None
-        try:
-            return datetime.datetime.fromtimestamp(ts).isoformat()
-        except Exception:
-            return None
+        def _fmt(ts):
+            import datetime
+            if ts is None:
+                return None
+            try:
+                return datetime.datetime.fromtimestamp(ts).isoformat()
+            except Exception:
+                return None
 
-    for it in status:
-        it["src_mtime_iso"] = _fmt(it.get("src_mtime"))
-        it["dst_mtime_iso"] = _fmt(it.get("dst_mtime"))
+        for it in status:
+            it["src_mtime_iso"] = _fmt(it.get("src_mtime"))
+            it["dst_mtime_iso"] = _fmt(it.get("dst_mtime"))
 
-    return jsonify({
-        "items": status,
-        "any_update": any(i.get("needs_update") for i in status),
-    })
+        return jsonify({
+            "items": status,
+            "any_update": any(i.get("needs_update") for i in status),
+        })
+    except Exception as e:
+        return jsonify({
+            "items": [],
+            "any_update": False,
+            "error": f"{e.__class__.__name__}: {e}",
+        }), 503
 
 
 @bp.post("/update")

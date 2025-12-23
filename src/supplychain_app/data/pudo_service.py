@@ -11,12 +11,15 @@ try:
     stores = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
     helios = pl.read_parquet(os.path.join(path_datan, folder_name_app, "helios.parquet"))
     items = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items.parquet"))
-    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
     items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
     nomenclatures = pl.read_parquet(os.path.join(path_datan, folder_name_app, "nomenclatures.parquet"))
     manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
     equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
     stock_554 = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stock_554.parquet"))
+    try:
+        items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+    except FileNotFoundError:
+        items_son_buildings = pl.DataFrame()
 except FileNotFoundError:
     update_data()
     try:
@@ -35,10 +38,6 @@ except FileNotFoundError:
         items = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items.parquet"))
     except FileNotFoundError:
         items = pl.DataFrame()
-    try:
-        items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
-    except FileNotFoundError:
-        items_son_buildings = pl.DataFrame()
     try:
         items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
     except FileNotFoundError:
@@ -59,6 +58,12 @@ except FileNotFoundError:
         stock_554 = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stock_554.parquet"))
     except FileNotFoundError:
         stock_554 = pl.DataFrame()
+
+    # items_son_buildings.parquet est optionnel (pas bloquant pour démarrer l'API)
+    try:
+        items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
+    except FileNotFoundError:
+        items_son_buildings = pl.DataFrame()
 
 # Dictionnaires utiles (magasins/helios)
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}

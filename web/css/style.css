@@ -5,11 +5,15 @@ body {
 
 /* Layout de base */
 body {
+  --chart-label-color: #111827;
+  --chart-axis-color: #111827;
   background-color: #f5f5f7;
   color: #111827;
 }
 
 body.dark-theme {
+  --chart-label-color: #e5e7eb;
+  --chart-axis-color: #e5e7eb;
   background-color: #020617;
   color: #e5e7eb;
 }

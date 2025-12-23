@@ -25,15 +25,26 @@ def get_datagouv_response_gps_for_address(address: str) -> dict:
         enc_login = quote(login_val, safe="")
         enc_password = quote(password_val, safe="")
         proxy_url = f"http://{enc_login}:{enc_password}@{proxy_tdf}"
-        os.environ["http_proxy"] = proxy_url
-        os.environ["https_proxy"] = proxy_url
         proxy_from_env = proxy_url
     proxies = {"http": proxy_from_env, "https": proxy_from_env} if proxy_from_env else None
 
     try:
-        resp = requests.get(URL_DATA_GOUV, params=params, proxies=proxies, timeout=10)
+        direct_session = requests.Session()
+        direct_session.trust_env = False
+        resp = direct_session.get(URL_DATA_GOUV, params=params, timeout=10)
         resp.raise_for_status()
         results = resp.json()
+    except requests.exceptions.RequestException:
+        try:
+            proxy_session = requests.Session()
+            proxy_session.trust_env = False
+            resp = proxy_session.get(URL_DATA_GOUV, params=params, proxies=proxies, timeout=10)
+            resp.raise_for_status()
+            results = resp.json()
+        except Exception:
+            # En cas d'erreur réseau / proxy / JSON, on renvoie simplement None
+            # pour laisser l'appelant gérer l'absence de coordonnées.
+            return None
     except Exception:
         # En cas d'erreur réseau / proxy / JSON, on renvoie simplement None
         # pour laisser l'appelant gérer l'absence de coordonnées.

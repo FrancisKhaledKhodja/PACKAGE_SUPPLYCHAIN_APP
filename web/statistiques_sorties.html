@@ -5,8 +5,7 @@
   <title>Statistiques sorties - SupplyChainApp</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="js/api.js?v=2" defer></script>
-  <script src="https://d3js.org/d3.v7.min.js" defer></script>
-  <script src="js/stats_exit.js?v=1" defer></script>
+  <script src="js/d3-loader.js?v=1" defer></script>
 </head>
 <body>
   <div id="scapp-header"></div>
@@ -24,10 +23,7 @@
       </div>
       <div class="card" style="margin-top:0.5rem;">
         <div style="overflow:auto; max-height:70vh;">
-          <table id="tbl-items-stats" style="width:100%; border-collapse:collapse;">
-            <thead><tr id="thead-stats"></tr></thead>
-            <tbody id="tbody-stats"></tbody>
-          </table>
+          <div id="items-list-stats" style="display:flex; flex-direction:column; gap:6px;"></div>
         </div>
       </div>
     </section>
@@ -47,32 +43,20 @@
       </form>
       <p id="stats-message" class="muted">Sélectionnez un article dans la liste de gauche pour afficher ses statistiques de sorties.</p>
       <div class="card" style="margin-top:0.5rem; overflow:auto;">
-        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+        <div style="display:flex; flex-wrap:wrap; gap:16px; align-items:flex-start;">
           <!-- Colonne gauche : stats annuelles -->
-          <div style="flex:1 1 300px; min-width:0;">
+          <div style="flex:1 1 520px; min-width:520px;">
             <div class="muted" style="margin-bottom:4px; font-weight:500;">Statistiques annuelles</div>
-            <div style="max-height:30vh; overflow:auto;">
-              <table id="tbl-stats-exit-yearly" style="width:100%; border-collapse:collapse;">
-                <thead><tr id="thead-stats-exit-yearly"></tr></thead>
-                <tbody id="tbody-stats-exit-yearly"></tbody>
-              </table>
-            </div>
             <div style="margin-top:0.5rem; overflow:auto;">
-              <svg id="stats-exit-chart-yearly" width="380" height="260"></svg>
+              <svg id="stats-exit-chart-yearly" style="width:100%; height:360px; display:block;"></svg>
             </div>
           </div>
 
           <!-- Colonne droite : stats mensuelles de l'année en cours -->
-          <div style="flex:1 1 300px; min-width:0;">
+          <div style="flex:1 1 520px; min-width:520px;">
             <div class="muted" style="margin-bottom:4px; font-weight:500;">Statistiques mensuelles (année en cours)</div>
-            <div style="max-height:30vh; overflow:auto;">
-              <table id="tbl-stats-exit-monthly" style="width:100%; border-collapse:collapse;">
-                <thead><tr id="thead-stats-exit-monthly"></tr></thead>
-                <tbody id="tbody-stats-exit-monthly"></tbody>
-              </table>
-            </div>
             <div style="margin-top:0.5rem; overflow:auto;">
-              <svg id="stats-exit-chart-monthly" width="380" height="260"></svg>
+              <svg id="stats-exit-chart-monthly" style="width:100%; height:360px; display:block;"></svg>
             </div>
           </div>
         </div>

@@ -10,6 +10,14 @@ Ce document résume :
 
 ---
 
+## Documentation
+
+- **Spécification métier** : `docs/spec/SPEC_METIER_SUPPLYCHAINAPP.md`
+- **Décisions d’architecture (ADR)** : `docs/adr/`
+- **Checklist PR** : `.github/pull_request_template.md`
+
+---
+
 ## 0. Installation & environnement
 
 ### 0.1. Prérequis
@@ -26,6 +34,20 @@ Depuis la racine du projet :
 
 ```powershell
 uv sync
+```
+
+Optionnel :
+
+- installer les dépendances "LLM" (RAG / embeddings) :
+
+```powershell
+uv sync --extra llm
+```
+
+- installer les dépendances de build (PyInstaller) :
+
+```powershell
+uv sync --extra build
 ```
 
 `uv` crée/actualise automatiquement l'environnement virtuel et installe toutes les dépendances déclarées.

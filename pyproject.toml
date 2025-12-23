@@ -13,15 +13,21 @@ dependencies = [
     "fastexcel>=0.16.0",
     "flask>=3.1.2",
     "flask-cors>=6.0.1",
-    "chromadb>=0.5.0",
     "loguru>=0.7.3",
     "openpyxl>=3.1.5",
     "polars-lts-cpu==1.31.0",
     "pyarrow>=22.0.0",
-    "pyinstaller>=6.17.0",
     "requests>=2.32.5",
-    "sentence-transformers>=3.0.0",
     "unidecode>=1.4.0",
+]
+
+[project.optional-dependencies]
+build = [
+    "pyinstaller>=6.17.0",
+]
+llm = [
+    "chromadb>=0.5.0",
+    "sentence-transformers>=3.0.0",
 ]
 
 [tool.setuptools]

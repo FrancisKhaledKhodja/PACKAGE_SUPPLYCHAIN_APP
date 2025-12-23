@@ -136,8 +136,11 @@ def _load_spec_excerpt(max_chars: int = 6000) -> str:
     On tronque volontairement pour éviter d'envoyer un prompt trop volumineux.
     """
     try:
-        spec_path = str(get_project_root_dir() / "SPEC_METIER_SUPPLYCHAINAPP.md")
-        if not os.path.exists(spec_path):
+        root = get_project_root_dir()
+        primary_spec_path = root / "docs" / "spec" / "SPEC_METIER_SUPPLYCHAINAPP.md"
+        legacy_spec_path = root / "SPEC_METIER_SUPPLYCHAINAPP.md"
+        spec_path = primary_spec_path if primary_spec_path.exists() else legacy_spec_path
+        if not spec_path.exists():
             return ""
         with open(spec_path, "r", encoding="utf-8") as f:
             content = f.read()
@@ -173,6 +176,9 @@ def _parse_assistant_payload(raw_text: str) -> dict:
 
     if not isinstance(payload.get("params"), dict):
         payload["params"] = {}
+
+    if "sources" in payload and not isinstance(payload.get("sources"), list):
+        payload["sources"] = []
 
     return payload
 
@@ -708,7 +714,16 @@ def assistant_query():
     )
 
     if spec_excerpt:
-        system_prompt += ("\nContexte métier (extrait de la spécification) :\n\n" + spec_excerpt)
+        system_prompt += (
+            "\nIMPORTANT : la spécification métier ci-dessous est la source de vérité. "
+            "Si ta réponse s'appuie sur cette spécification, tu dois inclure un champ JSON `sources` (liste) "
+            "avec au minimum une entrée contenant `file` et `note`. "
+            "Si la question n'est pas couverte par la spécification, réponds avec intent=\"none\" et explique quoi préciser ou quoi documenter.\n"
+            "Exemple attendu quand la spec est utilisée :\n"
+            "{\n  \"answer\": \"...\",\n  \"intent\": \"none\",\n  \"params\": {},\n  \"target_page\": null,\n  \"sources\": [{\"file\": \"docs/spec/SPEC_METIER_SUPPLYCHAINAPP.md\", \"note\": \"section ...\"}]\n}\n"
+            "\nContexte métier (extrait de la spécification) :\n\n"
+            + spec_excerpt
+        )
 
     lower_q = (question or "").lower()
     assistant_mode = os.environ.get("ASSISTANT_MODE", "rules").strip().lower()
@@ -731,6 +746,19 @@ def assistant_query():
     intent = payload.get("intent") or "none"
     params = payload.get("params") or {}
     target_page = payload.get("target_page")
+    sources = payload.get("sources") or []
+
+    # Anti-hallucinations : si la spec est activée et que le LLM n'a fourni aucune source,
+    # on neutralise l'action et on demande une clarification / mise à jour de la spec.
+    if spec_enabled and assistant_mode in ("ollama", "auto") and not used_rules_fallback:
+        if not sources:
+            intent = "none"
+            target_page = None
+            params = {}
+            answer = (
+                "Je ne peux pas justifier cette action à partir de la spécification métier actuellement fournie. "
+                "Peux-tu reformuler (ex: code article / écran visé) ou compléter la spécification métier ?"
+            )
 
     if assistant_mode in ("ollama", "auto") and used_rules_fallback:
         if answer:
@@ -815,6 +843,7 @@ def assistant_query():
         "intent": intent,
         "params": params,
         "target_page": target_page,
+        "sources": sources,
     })
 
 
