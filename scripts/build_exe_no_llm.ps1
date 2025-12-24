@@ -4,7 +4,18 @@ $Version = '1.6.0'
 $ExeName = "SUPPLYCHAIN_APP_v$Version"
 
 # Build single EXE (without LLM/RAG libs)
-py -m PyInstaller --clean --noconfirm --onefile --name $ExeName `
+$UvCmd = Get-Command uv -ErrorAction SilentlyContinue
+if (-not $UvCmd) {
+  Write-Error "uv n'est pas disponible dans le PATH. Installez uv puis relancez ce script."
+}
+
+try {
+  uv run python -c "import PyInstaller" | Out-Null
+} catch {
+  Write-Error "PyInstaller n'est pas installé dans l'environnement uv. Exécutez: uv sync --extra build"
+}
+
+uv run python -m PyInstaller --clean --noconfirm --onefile --noconsole --name $ExeName `
   --paths "src" `
   --add-data "web;web" `
   --collect-submodules "supplychain_app.blueprints.assistant" `

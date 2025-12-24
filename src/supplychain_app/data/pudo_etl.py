@@ -1,7 +1,7 @@
 import os
 import shutil
 import time
-from supplychain_app.constants import (path_r,
+from supplychain_app.constants import (path_exit,
                                             folder_gestion_pr,  
                                             path_exit_parquet,
                                             path_datan, 
@@ -12,7 +12,7 @@ import polars as pl
 from supplychain_app.excel_csv_to_dataframe import read_excel
 from supplychain_app.my_loguru import logger
 
-SRC_STOCK_554_SUPPLYCHAIN_APP = r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties"
+SRC_STOCK_554_SUPPLYCHAIN_APP = path_exit
 NAME_FILE_554 = "554 - (STK SPD TPS REEL) - STOCK TEMPS REEL SUPPLYCHAIN_APP.xlsx"
 
 last_update_summary: dict | None = None
@@ -79,7 +79,7 @@ def _mtime(path: str):
 
 
 def get_update_status():
-    annuaire_dir = os.path.join(path_r, folder_gestion_pr, "ANNUAIRE_PR")
+    annuaire_dir = os.path.join(path_exit, folder_gestion_pr, "ANNUAIRE_PR")
 
     src_annuaire = None
     try:

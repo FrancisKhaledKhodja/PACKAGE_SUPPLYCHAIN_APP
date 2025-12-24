@@ -131,9 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const st = String(statut).toLowerCase();
             const isOpen = st.includes("ouvert") || ["1", "true", "actif", "active", "open"].includes(st);
             const isClosed = st.includes("ferme") || ["0", "false", "inactif", "inactive", "closed"].includes(st);
-            const bg = isOpen ? "#16a34a" : (isClosed ? "#dc2626" : "#6b7280");
-            const fg = "#ffffff";
-            td.innerHTML = `<span style="display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; font-weight:600; background:${bg}; color:${fg};">${statut}</span>`;
+            const css = isOpen ? "status-badge--open" : (isClosed ? "status-badge--closed" : "status-badge--unknown");
+            td.innerHTML = `<span class="status-badge ${css}">${statut}</span>`;
           } else {
             td.textContent = "";
           }
@@ -215,13 +214,18 @@ document.addEventListener("DOMContentLoaded", () => {
     if (q) params.set("q", q);
     if (pr) params.set("pr", pr);
     if (store) params.set("store", store);
-    if (status) params.set("status", status);
+    if (status) {
+      params.set("status", status);
+    } else if (statusInput) {
+      // s'assurer que le champ est bien "" (pas d'espaces invisibles)
+      statusInput.value = "";
+    }
     roles.forEach(r => params.append("roles", r));
     if (expandStoreRoles) params.set("expand_store_roles", "1");
 
     const url = API("/technicians/assignments") + (params.toString() ? "?" + params.toString() : "");
     try {
-      const res = await fetch(url);
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) {
         if (countDiv) {
           countDiv.textContent = `Erreur API (${res.status}) : impossible de charger les affectations.`;

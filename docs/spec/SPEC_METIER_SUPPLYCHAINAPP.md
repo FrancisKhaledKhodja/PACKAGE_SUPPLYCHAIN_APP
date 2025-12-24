@@ -18,6 +18,15 @@ Elle centralise plusieurs sources de données (fichiers Excel, exports BO, fichi
 
 L’objectif métier est de **faciliter la décision opérationnelle** (gestion des stocks, arbitrage des articles dormants, choix des emplacements, suivi du parc) en réduisant les manipulations manuelles sur Excel et en proposant une vue consolidée.
 
+### 1.3. Contexte d’exécution (local) et fermeture de l’application
+
+- Le **frontend** est servi en statique sur `http://127.0.0.1:8000/`.
+- L’**API** est servie sur `http://127.0.0.1:5001/api/*`.
+
+Fermeture recommandée : cliquer sur **Quitter** dans le header.
+
+En alternative, si toutes les pages/onglets de l’application sont fermés, un mécanisme d’auto-arrêt coupe l’application après une courte période d’inactivité.
+
 ---
 
 ### 1.1. Impacts métiers spécifiques à la version 1.3.0

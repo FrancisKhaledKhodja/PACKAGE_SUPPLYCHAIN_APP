@@ -27,8 +27,8 @@ folder_mvt_oracle = r"MVT\ORACLE"
 folder_gestion_pr = "GESTION_PR"
 path_lmline = os.path.join(path_datan, folder_bdd_python, folder_pudo, "LM2S")
 
-path_r = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data"
-path_r_lmline = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\LM2S"
+
+path_exit_lmline = os.path.join(path_exit, r"GESTION_PR\LM2S")
 path_backup_address_gps = os.path.join(path_datan, folder_bdd_python,  "backup_addresses")
 
 path_pudo = os.path.join(path_datan, folder_bdd_python, folder_pudo)
@@ -47,7 +47,7 @@ path_tracking_logistic = os.path.join(path_exit, folder_tracking_logistic)
 
 
 # Choix PR technicien (overrides administration)
-CHOIX_PR_TECH_DIR = os.path.join(path_r, folder_gestion_pr, "CHOIX_PR_TECH")
+CHOIX_PR_TECH_DIR = os.path.join(path_exit, folder_gestion_pr, "CHOIX_PR_TECH")
 CHOIX_PR_TECH_FILE = "choix_pr_tech.parquet"
 
 # referential items

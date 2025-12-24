@@ -8,7 +8,7 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 
 from . import bp
-from supplychain_app.constants import path_r, folder_gestion_pr, path_lmline, path_datan, folder_name_app
+from supplychain_app.constants import path_exit, folder_gestion_pr, path_lmline, path_datan, folder_name_app
 
 
 CARNET_CHRONOPOST_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\GESTION_PR\CARNET_CHRONOPOST"
@@ -135,7 +135,7 @@ def _latest_file_in_dir(directory: str, pattern_ext: tuple = (".xlsx", ".xls", "
 def list_latest_files():
     """Return the latest available business files for download (no parquets)."""
     # Annuaire PR
-    annuaire_dir = os.path.join(path_r, folder_gestion_pr, "ANNUAIRE_PR")
+    annuaire_dir = os.path.join(path_exit, folder_gestion_pr, "ANNUAIRE_PR")
     latest_annuaire = _latest_file_in_dir(annuaire_dir)
 
     # LM2S
@@ -167,7 +167,7 @@ def list_latest_files():
 
 @bp.get("/annuaire_pr")
 def download_annuaire_pr_api():
-    annuaire_dir = os.path.join(path_r, folder_gestion_pr, "ANNUAIRE_PR")
+    annuaire_dir = os.path.join(path_exit, folder_gestion_pr, "ANNUAIRE_PR")
     latest = _latest_file_in_dir(annuaire_dir)
     if not latest:
         return jsonify({"error": "not_found"}), 404

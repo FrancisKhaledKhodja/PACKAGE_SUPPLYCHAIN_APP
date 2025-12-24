@@ -3801,3 +3801,19 @@ FileNotFoundError: [WinError 53] Le chemin réseau n’a pas été trouvé: 'R:\
 2025-12-22 08:55:56.224 | INFO     | supplychain_app.data.pudo_etl:update_data:338 - Data updated successfully
 2025-12-23 03:22:24.762 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
 2025-12-23 03:23:23.092 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 09:16:29.853 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 09:17:10.805 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 09:29:40.623 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 09:30:05.178 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 11:16:01.858 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 11:16:15.665 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 11:39:26.696 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 11:39:44.750 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 11:44:04.747 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 11:44:15.519 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 11:48:49.441 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 11:49:03.386 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 13:42:07.812 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 13:42:28.698 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully
+2025-12-23 16:18:11.509 | INFO     | supplychain_app.data.pudo_etl:update_data:267 - Update data
+2025-12-23 16:18:17.383 | INFO     | supplychain_app.data.pudo_etl:update_data:366 - Data updated successfully

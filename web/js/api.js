@@ -8,6 +8,101 @@ const API_BASE_URL = (() => {
   }
 })();
 
+function scappStartHeartbeat() {
+  if (window.__scappHeartbeatTimer) return;
+  const send = () => {
+    try {
+      const url = API("/app/ping");
+      if (navigator && typeof navigator.sendBeacon === "function") {
+        navigator.sendBeacon(url, "");
+        return;
+      }
+      fetch(url, { method: "POST", keepalive: true }).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
+  };
+  send();
+  window.__scappHeartbeatTimer = setInterval(send, 10000);
+}
+
+function scappStopHeartbeat() {
+  const t = window.__scappHeartbeatTimer;
+  if (t) {
+    clearInterval(t);
+    window.__scappHeartbeatTimer = null;
+  }
+}
+
+function scappBroadcastExit() {
+  try {
+    if (window.BroadcastChannel) {
+      const ch = new BroadcastChannel("scapp-exit");
+      ch.postMessage({ type: "exit" });
+      try { ch.close(); } catch (e) {}
+      return;
+    }
+  } catch (e) {
+    // ignore
+  }
+  try {
+    localStorage.setItem("scapp-exit", String(Date.now()));
+  } catch (e) {
+    // ignore
+  }
+}
+
+function scappHandleExitSignal() {
+  scappStopHeartbeat();
+  try {
+    window.location.replace("about:blank");
+  } catch (e) {
+    // ignore
+  }
+  setTimeout(() => {
+    try { window.close(); } catch (e) {}
+  }, 50);
+}
+
+function scappInitExitListener() {
+  try {
+    if (window.BroadcastChannel) {
+      const ch = new BroadcastChannel("scapp-exit");
+      ch.addEventListener("message", (ev) => {
+        const msg = ev && ev.data ? ev.data : null;
+        if (msg && msg.type === "exit") {
+          scappHandleExitSignal();
+        }
+      });
+    }
+  } catch (e) {
+    // ignore
+  }
+  try {
+    window.addEventListener("storage", (e) => {
+      if (e && e.key === "scapp-exit") {
+        scappHandleExitSignal();
+      }
+    });
+  } catch (e) {
+    // ignore
+  }
+}
+
+function scappInitExitButton() {
+  const btn = document.getElementById("scapp-exit");
+  if (!btn) return;
+  btn.addEventListener("click", () => {
+    scappBroadcastExit();
+    try {
+      fetch(API("/app/exit"), { method: "POST", keepalive: true }).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
+    scappHandleExitSignal();
+  });
+}
+
 function API(path) {
   return `${API_BASE_URL}${path}`;
 }
@@ -141,7 +236,10 @@ async function scappRenderHeader() {
         ${llmRagLink}
       </nav>
       <div id="scapp-update-banner" style="font-size:0.75rem; color:#facc15;"></div>
-      <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
+      <div style="display:flex; gap:0.5rem; align-items:center;">
+        <button id="scapp-exit" type="button" class="btn-theme-toggle">Quitter</button>
+        <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
+      </div>
     </div>
   </header>
   `;
@@ -213,7 +311,13 @@ async function scappCheckUpdates() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  scappRenderHeader();
+  scappInitExitListener();
+  scappRenderHeader().then(() => {
+    scappInitExitButton();
+    scappStartHeartbeat();
+  }).catch(() => {
+    // ignore
+  });
   scappInitSingleTabLinks();
   scappCheckUpdates();
   setInterval(scappCheckUpdates, 60000);

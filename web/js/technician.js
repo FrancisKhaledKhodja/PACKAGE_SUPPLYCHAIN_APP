@@ -225,14 +225,13 @@ document.addEventListener("DOMContentLoaded", () => {
           const isOpen = st.includes("ouvert") || ["1", "true", "actif", "active", "open"].includes(st);
           const isClosed = st.includes("ferme") || ["0", "false", "inactif", "inactive", "closed"].includes(st);
           const periodeAbs = prData.periode_absence_a_utiliser || "";
-          const bg = isOpen ? "#16a34a" : (isClosed ? "#dc2626" : "#6b7280");
-          const fg = "#ffffff";
           if (statut) {
             const parts = [`Statut: ${statut}`];
             if (isClosed && periodeAbs) {
               parts.push(`Période absence: ${periodeAbs}`);
             }
-            statutEl.innerHTML = `<span style="display:inline-block; padding:2px 8px; border-radius:9999px; font-size:12px; font-weight:600; background:${bg}; color:${fg};">${parts.join(" • ")}</span>`;
+            const css = isOpen ? "status-badge--open" : (isClosed ? "status-badge--closed" : "status-badge--unknown");
+            statutEl.innerHTML = `<span class="status-badge ${css}">${parts.join(" • ")}</span>`;
           } else {
             statutEl.innerHTML = "";
           }

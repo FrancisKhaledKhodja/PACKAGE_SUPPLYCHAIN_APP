@@ -67,24 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const span = document.createElement("span");
     span.textContent = txt || "";
-    span.style.display = "inline-block";
-    span.style.padding = "0.12rem 0.5rem";
-    span.style.borderRadius = "999px";
-    span.style.fontWeight = "600";
-    span.style.fontSize = "0.8rem";
 
+    span.classList.add("status-badge");
     if (isOpen) {
-      span.style.backgroundColor = "#dcfce7";
-      span.style.color = "#166534";
-      span.style.border = "1px solid #86efac";
+      span.classList.add("status-badge--open");
     } else if (isClosed) {
-      span.style.backgroundColor = "#fee2e2";
-      span.style.color = "#991b1b";
-      span.style.border = "1px solid #fca5a5";
+      span.classList.add("status-badge--closed");
     } else {
-      span.style.backgroundColor = "#e5e7eb";
-      span.style.color = "#111827";
-      span.style.border = "1px solid #d1d5db";
+      span.classList.add("status-badge--unknown");
     }
     return span;
   }

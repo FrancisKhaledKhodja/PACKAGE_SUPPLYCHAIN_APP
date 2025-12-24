@@ -816,13 +816,26 @@ def get_pudo_directory() -> list[dict]:
     return rows
 
 
-def _ensure_choix_pr_dir():
-    if not os.path.isdir(CHOIX_PR_TECH_DIR):
-        os.makedirs(CHOIX_PR_TECH_DIR, exist_ok=True)
+def _ensure_choix_pr_dir() -> bool:
+    try:
+        if not os.path.isdir(CHOIX_PR_TECH_DIR):
+            os.makedirs(CHOIX_PR_TECH_DIR, exist_ok=True)
+        return True
+    except Exception:
+        return False
 
 
 def _load_pr_overrides_df() -> pl.DataFrame:
-    _ensure_choix_pr_dir()
+    if not _ensure_choix_pr_dir():
+        return pl.DataFrame(
+            schema={
+                "code_magasin": pl.Utf8,
+                "pr_role": pl.Utf8,
+                "code_point_relais_override": pl.Utf8,
+                "commentaire": pl.Utf8,
+                "date_commentaire": pl.Utf8,
+            }
+        )
     path = os.path.join(CHOIX_PR_TECH_DIR, CHOIX_PR_TECH_FILE)
     if not os.path.exists(path):
         return pl.DataFrame(
@@ -849,9 +862,13 @@ def _load_pr_overrides_df() -> pl.DataFrame:
 
 
 def _save_pr_overrides_df(df: pl.DataFrame) -> None:
-    _ensure_choix_pr_dir()
+    if not _ensure_choix_pr_dir():
+        return
     path = os.path.join(CHOIX_PR_TECH_DIR, CHOIX_PR_TECH_FILE)
-    df.write_parquet(path)
+    try:
+        df.write_parquet(path)
+    except Exception:
+        return
 
 
 def get_pr_overrides_for_store(code_magasin: str) -> dict:

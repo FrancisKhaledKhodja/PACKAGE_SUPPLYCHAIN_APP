@@ -4,7 +4,13 @@ Static HTML/CSS/JS frontend served by a simple HTTP server.
 
 The Flask API is available on `http://127.0.0.1:5001/api/*` and is consumed via AJAX from these pages.
 
-In development, the frontend is served automatically by `run_supplychainapp.py` using `http.server` on `http://127.0.0.1:8000/`.
+In development, the frontend is served automatically by `py -m supplychain_app.run` (or `py src/supplychain_app/run.py`) using a simple HTTP server on `http://127.0.0.1:8000/`.
+
+Notes:
+
+- The frontend port defaults to `8000` but may fall back to `8001`, `8002`, ... if `8000` is already in use.
+- The header includes a **Quitter** button which calls `POST /api/app/exit` to stop the application.
+- Pages send a heartbeat (`POST /api/app/ping`) so the server can auto-stop after a short inactivity delay.
 
 Entry points:
 

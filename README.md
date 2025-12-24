@@ -16,6 +16,10 @@ Ce document résume :
 - **Décisions d’architecture (ADR)** : `docs/adr/`
 - **Checklist PR** : `.github/pull_request_template.md`
 
+Dernières ADR notables :
+
+- `docs/adr/0004-application-lifecycle-shutdown.md` (heartbeat, bouton Quitter, auto-stop)
+
 ---
 
 ## 0. Installation & environnement
@@ -101,9 +105,10 @@ Vue d'ensemble des principaux composants :
 ```
 
 - `py -m supplychain_app.run` :
-  - démarre **l'API Flask** sur `127.0.0.1:5001` ;
-  - démarre un **serveur HTTP simple** (module `http.server`) sur `127.0.0.1:8000` pour servir `web/` ;
-  - ouvre automatiquement le navigateur sur `http://127.0.0.1:8000/`.
+  - démarre **l'API Flask** sur `http://127.0.0.1:5001/api/*` ;
+  - démarre un **serveur HTTP** pour le frontend (dossier `web/`) sur `http://127.0.0.1:8000/` ;
+    - si le port `8000` est déjà occupé, l'application tente `8001`, `8002`, etc.
+  - ouvre automatiquement le navigateur sur l'URL frontend (port effectif).
 - `src/supplychain_app` :
   - organise l'API en **blueprints** (`items`, `pudo`, `stores`, `helios`, `technicians`, `downloads`, etc.) ;
   - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
@@ -146,7 +151,16 @@ Ce script :
 - démarre un petit serveur HTTP pour le frontend sur `http://127.0.0.1:8000`,
 - ouvre automatiquement le navigateur sur `http://127.0.0.1:8000/`.
 
-Pour arrêter : `Ctrl + C` dans le terminal.
+Pour arrêter :
+
+- **Recommandé (UI)** : cliquer sur **Quitter** (bouton dans le header).
+- **Alternative** : fermer toutes les pages/onglets de l'application ; un watchdog arrête automatiquement les serveurs au bout d'environ 45s sans activité.
+- **Mode terminal** : `Ctrl + C` (si l'application est lancée depuis un terminal).
+
+Endpoints techniques associés :
+
+- `POST /api/app/ping` : heartbeat envoyé par le navigateur.
+- `POST /api/app/exit` : arrêt propre des serveurs (utilisé par le bouton **Quitter**).
 
 ### 1.3. Assistant : modes de fonctionnement (règles vs Ollama)
 
@@ -560,6 +574,18 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
   - fermer les fenêtres/terminaux qui pointent sur `build/` ou `dist/`,
   - mettre en pause temporairement la synchronisation OneDrive ou déplacer le projet hors OneDrive,
   - ou lancer PyInstaller sans `--clean` si nécessaire.
+
+### 4.1. Dépannage : ports occupés (Windows)
+
+Si l'application a été lancée plusieurs fois et qu'un ancien process tourne encore, les ports `8000` (frontend) et/ou `5001` (API) peuvent être occupés.
+
+Commandes utiles :
+
+```powershell
+netstat -ano | findstr :8000
+netstat -ano | findstr :5001
+taskkill /PID <PID> /F
+```
 
 ---
 

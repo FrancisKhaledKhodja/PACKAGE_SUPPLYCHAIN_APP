@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from .config import Config
 from .extensions import cors
 from .blueprints.auth import bp as auth_bp
@@ -22,6 +22,9 @@ from supplychain_app.data.pudo_etl import update_data, get_last_update_summary
 def create_app(config_object: type[Config] = Config) -> Flask:
     app = Flask(__name__)
     app.config.from_object(config_object)
+
+    app.config.setdefault("SCAPP_LAST_PING_TS", time.time())
+    app.config.setdefault("SCAPP_EXIT_CALLBACK", None)
 
     # Extensions
     origins = app.config.get("CORS_ORIGINS", "*")
@@ -83,6 +86,21 @@ def create_app(config_object: type[Config] = Config) -> Flask:
             "force_show_llm_rag": force_show_llm_rag,
             "hide_llm_rag_env": hide_llm_rag_env,
         }
+
+    @app.post("/api/app/ping")
+    def app_ping():
+        app.config["SCAPP_LAST_PING_TS"] = time.time()
+        return {"ok": True}
+
+    @app.post("/api/app/exit")
+    def app_exit():
+        cb = app.config.get("SCAPP_EXIT_CALLBACK")
+        if callable(cb):
+            try:
+                cb()
+            except Exception:
+                pass
+        return {"ok": True}
 
     def _background_update_loop():
         while True:
