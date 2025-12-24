@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$Version = '1.6.0'
+$Version = '1.6.1'
 $ExeName = "SUPPLYCHAIN_APP_v$Version"
 
 # Build single EXE (without LLM/RAG libs)

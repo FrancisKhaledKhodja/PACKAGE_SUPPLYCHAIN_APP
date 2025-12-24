@@ -93,6 +93,8 @@ function scappInitExitButton() {
   const btn = document.getElementById("scapp-exit");
   if (!btn) return;
   btn.addEventListener("click", () => {
+    const ok = confirm("Quitter SupplyChainApp ?\n\nCela va arrêter l'application (frontend + API).");
+    if (!ok) return;
     scappBroadcastExit();
     try {
       fetch(API("/app/exit"), { method: "POST", keepalive: true }).catch(() => {});
@@ -236,9 +238,9 @@ async function scappRenderHeader() {
         ${llmRagLink}
       </nav>
       <div id="scapp-update-banner" style="font-size:0.75rem; color:#facc15;"></div>
-      <div style="display:flex; gap:0.5rem; align-items:center;">
-        <button id="scapp-exit" type="button" class="btn-theme-toggle">Quitter</button>
+      <div style="display:flex; gap:0.75rem; align-items:center;">
         <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
+        <button id="scapp-exit" type="button" class="btn-danger" title="Fermer l'application (arrête les serveurs locaux)">Quitter</button>
       </div>
     </div>
   </header>

@@ -1,7 +1,7 @@
 
-# SupplyChainApp – Spécification des usages et besoins métiers (version 1.6.0)
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.6.1)
 
-> Cette version de la spécification correspond à l’application **SupplyChainApp 1.6.0**.
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.6.1**.
 
 ## 1. Contexte et objectifs
 
