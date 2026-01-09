@@ -4,260 +4,17 @@
   <meta charset="UTF-8">
   <title>DEMANDE CREATION OU MODIFICATION ARTICLE</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/article_request.css">
   <script src="js/api.js?v=4" defer></script>
-  <style>
-    .help-tip {
-      font-size: 0.85rem;
-      max-width: 100%;
-    }
-    .help-tip-content {
-      padding: 0.4rem 0.6rem;
-      border-radius: 0.5rem;
-    }
-    .help-tip-text {
-      line-height: 1.4;
-    }
-
-    .scapp-excel-wrap {
-      overflow: auto;
-      border: 1px solid var(--border);
-      border-radius: 0;
-      background: #fff;
-    }
-
-    .scapp-creation-form-grid {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(220px, 1fr));
-      gap: 0.75rem 1.25rem;
-      margin-top: 0.75rem;
-      justify-content: start;
-      width: 100%;
-      max-width: none;
-    }
-
-    .scapp-creation-form-field {
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      max-width: none;
-    }
-
-    .scapp-creation-form-field.scapp-field-narrow {
-      max-width: none;
-    }
-
-    .scapp-creation-form-field.scapp-field-wide {
-      max-width: none;
-    }
-
-    .scapp-creation-form-section {
-      grid-column: 1 / -1;
-      border: 1px solid var(--border);
-      background: #f9fafb;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
-      border-radius: 0.5rem;
-      padding: 0.75rem;
-    }
-
-    .scapp-creation-form-section-title {
-      font-weight: 700;
-      letter-spacing: 0.02em;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-
-    .scapp-creation-form-row-2 {
-      grid-column: 1 / -1;
-      display: grid;
-      grid-template-columns: repeat(2, minmax(320px, 1fr));
-      gap: 0.75rem 1.25rem;
-      align-items: start;
-    }
-
-    .scapp-creation-form-row-2 > .scapp-creation-form-section {
-      grid-column: auto;
-      height: 100%;
-    }
-
-    #creation-form-libelles-section {
-      margin-top: 0.75rem;
-    }
-
-    #creation-form-libelles-section .scapp-creation-form-inline {
-      flex-wrap: nowrap;
-      align-items: flex-end;
-    }
-
-    #creation-form-libelles-section .scapp-creation-form-field.scapp-field-wide {
-      max-width: none;
-      flex: 1 1 0;
-    }
-
-    #creation-form-ref-fab-section .scapp-creation-form-inline {
-      align-items: flex-start;
-      flex-wrap: nowrap;
-    }
-
-    #creation-form-ref-fab-section .scapp-creation-form-inline .scapp-creation-form-field {
-      flex: 1 1 0;
-    }
-
-    #creation-form-ref-fab-counter {
-      margin-top: 0.15rem;
-    }
-
-    .scapp-creation-form-subgrid {
-      display: grid;
-      grid-template-columns: inherit;
-      gap: 0.75rem 1.25rem;
-      justify-content: start;
-    }
-
-    .scapp-creation-form-inline {
-      display: flex;
-      align-items: flex-end;
-      gap: 0.75rem 1.25rem;
-      flex-wrap: wrap;
-    }
-
-    .scapp-creation-form-inline .scapp-creation-form-field {
-      margin: 0;
-    }
-
-    .scapp-creation-form-field label {
-      min-width: 0;
-    }
-
-    .scapp-creation-form-field input,
-    .scapp-creation-form-field select {
-      min-width: 0;
-      max-width: 100%;
-      width: 100%;
-    }
-
-    .scapp-creation-form-field textarea {
-      min-width: 0;
-      max-width: 100%;
-      width: 100%;
-    }
-
-    @media (max-width: 1360px) {
-      .scapp-creation-form-grid {
-        grid-template-columns: repeat(3, minmax(240px, 1fr));
-        max-width: none;
-      }
-    }
-
-    @media (max-width: 1120px) {
-      .scapp-creation-form-grid {
-        grid-template-columns: repeat(2, minmax(280px, 1fr));
-        max-width: none;
-      }
-    }
-
-    @media (max-width: 980px) {
-      .scapp-creation-form-grid {
-        grid-template-columns: 1fr;
-        max-width: none;
-      }
-
-      .scapp-creation-form-row-2 {
-        grid-template-columns: 1fr;
-      }
-
-      .scapp-creation-form-subgrid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .scapp-excel {
-      width: 100%;
-      border-collapse: collapse;
-      table-layout: fixed;
-      font-size: 0.9rem;
-    }
-
-    .scapp-excel th,
-    .scapp-excel td {
-      border: 1px solid #d1d5db;
-      padding: 0;
-      vertical-align: middle;
-    }
-
-    .scapp-excel thead th {
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      background: #f3f4f6;
-      color: #111827;
-      font-weight: 600;
-      padding: 8px;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    .scapp-excel tbody tr:nth-child(even) {
-      background: #fafafa;
-    }
-
-    .scapp-excel tbody tr:hover {
-      background: #eef2ff;
-    }
-
-    .scapp-excel-input {
-      width: 100%;
-      min-width: 0;
-      border: 0;
-      border-radius: 0;
-      padding: 8px;
-      background: transparent;
-      color: #111827;
-      outline: none;
-      box-shadow: none;
-    }
-
-    .scapp-excel-input[readonly] {
-      background: #f9fafb;
-      color: #374151;
-    }
-
-    .scapp-excel-input:focus {
-      background: #fff;
-      box-shadow: inset 0 0 0 2px #2563eb;
-    }
-
-    .scapp-excel-select {
-      width: 100%;
-      min-width: 0;
-      border: 0;
-      border-radius: 0;
-      padding: 8px;
-      background: transparent;
-      color: #111827;
-      outline: none;
-      box-shadow: none;
-      appearance: none;
-    }
-
-    .scapp-excel-select:focus {
-      background: #fff;
-      box-shadow: inset 0 0 0 2px #2563eb;
-    }
-
-    .scapp-excel-actions {
-      padding: 6px;
-      white-space: nowrap;
-    }
-  </style>
 </head>
 <body>
   <div id="scapp-header"></div>
 
   <div class="card">
-    <h2 style="margin:0 0 4px; color:var(--muted)">Demande création ou modification article</h2>
-    <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap;">
-      <label for="request-type" class="muted" style="min-width:180px;">Type de demande</label>
-      <select id="request-type" name="request_type" style="min-width:420px; max-width:100%;">
+    <h2 class="article-request-title">Demande création ou modification article</h2>
+    <div class="row article-request-row">
+      <label for="request-type" class="muted article-request-label-180">Type de demande</label>
+      <select id="request-type" name="request_type" class="article-request-control-wide">
         <option value="" selected disabled>Choisir un type de demande...</option>
         <option value="creation_articles">Création d'article(s)</option>
         <option value="modification_criticite">Modification d'une criticité</option>
@@ -267,52 +24,52 @@
       </select>
     </div>
 
-    <div id="requester-section" class="section" style="display:none; margin-top:0.5rem;">
-      <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap;">
-        <label for="requester-firstname" class="muted" style="min-width:180px;">Prénom</label>
-        <input id="requester-firstname" name="requester_firstname" type="text" placeholder="Saisir votre prénom" style="min-width:420px; max-width:100%;" />
+    <div id="requester-section" class="section">
+      <div class="row article-request-row">
+        <label for="requester-firstname" class="muted article-request-label-180">Prénom</label>
+        <input id="requester-firstname" name="requester_firstname" type="text" placeholder="Saisir votre prénom" class="article-request-control-wide" />
       </div>
-      <div class="row" style="gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
-        <label for="requester-lastname" class="muted" style="min-width:180px;">Nom</label>
-        <input id="requester-lastname" name="requester_lastname" type="text" placeholder="Saisir votre nom" style="min-width:420px; max-width:100%;" />
+      <div class="row article-request-row scapp-mt-05">
+        <label for="requester-lastname" class="muted article-request-label-180">Nom</label>
+        <input id="requester-lastname" name="requester_lastname" type="text" placeholder="Saisir votre nom" class="article-request-control-wide" />
       </div>
     </div>
 
-    <div id="creation-section" class="section" style="display:none; margin-top:1rem;">
-      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Création d'article(s)</h3>
-      <div class="row" style="gap:1rem; align-items:center; flex-wrap:wrap;">
-        <span class="muted" style="min-width:220px;">Mode de saisie</span>
-        <label style="display:flex; align-items:center; gap:0.35rem;">
+    <div id="creation-section" class="section">
+      <h3 class="article-request-subtitle">Création d'article(s)</h3>
+      <div class="row article-request-row-wide">
+        <span class="muted article-request-label-220">Mode de saisie</span>
+        <label class="article-request-inline-radio">
           <input type="radio" name="creation-mode" id="creation-mode-form" value="form" checked />
           Formulaire
         </label>
-        <label style="display:flex; align-items:center; gap:0.35rem;">
+        <label class="article-request-inline-radio">
           <input type="radio" name="creation-mode" id="creation-mode-excel" value="excel" />
           Feuille (type Excel)
         </label>
       </div>
 
-      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap; margin-top:0.75rem;">
+      <div class="row article-request-actions">
         <button id="creation-add-row" type="button">Ajouter une ligne</button>
-        <button id="creation-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+        <button id="creation-validate" type="button">Valider</button>
       </div>
 
-      <div id="creation-excel-import" class="row" style="display:none; justify-content:flex-end; gap:0.5rem; flex-wrap:wrap; margin-top:0.5rem;">
+      <div id="creation-excel-import" class="row">
         <button id="creation-template-download" type="button">Télécharger le modèle</button>
-        <label class="muted" style="display:flex; align-items:center; gap:0.5rem;">
+        <label class="muted article-request-inline-radio">
           Importer un fichier Excel
           <input id="creation-import-file" type="file" accept=".xlsx,.xlsm" />
         </label>
       </div>
 
-      <div id="creation-feedback" class="muted" style="margin-top:0.5rem;"></div>
+      <div id="creation-feedback" class="muted"></div>
 
-      <div id="creation-form" style="display:block; margin-top:0.75rem;">
+      <div id="creation-form">
         <div class="scapp-creation-form-grid">
           <div class="scapp-creation-form-row-2">
             <div class="scapp-creation-form-section" id="creation-form-ref-fab-section">
               <div class="scapp-creation-form-section-title">REFERENCE FABRICANT</div>
-              <div class="help-tip" style="margin-bottom:0.5rem;">
+              <div class="help-tip scapp-mb-05">
                 <div class="help-tip-content">
                   <div class="help-tip-text">
                     <strong>Étape 1 :</strong> renseigner le <strong>fournisseur</strong>, la <strong>référence fabricant</strong> (référence exacte du matériel chez le fournisseur) et le <strong>prix prévisionnel</strong> de l'article.
@@ -324,13 +81,13 @@
                   <label class="muted">Fabricant</label>
                   <input id="creation-form-fabricant" type="text" placeholder="Fabricant" list="creation-form-fabricant-list" required />
                   <datalist id="creation-form-fabricant-list"></datalist>
-                  <div id="creation-form-fabricant-new" style="display:none; color:#dc2626; font-weight:600;">nouveau fournisseur</div>
+                  <div id="creation-form-fabricant-new">nouveau fournisseur</div>
                 </div>
                 <div class="scapp-creation-form-field">
                   <label class="muted">Référence fabricant</label>
                   <input id="creation-form-ref-fab" type="text" placeholder="Référence fabricant (31 caractères conseillés)" required />
-                  <div id="creation-form-ref-fab-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
-                  <div id="creation-form-ref-fab-check" class="muted" style="font-size:0.85rem; line-height:1.2; margin-top:0.15rem;"></div>
+                  <div id="creation-form-ref-fab-counter" class="muted"></div>
+                  <div id="creation-form-ref-fab-check" class="muted"></div>
                 </div>
                 <div class="scapp-creation-form-field scapp-field-narrow">
                   <label class="muted">Prix prévisionnel</label>
@@ -340,7 +97,7 @@
             </div>
             <div class="scapp-creation-form-section" id="creation-form-famille-section">
               <div class="scapp-creation-form-section-title">FAMILLE ARTICLE</div>
-              <div class="help-tip" style="margin-bottom:0.5rem;">
+              <div class="help-tip scapp-mb-05">
                 <div class="help-tip-content">
                   <div class="help-tip-text">
                     <strong>Étape 2 :</strong> choisir <strong>TDF</strong> (le matériel est acheté par TDF) ou <strong>CLT</strong> (le matériel est mis à disposition de TDF par le client).
@@ -371,12 +128,12 @@
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Libellé court</label>
                 <textarea id="creation-form-libelle-court" maxlength="120" rows="2" placeholder="MAJUSCULES sans accents (120 car. max)" required></textarea>
-                <div id="creation-form-libelle-court-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
+                <div id="creation-form-libelle-court-counter" class="muted"></div>
               </div>
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Libellé long</label>
                 <textarea id="creation-form-libelle-long" maxlength="240" rows="3" placeholder="MAJUSCULES sans accents (240 car. max)" required></textarea>
-                <div id="creation-form-libelle-long-counter" class="muted" style="font-size:0.8rem; line-height:1.2;"></div>
+                <div id="creation-form-libelle-long-counter" class="muted"></div>
               </div>
             </div>
           </div>
@@ -392,7 +149,7 @@
                   <option value="COMPOS">COMPOS</option>
                 </select>
               </div>
-              <div class="scapp-creation-form-field scapp-field-narrow" id="creation-form-mnemo-wrap" style="display:none;">
+              <div class="scapp-creation-form-field scapp-field-narrow" id="creation-form-mnemo-wrap">
                 <label class="muted">Mnémonique</label>
                 <input id="creation-form-mnemo" type="text" placeholder="20 caractères max" />
               </div>
@@ -504,7 +261,7 @@
                     <option value="NON">NON</option>
                   </select>
                 </div>
-                <div id="creation-form-md-details" class="scapp-creation-form-inline" style="display:none;">
+                <div id="creation-form-md-details" class="scapp-creation-form-inline">
                   <div class="scapp-creation-form-field">
                     <label class="muted">Catégorie MD</label>
                     <select id="creation-form-cat-md">
@@ -540,7 +297,7 @@
                     <option value="NON">NON</option>
                   </select>
                 </div>
-                <div id="creation-form-conso-details" class="scapp-creation-form-inline" style="display:none;">
+                <div id="creation-form-conso-details" class="scapp-creation-form-inline">
                   <div class="scapp-creation-form-field">
                     <label class="muted">Catégorie consommables</label>
                     <select id="creation-form-cat-conso">
@@ -608,74 +365,74 @@
             </div>
           </div>
         </div>
-        <div class="muted" style="margin-top:0.75rem;">Pour saisir plusieurs articles, basculez en mode "Feuille (type Excel)".</div>
+        <div class="muted article-request-hint">Pour saisir plusieurs articles, basculez en mode "Feuille (type Excel)".</div>
       </div>
 
-      <div id="creation-excel" style="display:none; margin-top:0.75rem;">
+      <div id="creation-excel">
         <div class="scapp-excel-wrap">
           <table id="creation-table" class="scapp-excel">
             <colgroup>
-              <col style="width:220px;" />
-              <col style="width:220px;" />
-              <col style="width:140px;" />
-              <col style="width:140px;" />
-              <col style="width:150px;" />
-              <col style="width:360px;" />
-              <col style="width:520px;" />
-              <col style="width:140px;" />
-              <col style="width:160px;" />
-              <col style="width:240px;" />
-              <col style="width:160px;" />
-              <col style="width:150px;" />
-              <col style="width:110px;" />
-              <col style="width:360px;" />
-              <col style="width:110px;" />
-              <col style="width:110px;" />
-              <col style="width:110px;" />
-              <col style="width:110px;" />
-              <col style="width:150px;" />
-              <col style="width:150px;" />
-              <col style="width:130px;" />
-              <col style="width:170px;" />
-              <col style="width:170px;" />
-              <col style="width:220px;" />
-              <col style="width:140px;" />
-              <col style="width:200px;" />
-              <col style="width:240px;" />
-              <col style="width:240px;" />
-              <col style="width:110px;" />
+              <col class="scapp-col-w-220" />
+              <col class="scapp-col-w-220" />
+              <col class="scapp-col-w-140" />
+              <col class="scapp-col-w-140" />
+              <col class="scapp-col-w-150" />
+              <col class="scapp-col-w-360" />
+              <col class="scapp-col-w-520" />
+              <col class="scapp-col-w-140" />
+              <col class="scapp-col-w-160" />
+              <col class="scapp-col-w-240" />
+              <col class="scapp-col-w-160" />
+              <col class="scapp-col-w-150" />
+              <col class="scapp-col-w-110" />
+              <col class="scapp-col-w-360" />
+              <col class="scapp-col-w-110" />
+              <col class="scapp-col-w-110" />
+              <col class="scapp-col-w-110" />
+              <col class="scapp-col-w-110" />
+              <col class="scapp-col-w-150" />
+              <col class="scapp-col-w-150" />
+              <col class="scapp-col-w-130" />
+              <col class="scapp-col-w-170" />
+              <col class="scapp-col-w-170" />
+              <col class="scapp-col-w-220" />
+              <col class="scapp-col-w-140" />
+              <col class="scapp-col-w-200" />
+              <col class="scapp-col-w-240" />
+              <col class="scapp-col-w-240" />
+              <col class="scapp-col-w-110" />
             </colgroup>
             <thead>
               <tr>
-                <th style="text-align:left; padding:8px;">fabricant</th>
-                <th style="text-align:left; padding:8px;">reference_fabricant</th>
-                <th style="text-align:left; padding:8px;">prix_previsionnel</th>
-                <th style="text-align:left; padding:8px;">article_tdf_clt</th>
-                <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
-                <th style="text-align:left; padding:8px;">libelle_court</th>
-                <th style="text-align:left; padding:8px;">libelle_long</th>
-                <th style="text-align:left; padding:8px;">type_article</th>
-                <th style="text-align:left; padding:8px;">mnemonique</th>
-                <th style="text-align:left; padding:8px;">cycle_vie_production</th>
-                <th style="text-align:left; padding:8px;">cycle_vie_achat</th>
-                <th style="text-align:left; padding:8px;">statut_article</th>
-                <th style="text-align:left; padding:8px;">criticite</th>
-                <th style="text-align:left; padding:8px;">commentaire_technique</th>
-                <th style="text-align:left; padding:8px;">poids_kg</th>
-                <th style="text-align:left; padding:8px;">long_m</th>
-                <th style="text-align:left; padding:8px;">larg_m</th>
-                <th style="text-align:left; padding:8px;">haut_m</th>
-                <th style="text-align:left; padding:8px;">article_datacenter</th>
-                <th style="text-align:left; padding:8px;">article_hors_norme</th>
-                <th style="text-align:left; padding:8px;">peremption</th>
-                <th style="text-align:left; padding:8px;">retour_production</th>
-                <th style="text-align:left; padding:8px;">matiere_dangereuse</th>
-                <th style="text-align:left; padding:8px;">categorie_md</th>
-                <th style="text-align:left; padding:8px;">code_onu</th>
-                <th style="text-align:left; padding:8px;">catalogue_consommables</th>
-                <th style="text-align:left; padding:8px;">categorie_consommables</th>
-                <th style="text-align:left; padding:8px;">sous_categorie_consommables</th>
-                <th style="text-align:left; padding:8px;">statut</th>
+                <th>fabricant</th>
+                <th>reference_fabricant</th>
+                <th>prix_previsionnel</th>
+                <th>article_tdf_clt</th>
+                <th>feuille_du_catalogue</th>
+                <th>libelle_court</th>
+                <th>libelle_long</th>
+                <th>type_article</th>
+                <th>mnemonique</th>
+                <th>cycle_vie_production</th>
+                <th>cycle_vie_achat</th>
+                <th>statut_article</th>
+                <th>criticite</th>
+                <th>commentaire_technique</th>
+                <th>poids_kg</th>
+                <th>long_m</th>
+                <th>larg_m</th>
+                <th>haut_m</th>
+                <th>article_datacenter</th>
+                <th>article_hors_norme</th>
+                <th>peremption</th>
+                <th>retour_production</th>
+                <th>matiere_dangereuse</th>
+                <th>categorie_md</th>
+                <th>code_onu</th>
+                <th>catalogue_consommables</th>
+                <th>categorie_consommables</th>
+                <th>sous_categorie_consommables</th>
+                <th>statut</th>
               </tr>
             </thead>
             <tbody id="creation-tbody"></tbody>
@@ -684,37 +441,37 @@
       </div>
     </div>
 
-    <div id="achetable-section" class="section" style="display:none; margin-top:1rem;">
-      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Modification du statut achetable / non achetable</h3>
-      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+    <div id="achetable-section" class="section">
+      <h3 class="article-request-subtitle">Modification du statut achetable / non achetable</h3>
+      <div class="row article-request-actions">
         <button id="achetable-add-row" type="button">Ajouter une ligne</button>
-        <button id="achetable-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+        <button id="achetable-validate" type="button" class="article-request-validate-fixed">Valider</button>
       </div>
-      <div id="achetable-feedback" class="muted" style="margin-top:0.5rem;"></div>
-      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+      <div id="achetable-feedback" class="muted"></div>
+      <div class="scapp-excel-wrap article-request-table-wrap">
         <table id="achetable-table" class="scapp-excel">
           <colgroup>
-            <col style="width:120px;" />
-            <col style="width:160px;" />
-            <col style="width:180px;" />
-            <col style="width:520px;" />
-            <col style="width:170px;" />
-            <col style="width:210px;" />
-            <col style="width:340px;" />
-            <col style="width:110px;" />
-            <col style="width:110px;" />
+            <col class="scapp-col-w-120" />
+            <col class="scapp-col-w-160" />
+            <col class="scapp-col-w-180" />
+            <col class="scapp-col-w-520" />
+            <col class="scapp-col-w-170" />
+            <col class="scapp-col-w-210" />
+            <col class="scapp-col-w-340" />
+            <col class="scapp-col-w-110" />
+            <col class="scapp-col-w-110" />
           </colgroup>
           <thead>
             <tr>
-              <th style="text-align:left; padding:8px;">code_article</th>
-              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
-              <th style="text-align:left; padding:8px;">type_article</th>
-              <th style="text-align:left; padding:8px;">libelle_article</th>
-              <th style="text-align:left; padding:8px;">statut article</th>
-              <th style="text-align:left; padding:8px;">nouveau statut article</th>
-              <th style="text-align:left; padding:8px;">Cause(s) de la modification</th>
-              <th style="text-align:left; padding:8px;">statut</th>
-              <th style="text-align:left; padding:8px;"></th>
+              <th>code_article</th>
+              <th>feuille_du_catalogue</th>
+              <th>type_article</th>
+              <th>libelle_article</th>
+              <th>statut article</th>
+              <th>nouveau statut article</th>
+              <th>Cause(s) de la modification</th>
+              <th>statut</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="achetable-tbody"></tbody>
@@ -722,37 +479,37 @@
       </div>
     </div>
 
-    <div id="criticite-section" class="section" style="display:none; margin-top:1rem;">
-      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Modification d'une criticité</h3>
-      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+    <div id="criticite-section" class="section">
+      <h3 class="article-request-subtitle">Modification d'une criticité</h3>
+      <div class="row article-request-actions">
         <button id="criticite-add-row" type="button">Ajouter une ligne</button>
-        <button id="criticite-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+        <button id="criticite-validate" type="button" class="article-request-validate-fixed">Valider</button>
       </div>
-      <div id="criticite-feedback" class="muted" style="margin-top:0.5rem;"></div>
-      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+      <div id="criticite-feedback" class="muted"></div>
+      <div class="scapp-excel-wrap article-request-table-wrap">
         <table id="criticite-table" class="scapp-excel">
           <colgroup>
-            <col style="width:120px;" />
-            <col style="width:160px;" />
-            <col style="width:180px;" />
-            <col style="width:520px;" />
-            <col style="width:110px;" />
-            <col style="width:150px;" />
-            <col style="width:340px;" />
-            <col style="width:110px;" />
-            <col style="width:110px;" />
+            <col class="scapp-col-w-120" />
+            <col class="scapp-col-w-160" />
+            <col class="scapp-col-w-180" />
+            <col class="scapp-col-w-520" />
+            <col class="scapp-col-w-110" />
+            <col class="scapp-col-w-150" />
+            <col class="scapp-col-w-340" />
+            <col class="scapp-col-w-110" />
+            <col class="scapp-col-w-110" />
           </colgroup>
           <thead>
             <tr>
-              <th style="text-align:left; padding:8px;">code_article</th>
-              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
-              <th style="text-align:left; padding:8px;">type_article</th>
-              <th style="text-align:left; padding:8px;">libelle_article</th>
-              <th style="text-align:left; padding:8px;">criticité article</th>
-              <th style="text-align:left; padding:8px;">nouvelle criticite_article</th>
-              <th style="text-align:left; padding:8px;">Cause(s) de la modification</th>
-              <th style="text-align:left; padding:8px;">statut</th>
-              <th style="text-align:left; padding:8px;"></th>
+              <th>code_article</th>
+              <th>feuille_du_catalogue</th>
+              <th>type_article</th>
+              <th>libelle_article</th>
+              <th>criticité article</th>
+              <th>nouvelle criticite_article</th>
+              <th>Cause(s) de la modification</th>
+              <th>statut</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="criticite-tbody"></tbody>
@@ -760,37 +517,37 @@
       </div>
     </div>
 
-    <div id="equivalence-section" class="section" style="display:none; margin-top:1rem;">
-      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Déclaration d'une équivalence</h3>
-      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+    <div id="equivalence-section" class="section">
+      <h3 class="article-request-subtitle">Déclaration d'une équivalence</h3>
+      <div class="row article-request-actions">
         <button id="equivalence-add-row" type="button">Ajouter une ligne</button>
-        <button id="equivalence-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+        <button id="equivalence-validate" type="button" class="article-request-validate-fixed">Valider</button>
       </div>
-      <div id="equivalence-feedback" class="muted" style="margin-top:0.5rem;"></div>
-      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+      <div id="equivalence-feedback" class="muted"></div>
+      <div class="scapp-excel-wrap article-request-table-wrap">
         <table id="equivalence-table" class="scapp-excel">
           <colgroup>
-            <col style="width:130px;" />
-            <col style="width:520px;" />
-            <col style="width:160px;" />
-            <col style="width:520px;" />
-            <col style="width:220px;" />
-            <col style="width:120px;" />
-            <col style="width:90px;" />
-            <col style="width:110px;" />
-            <col style="width:110px;" />
+            <col class="scapp-col-w-130" />
+            <col class="scapp-col-w-520" />
+            <col class="scapp-col-w-160" />
+            <col class="scapp-col-w-520" />
+            <col class="scapp-col-w-220" />
+            <col class="scapp-col-w-120" />
+            <col class="scapp-col-w-90" />
+            <col class="scapp-col-w-110" />
+            <col class="scapp-col-w-110" />
           </colgroup>
           <thead>
             <tr>
-              <th style="text-align:left; padding:8px;">code_article</th>
-              <th style="text-align:left; padding:8px;">libelle_article</th>
-              <th style="text-align:left; padding:8px;">code_equivalent</th>
-              <th style="text-align:left; padding:8px;">libelle_article_equivalent</th>
-              <th style="text-align:left; padding:8px;">type_equivalence</th>
-              <th style="text-align:left; padding:8px;">reciprocite</th>
-              <th style="text-align:left; padding:8px;">rang</th>
-              <th style="text-align:left; padding:8px;">statut</th>
-              <th style="text-align:left; padding:8px;"></th>
+              <th>code_article</th>
+              <th>libelle_article</th>
+              <th>code_equivalent</th>
+              <th>libelle_article_equivalent</th>
+              <th>type_equivalence</th>
+              <th>reciprocite</th>
+              <th>rang</th>
+              <th>statut</th>
+              <th></th>
             </tr>
           </thead>
           <tbody id="equivalence-tbody"></tbody>
@@ -798,41 +555,41 @@
       </div>
     </div>
 
-    <div id="rebut-section" class="section" style="display:none; margin-top:1rem;">
-      <h3 style="margin:0 0 0.75rem; color:var(--muted)">Demande de passage en REBUT</h3>
-      <div class="row" style="justify-content:flex-end; gap:0.5rem; flex-wrap:wrap;">
+    <div id="rebut-section" class="section">
+      <h3 class="article-request-subtitle">Demande de passage en REBUT</h3>
+      <div class="row article-request-actions">
         <button id="rebut-add-row" type="button">Ajouter une ligne</button>
-        <button id="rebut-validate" type="button" style="background:#16a34a; position:fixed; right:2rem; bottom:2rem; z-index:60; box-shadow:0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);">Valider</button>
+        <button id="rebut-validate" type="button" class="article-request-validate-fixed">Valider</button>
       </div>
-      <div id="rebut-feedback" class="muted" style="margin-top:0.5rem;"></div>
-      <div class="scapp-excel-wrap" style="margin-top:0.75rem;">
+      <div id="rebut-feedback" class="muted"></div>
+      <div class="scapp-excel-wrap article-request-table-wrap">
         <table id="rebut-table" class="scapp-excel">
           <colgroup>
-            <col style="width:120px;" />
-            <col style="width:520px;" />
-            <col style="width:160px;" />
-            <col style="width:180px;" />
-            <col style="width:170px;" />
-            <col style="width:110px;" />
-            <col style="width:240px;" />
-            <col style="width:200px;" />
-            <col style="width:210px;" />
-            <col style="width:90px;" />
-            <col style="width:160px;" />
+            <col class="scapp-col-w-120" />
+            <col class="scapp-col-w-520" />
+            <col class="scapp-col-w-160" />
+            <col class="scapp-col-w-180" />
+            <col class="scapp-col-w-170" />
+            <col class="scapp-col-w-110" />
+            <col class="scapp-col-w-240" />
+            <col class="scapp-col-w-200" />
+            <col class="scapp-col-w-210" />
+            <col class="scapp-col-w-90" />
+            <col class="scapp-col-w-160" />
           </colgroup>
           <thead>
             <tr>
-              <th style="text-align:left; padding:8px;">code_article</th>
-              <th style="text-align:left; padding:8px;">libelle_article</th>
-              <th style="text-align:left; padding:8px;">feuille_du_catalogue</th>
-              <th style="text-align:left; padding:8px;">type_article</th>
-              <th style="text-align:left; padding:8px;">statut_abrege_article</th>
-              <th style="text-align:left; padding:8px;">criticite</th>
-              <th style="text-align:left; padding:8px;">cycle_de_vie_de_production_pim</th>
-              <th style="text-align:left; padding:8px;">cycle_de_vie_achat</th>
-              <th style="text-align:left; padding:8px;">lieu_de_reparation_pim</th>
-              <th style="text-align:left; padding:8px;">rma</th>
-              <th style="text-align:left; padding:8px;">retour_production</th>
+              <th>code_article</th>
+              <th>libelle_article</th>
+              <th>feuille_du_catalogue</th>
+              <th>type_article</th>
+              <th>statut_abrege_article</th>
+              <th>criticite</th>
+              <th>cycle_de_vie_de_production_pim</th>
+              <th>cycle_de_vie_achat</th>
+              <th>lieu_de_reparation_pim</th>
+              <th>rma</th>
+              <th>retour_production</th>
             </tr>
           </thead>
           <tbody id="rebut-tbody"></tbody>

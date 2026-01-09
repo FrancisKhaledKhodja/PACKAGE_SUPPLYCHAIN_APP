@@ -1,0 +1,405 @@
+.help-tip {
+  font-size: 0.85rem;
+  max-width: 100%;
+}
+.help-tip-content {
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.5rem;
+}
+.help-tip-text {
+  line-height: 1.4;
+}
+
+.scapp-excel-wrap {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #fff;
+}
+
+.scapp-creation-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.75rem;
+  justify-content: start;
+  width: 100%;
+  max-width: none;
+}
+
+.scapp-creation-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-width: none;
+}
+
+.scapp-creation-form-field.scapp-field-narrow {
+  max-width: none;
+}
+
+.scapp-creation-form-field.scapp-field-wide {
+  max-width: none;
+}
+
+.scapp-creation-form-section {
+  grid-column: 1 / -1;
+  border: 1px solid var(--border);
+  background: #f9fafb;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 1px 1px rgba(15, 23, 42, 0.04);
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.scapp-creation-form-section-title {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+  margin-bottom: 0.5rem;
+}
+
+.scapp-creation-form-row-2 {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+  gap: 0.75rem 1.25rem;
+  align-items: start;
+}
+
+.scapp-creation-form-row-2 > .scapp-creation-form-section {
+  grid-column: auto;
+  height: 100%;
+}
+
+#creation-form-libelles-section {
+  margin-top: 0.75rem;
+}
+
+#creation-form-libelles-section .scapp-creation-form-inline {
+  flex-wrap: nowrap;
+  align-items: flex-end;
+}
+
+#creation-form-libelles-section .scapp-creation-form-field.scapp-field-wide {
+  max-width: none;
+  flex: 1 1 0;
+}
+
+#creation-form-ref-fab-section .scapp-creation-form-inline {
+  align-items: flex-start;
+  flex-wrap: nowrap;
+}
+
+#creation-form-ref-fab-section .scapp-creation-form-inline .scapp-creation-form-field {
+  flex: 1 1 0;
+}
+
+#creation-form-ref-fab-counter {
+  margin-top: 0.15rem;
+}
+
+.scapp-creation-form-subgrid {
+  display: grid;
+  grid-template-columns: inherit;
+  gap: 0.75rem 1.25rem;
+  justify-content: start;
+}
+
+.scapp-creation-form-inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem 1.25rem;
+  flex-wrap: wrap;
+}
+
+.scapp-creation-form-inline .scapp-creation-form-field {
+  margin: 0;
+}
+
+.scapp-creation-form-field label {
+  min-width: 0;
+}
+
+.scapp-creation-form-field input,
+.scapp-creation-form-field select {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+.scapp-creation-form-field textarea {
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+}
+
+@media (max-width: 1360px) {
+  .scapp-creation-form-grid {
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    max-width: none;
+  }
+}
+
+@media (max-width: 1120px) {
+  .scapp-creation-form-grid {
+    grid-template-columns: repeat(2, minmax(280px, 1fr));
+    max-width: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .scapp-creation-form-grid {
+    grid-template-columns: 1fr;
+    max-width: none;
+  }
+
+  .scapp-creation-form-row-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .scapp-creation-form-subgrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scapp-excel {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.9rem;
+}
+
+.scapp-excel th,
+.scapp-excel td {
+  border: 1px solid #d1d5db;
+  padding: 0;
+  vertical-align: middle;
+}
+
+.scapp-excel thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 600;
+  padding: 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.scapp-excel tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.scapp-excel tbody tr:hover {
+  background: #eef2ff;
+}
+
+.scapp-excel-input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 8px;
+  background: transparent;
+  color: #111827;
+  outline: none;
+  box-shadow: none;
+}
+
+.scapp-excel-input[readonly] {
+  background: #f9fafb;
+  color: #374151;
+}
+
+.scapp-excel-input:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #2563eb;
+}
+
+.scapp-excel-select {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  padding: 8px;
+  background: transparent;
+  color: #111827;
+  outline: none;
+  box-shadow: none;
+  appearance: none;
+}
+
+.scapp-excel-select:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px #2563eb;
+}
+
+.scapp-excel-actions {
+  padding: 6px;
+  white-space: nowrap;
+}
+
+.article-request-title {
+  margin: 0 0 4px;
+  color: var(--muted);
+}
+
+.article-request-row {
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.article-request-label-180 {
+  min-width: 180px;
+}
+
+.article-request-label-220 {
+  min-width: 220px;
+}
+
+.article-request-control-wide {
+  min-width: 420px;
+  max-width: 100%;
+}
+
+#requester-section {
+  display: none;
+  margin-top: 0.5rem;
+}
+
+#creation-section {
+  display: none;
+  margin-top: 1rem;
+}
+
+.article-request-subtitle {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+}
+
+.article-request-row-wide {
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.article-request-inline-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.article-request-actions {
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+#creation-excel-import {
+  display: none;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+#creation-feedback {
+  margin-top: 0.5rem;
+}
+
+#creation-form {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+#creation-form-fabricant-new {
+  display: none;
+  color: #dc2626;
+  font-weight: 600;
+}
+
+#creation-form-ref-fab-counter {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+#creation-form-ref-fab-check {
+  font-size: 0.85rem;
+  line-height: 1.2;
+  margin-top: 0.15rem;
+}
+
+#creation-form-libelle-court-counter,
+#creation-form-libelle-long-counter {
+  font-size: 0.8rem;
+  line-height: 1.2;
+}
+
+.article-request-hint {
+  margin-top: 0.75rem;
+}
+
+.article-request-table-wrap {
+  margin-top: 0.75rem;
+}
+
+/* Sections masquées par défaut (affichées via JS selon le type de demande) */
+#creation-excel {
+  display: none;
+  margin-top: 0.75rem;
+}
+
+#creation-form-mnemo-wrap,
+#creation-form-md-details,
+#creation-form-conso-details {
+  display: none;
+}
+
+#achetable-section,
+#criticite-section,
+#equivalence-section,
+#rebut-section {
+  display: none;
+  margin-top: 1rem;
+}
+
+/* Boutons "Valider" flottants (commun à plusieurs sections) */
+.article-request-validate-fixed {
+  background: #16a34a;
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 60;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);
+}
+
+/* Largeurs de colonnes pour les tables "Excel" (remplacement des styles inline sur <col>) */
+col.scapp-col-w-90 { width: 90px; }
+col.scapp-col-w-110 { width: 110px; }
+col.scapp-col-w-120 { width: 120px; }
+col.scapp-col-w-130 { width: 130px; }
+col.scapp-col-w-140 { width: 140px; }
+col.scapp-col-w-150 { width: 150px; }
+col.scapp-col-w-160 { width: 160px; }
+col.scapp-col-w-170 { width: 170px; }
+col.scapp-col-w-180 { width: 180px; }
+col.scapp-col-w-200 { width: 200px; }
+col.scapp-col-w-210 { width: 210px; }
+col.scapp-col-w-220 { width: 220px; }
+col.scapp-col-w-240 { width: 240px; }
+col.scapp-col-w-340 { width: 340px; }
+col.scapp-col-w-360 { width: 360px; }
+col.scapp-col-w-520 { width: 520px; }
+
+#creation-validate {
+  background: #16a34a;
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 60;
+  box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.2), 0 4px 6px -2px rgba(15, 23, 42, 0.1);
+}

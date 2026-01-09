@@ -1,0 +1,143 @@
+.stock-map-layout{
+  font-size:1rem;
+  grid-template-columns:22vw minmax(0, 1fr);
+}
+
+.stock-map-title{
+  margin:0 0 8px;
+  color:var(--muted);
+}
+
+.stock-map-form{
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+}
+
+.stock-map-field{
+  display:flex;
+  flex-direction:column;
+  gap:0.35rem;
+}
+
+.stock-map-subsection{
+  font-size:0.85rem;
+  padding-top:0.5rem;
+  display:flex;
+  flex-direction:column;
+  gap:0.75rem;
+}
+
+.stock-map-subsection-note{
+  margin-bottom:0.15rem;
+}
+
+.stock-map-field--tight{
+  gap:0.25rem;
+}
+
+.stock-map-filters{
+  margin-top:0.5rem;
+  padding-top:0.5rem;
+  border-top:1px dashed var(--border);
+}
+
+.stock-map-filters-header{
+  margin-bottom:0.25rem;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:0.5rem;
+}
+
+.stock-map-toggle-label{
+  font-size:0.8rem;
+  font-weight:normal;
+  cursor:pointer;
+}
+
+.stock-map-filter-block{
+  margin-bottom:0.35rem;
+}
+
+.stock-map-filter-title{
+  font-size:0.8rem;
+  margin-bottom:0.15rem;
+}
+
+.stock-map-filter-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.2rem 0.75rem;
+  font-size:0.8rem;
+}
+
+.stock-map-filter-item{
+  flex:0 0 48%;
+}
+
+.stock-map-filter-item--full{
+  flex:0 0 100%;
+}
+
+.stock-map-search-btn{
+  margin-top:0.5rem;
+}
+
+.stock-map-article-info{
+  font-size:0.9rem;
+}
+
+.stock-map-center-info{
+  font-size:0.85rem;
+  margin-top:0.35rem;
+}
+
+.stock-map-hero-card{
+  margin-bottom:1rem;
+}
+
+.stock-map-hero-title{
+  margin-top:0;
+}
+
+.stock-map-legend{
+  margin-top:0.5rem;
+  font-size:0.8rem;
+  color:var(--muted);
+  display:flex;
+  flex-wrap:wrap;
+  gap:0.35rem 1rem;
+  align-items:center;
+}
+
+.stock-map-legend-label{
+  font-weight:600;
+}
+
+.stock-map-legend-item{
+  display:inline-flex;
+  align-items:center;
+  gap:0.25rem;
+}
+
+.stock-map-legend-dot{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  display:inline-block;
+}
+
+.stock-map-legend-dot--national{background-color:#2563eb;}
+.stock-map-legend-dot--local{background-color:#16a34a;}
+.stock-map-legend-dot--reo{background-color:#dc2626;}
+.stock-map-legend-dot--pied{background-color:#d97706;}
+.stock-map-legend-dot--embarque{background-color:#0d9488;}
+.stock-map-legend-dot--autres{background-color:#6b7280;}
+
+.stock-map-toolbar{
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:0.5rem;
+  gap:0.75rem;
+}

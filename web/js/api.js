@@ -181,11 +181,11 @@ async function scappRenderHeader() {
 
   const llmRagLink = hideLlmRag
     ? ""
-    : '<a href="assistant_rag.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">ASSISTANT (LLM+RAG)</a>';
+    : '<a href="assistant_rag.html" target="_blank" rel="noopener noreferrer" class="scapp-nav-link scapp-nav-link--spaced">ASSISTANT (LLM+RAG)</a>';
 
   container.innerHTML = `
-  <header style="background:#1f2933; color:#fff; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; gap:1.5rem;">
-    <h1 style="margin:0; font-size:1.25rem;">
+  <header class="scapp-header">
+    <h1 class="scapp-header-title">
       <span class="logo-scapp">
         <span class="logo-part-supply">Supply</span>
         <span class="logo-part-chain">Chain</span>
@@ -193,71 +193,71 @@ async function scappRenderHeader() {
       </span>
       ${versionHtml}
     </h1>
-    <div style="display:flex; flex-direction:column; gap:0.35rem; align-items:flex-end;">
-      <nav>
-        <a href="home.html" target="_blank" rel="noopener noreferrer" style="color:#fff; margin-left:1rem; text-decoration:none;">ACCUEIL</a>
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">STOCK ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:260px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="stock.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE STOCK</a>
-            <a href="stock_detailed.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">STOCK DÉTAILLÉ</a>
-            <a href="stock_hyper_detaille.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">STOCK HYPER DÉTAILLÉ</a>
-            <a href="stock_map.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">LOCALISATION STOCK</a>
+    <div class="scapp-header-right">
+      <nav class="scapp-nav">
+        <a href="home.html" target="_blank" rel="noopener noreferrer" class="scapp-nav-link scapp-nav-link--spaced">ACCUEIL</a>
+        <div class="scapp-dropdown scapp-nav-dropdown">
+          <button type="button" class="scapp-dropdown-toggle">STOCK ▾</button>
+          <div class="scapp-dropdown-menu">
+            <a href="stock.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">RECHERCHE STOCK</a>
+            <a href="stock_detailed.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">STOCK DÉTAILLÉ</a>
+            <a href="stock_hyper_detaille.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">STOCK HYPER DÉTAILLÉ</a>
+            <a href="stock_map.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">LOCALISATION STOCK</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">RÉFÉRENTIEL ARTICLE ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:320px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="items.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION ARTICLE</a>
-            <a href="article_request.html?v=3" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">DEMANDE CRÉATION / MODIFICATION ARTICLE</a>
+        <div class="scapp-dropdown scapp-nav-dropdown">
+          <button type="button" class="scapp-dropdown-toggle">RÉFÉRENTIEL ARTICLE ▾</button>
+          <div class="scapp-dropdown-menu scapp-dropdown-menu--wide">
+            <a href="items.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">CONSULTATION ARTICLE</a>
+            <a href="article_request.html?v=3" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">DEMANDE CRÉATION / MODIFICATION ARTICLE</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">PR & MAGASINS ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:360px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="technician.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION MAGASIN</a>
-            <a href="stores.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE PR ET MAGASINS PROCHES D'UNE ADRESSE</a>
-            <a href="technician_assignments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION PR TECHNICIEN</a>
-            <a href="pudo_directory.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ANNUAIRE POINTS RELAIS</a>
+        <div class="scapp-dropdown scapp-nav-dropdown" >
+          <button type="button" class="scapp-dropdown-toggle">PR & MAGASINS ▾</button>
+          <div class="scapp-dropdown-menu scapp-dropdown-menu--xwide">
+            <a href="technician.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">CONSULTATION MAGASIN</a>
+            <a href="stores.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">RECHERCHE PR ET MAGASINS PROCHES D'UNE ADRESSE</a>
+            <a href="technician_assignments.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">CONSULTATION PR TECHNICIEN</a>
+            <a href="pudo_directory.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">ANNUAIRE POINTS RELAIS</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">HELIOS ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:240px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="helios.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">PARC HELIOS</a>
+        <div class="scapp-dropdown scapp-nav-dropdown">
+          <button type="button" class="scapp-dropdown-toggle">HELIOS ▾</button>
+          <div class="scapp-dropdown-menu">
+            <a href="helios.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">PARC HELIOS</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">CONSOMMABLE ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:300px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="catalogue_consommables.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CATALOGUE CONSOMMABLES</a>
+        <div class="scapp-dropdown scapp-nav-dropdown">
+          <button type="button" class="scapp-dropdown-toggle">CONSOMMABLE ▾</button>
+          <div class="scapp-dropdown-menu">
+            <a href="catalogue_consommables.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">CATALOGUE CONSOMMABLES</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">APPLICATIONS / OUTILS ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:280px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">OL MODE DÉGRADÉ</a>
-            <a href="downloads.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TÉLÉCHARGEMENTS</a>
+        <div class="scapp-dropdown scapp-nav-dropdown">
+          <button type="button" class="scapp-dropdown-toggle">APPLICATIONS / OUTILS ▾</button>
+          <div class="scapp-dropdown-menu">
+            <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">OL MODE DÉGRADÉ</a>
+            <a href="downloads.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">TÉLÉCHARGEMENTS</a>
           </div>
         </div>
 
-        <div class="scapp-dropdown" data-admin="1" style="position:relative; display:inline-block; margin-left:1rem;">
-          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">ADMINISTRATION ▾</button>
-          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:260px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="treatments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TRAITEMENTS</a>
-            <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ADMINISTRATION PR</a>
+        <div class="scapp-dropdown scapp-nav-dropdown" data-admin="1">
+          <button type="button" class="scapp-dropdown-toggle">ADMINISTRATION ▾</button>
+          <div class="scapp-dropdown-menu">
+            <a href="treatments.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">TRAITEMENTS</a>
+            <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" class="scapp-dropdown-item">ADMINISTRATION PR</a>
           </div>
         </div>
 
         ${llmRagLink}
       </nav>
-      <div id="scapp-update-banner" style="font-size:0.75rem; color:#facc15;"></div>
-      <div style="display:flex; gap:0.75rem; align-items:center;">
+      <div id="scapp-update-banner" class="scapp-update-banner"></div>
+      <div class="scapp-header-actions">
         <button id="theme-toggle" type="button" class="btn-theme-toggle">Mode sombre</button>
         <button id="scapp-exit" type="button" class="btn-danger" title="Fermer l'application (arrête les serveurs locaux)">Quitter</button>
       </div>

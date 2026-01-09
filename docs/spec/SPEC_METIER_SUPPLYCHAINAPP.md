@@ -1430,6 +1430,73 @@ Accept: application/json
 
 ## B. Changelog fonctionnel (extrait)
 
+### B.0. Recommandations (candidates) – quick wins
+
+> Section volontairement prospective. Les éléments ci-dessous ne sont pas forcément implémentés dans la version décrite par cette spécification.
+
+- **Affichage de la fraîcheur des données (data freshness)**
+  - **Objectif** : rendre visible, sur chaque écran, la date/heure de mise à jour des sources (parquet) utilisées, et alerter si elles sont anciennes.
+  - **Valeur métier** : éviter les décisions prises sur des données obsolètes ; réduire les "pourquoi c'est vide ?".
+  - **Piste UI** : badge discret dans le header de page (ex : "Données à 06:30") + alerte si > 24h.
+  - **Dépendances** : endpoint existant `/api/updates/status` + éventuellement un endpoint détaillant les mtimes par parquet.
+
+- **Exports plus "métier" (colonnes, format, périmètre)**
+  - **Objectif** : faciliter les partages/analyses en dehors de l'app (Excel, mail) en proposant des exports cohérents.
+  - **Piste** :
+    - noms de colonnes lisibles (libellés métier),
+    - export des seules colonnes visibles,
+    - rappel des filtres appliqués (en-tête CSV/Excel ou feuille "paramètres").
+  - **Écrans concernés** : `stock_map.html`, `stock_hyper_detaille.html`, `technician_assignments.html`, `pudo_directory.html`.
+
+- **Comparaison de 2 articles (A/B)**
+  - **Objectif** : accélérer les arbitrages (substitution, équivalences, rationalisation).
+  - **Piste UI** : sélection de 2 codes article, affichage côte-à-côte :
+    - résumé article (statut, criticité),
+    - stock agrégé (GOOD/BAD),
+    - `categorie_sans_sortie`,
+    - fournisseurs / références fabricant,
+    - synthèse Helios (quantity_active + sites).
+
+- **Favoris + historique local**
+  - **Objectif** : réduire les ressaisies et accélérer les cas d'usage récurrents.
+  - **Piste** : favoris (articles, magasins, code IG, PR) + historique des dernières recherches.
+  - **Stockage** : `localStorage` (comme pour `scapp_admin_unlocked`) ; option d'export/import JSON.
+
+#### Recommandations (candidates) – moyen terme
+
+- **Plan d'action "stock dormant" (catégorie sans sortie)**
+  - **Objectif** : transformer l'indicateur `categorie_sans_sortie` en aide à la décision opérationnelle.
+  - **Piste** : génération d'une checklist et/ou d'un export d'actions (dégagement, transfert, ajustement min/max, demande rebut, équivalence).
+  - **Écrans concernés** : `items.html`, `stock.html`, exports associés.
+
+- **Couverture "stock vs parc Helios" (indicateur simple)**
+  - **Objectif** : mettre en perspective la décision de stock (maintien/obsolescence) avec l'importance du parc installé.
+  - **Piste** : ratio et synthèse combinant : stock dispo (GOOD/BAD, M/D) + `quantity_active` Helios + nombre de sites actifs.
+  - **Écrans concernés** : `stock.html`, `helios.html`.
+
+- **Amélioration du scoring magasin dans OL Mode Dégradé**
+  - **Objectif** : proposer un tri/suggestion automatique de magasins les plus pertinents.
+  - **Piste** : score composite : "tous articles disponibles" + distance (vol d'oiseau ou routier si disponible) + contraintes qualité / hors transit.
+
+- **Détection d'anomalies sur affectations technicien ↔ PR**
+  - **Objectif** : aider à l'administration (qualité du référentiel) et réduire les erreurs terrain.
+  - **Piste** : signaler PR fermés, PR manquants, overrides incohérents, distances anormales ; export de la liste d'anomalies.
+  - **Écrans concernés** : `technician_assignments.html`, `technician_admin.html`.
+
+#### Recommandations (candidates) – structurantes
+
+- **Mode "portefeuille" / batch multi-articles**
+  - **Objectif** : analyser une liste de codes article (copier-coller / import CSV) plutôt qu'unitaire.
+  - **Piste** : synthèse multi-articles (stock, sans sortie, Helios, top magasins) + exports.
+
+- **Traçabilité / audit des actions d'administration**
+  - **Objectif** : historiser les actions (qui/quoi/quand) sur `technician_admin` et `treatments`.
+  - **Piste** : journal local (log/parquet) + vue de consultation + possibilité d'export.
+
+- **Externalisation des règles métier (configurable)**
+  - **Objectif** : rendre certaines règles modifiables sans changer le code (ordre type_de_depot, seuils badges, etc.).
+  - **Piste** : fichier de configuration (JSON/YAML) chargé au démarrage + validations.
+
 - **Version 1.3.0**
   - Introduction de la **catégorie "sans sortie"** pour les articles, avec exposition API et intégration dans les écrans `info_article` et `RECHERCHE_STOCK`.
   - Enrichissement des recherches d’articles par les **données fournisseurs** (nom fabricant, référence fabricant) via agrégation des informations de `manufacturers`.
