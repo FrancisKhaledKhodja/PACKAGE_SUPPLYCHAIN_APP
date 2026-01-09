@@ -19,6 +19,7 @@ Ce document résume :
 Dernières ADR notables :
 
 - `docs/adr/0004-application-lifecycle-shutdown.md` (heartbeat, bouton Quitter, auto-stop)
+- `docs/adr/0005-admin-menu-password.md` (menu Administration protégé par mot de passe)
 
 ---
 
@@ -114,11 +115,47 @@ Vue d'ensemble des principaux composants :
   - expose aussi des endpoints techniques (`/api/health`, `/api/updates/status`).
 - `src/supplychain_app.data.pudo_etl` :
   - gère les **tâches d'ETL** (chargement/parquetisation, mise à jour périodique dans `path_datan/<folder_name_app>`).
+- `src/package_pudo` :
+  - package dédié à la **construction de l'annuaire points relais (PUDO)** (fusion multi-sources + géocodage) ;
+  - utilisé en amont pour produire l'Excel annuaire PR, ensuite parquetisé/consommé par l'application.
 - Binaire PyInstaller (`SupplyChainApp.exe`) :
   - embarque le même code Python et le dossier `web/` ;
   - reproduit exactement le comportement de `py -m supplychain_app.run` sans dépendre de Python installé sur le poste utilisateur.
 
 ---
+
+## 0.5. PUDO : `package_pudo` (annuaire points relais)
+
+Le package `package_pudo` est responsable de la production de l'**annuaire points relais** (référentiel PR) à partir de plusieurs sources.
+
+Traitements principaux :
+
+- récupération/traitement Chronopost (CSV → Excel, fusion C9/C13) ;
+- récupération/lecture LM2S (export annuaire LM2S) ;
+- extraction SPEED depuis le fichier 545 (onglet PUDO) ;
+- normalisation d'adresse (`adresse_nettoyee`) ;
+- géocodage et complétion des coordonnées (`latitude`, `longitude`) avec cache ;
+- fusion et génération d'un fichier annuaire PR.
+
+Notes LM2S :
+
+- l'ETL LM2S (`package_pudo.lm2s.etl_lm2s`) s'authentifie sur LMline via le formulaire (`/login` → `POST /user_sessions`) et nécessite des identifiants en variables d'environnement :
+  - `login_lmline`
+  - `password_lmline`
+- en sortie, l'ETL génère un fichier `annuaire_lm2s_YYYYMMDD.xlsx` dans `path_lmline` et copie le dernier fichier correspondant vers `path_exit_lmline`.
+
+Références code :
+
+- orchestrateur : `src/package_pudo/main.py` (`run_etl`) ;
+- fusion/enrichissements/export : `src/package_pudo/pudo/pudo.py`.
+
+Exécution (développement) :
+
+```powershell
+py -m package_pudo.main etl_pudos
+```
+
+> Remarque : l'application (SupplyChainApp) consomme ensuite les données PUDO via `pudo_directory.parquet` (voir section "Données" et endpoints `/api/pudo/*`).
 
 ## 1. Lancer l'application en mode développeur
 
@@ -272,7 +309,7 @@ Depuis la racine du projet, avec `.venv` activé :
 Ce script génère un exécutable nommé selon le modèle :
 
 ```text
-dist\SUPPLYCHAIN_APP_v1.6.1.exe
+dist\SUPPLYCHAIN_APP_v1.6.2.exe
 ```
 
 ### 2.3. Résultat
@@ -282,7 +319,7 @@ PyInstaller génère :
 - un exécutable dans `dist/` :
 
 ```text
-C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.6.1.exe
+C:\...\PACKAGE_SUPPLYCHAIN_APP\dist\SUPPLYCHAIN_APP_v1.6.2.exe
 ```
 
 - des fichiers intermédiaires dans `build/` (peuvent être supprimés si besoin).
@@ -330,8 +367,19 @@ Navigation (header) :
   - **STOCK**
   - **RÉFÉRENTIEL ARTICLE**
   - **PR & MAGASINS**
+  - **HELIOS**
+  - **CONSOMMABLE**
   - **APPLICATIONS / OUTILS**
+  - **ADMINISTRATION** *(accès protégé par mot de passe)*
 - le lien **ASSISTANT (LLM+RAG)** peut apparaître selon la configuration (`/api/app/info`).
+
+Administration (header) :
+
+- le menu **ADMINISTRATION** est protégé par un mot de passe (en dur) : `12344321`.
+- si le mot de passe est correct, l'accès est mémorisé dans le navigateur via `localStorage` (clé `scapp_admin_unlocked`) afin de ne le demander qu'une seule fois.
+- ce menu donne accès aux pages :
+  - `treatments.html`
+  - `technician_admin.html`
 
 - **Accueil** : page d'entrée de l'application.
 - **info_article (`items.html`)** :
@@ -339,15 +387,34 @@ Navigation (header) :
   - affichage détaillé d'un article (données PIM, compta, logistique, etc.),
   - visualisation de la **nomenclature** de l'article,
   - affichage des **références fournisseurs** et des **articles équivalents**.
+  - les unités d'affichage sont précisées dans le panneau de détail pour :
+    - `poids_article` (kg)
+    - `hauteur_article`, `largeur_article`, `longueur_article` (m)
+    - `volume_article` (m3)
+    - `delai_approvisionnement` (jours)
 - **RECHERCHE_STOCK (`stock.html`)** :
   - recherche d'article puis affichage du stock agrégé par magasin / type de dépôt,
   - lien direct vers le stock détaillé et vers l'onglet info_article.
 - **Stock détaillé (`stock_detailed.html`)** :
   - détail du stock par magasin et par emplacement pour un article donné.
+  - filtres par **liste déroulante** (valeurs dynamiques issues des lignes de stock chargées) :
+    - `type_de_depot`, `flag_stock_d_m` (D/M), `code_qualite`.
+- **Stock hyper détaillé (`stock_hyper_detaille.html`)** :
+  - stock au niveau ligne (lot / série / colis / projet, etc.) pour un article donné,
+  - filtres par **liste déroulante** (valeurs dynamiques issues des lignes de stock chargées) :
+    - `type_de_depot`, `flag_stock_d_m` (D/M), `qualite`,
+  - export CSV du résultat filtré.
 - **Parc Helios (`helios.html`)** :
   - synthèse du parc installé par code article.
+  - recherche **par code IG** : affichage du parc du site avec tables **Parents** / **Fils**.
+  - depuis la recherche par code article : sélection possible d'un **code IG** (clic sur un site) pour ouvrir le parc du site.
 - **Magasins & points relais (`stores.html`)** :
-  - recherche et infos de contact des magasins et points relais.
+  - recherche de magasins et de **points relais proches d'une adresse** (rayon + filtres Chronopost/LM2S/TDF) ;
+  - affichage table + carte (Leaflet) ;
+  - endpoint principal : `POST /api/pudo/nearby-address`.
+- **Annuaire points relais (`pudo_directory.html`)** :
+  - consultation et filtres sur l'annuaire PR (recherche plein texte, filtres prestataire, export CSV) ;
+  - endpoint : `GET /api/pudo/directory`.
 - **Stock ultra détaillé** :
   - vue API/exports permettant d’analyser le stock `lot / série / projet / colis` avec date de stock pour un article donné (cf. endpoint `/api/auth/stock/<code_article>/ultra-details`).
 - **Localisation du stock (`stock_map.html`)** :
@@ -500,6 +567,11 @@ L'API démarre un thread en arrière-plan qui appelle régulièrement `update_da
   - bandeau sous le menu de navigation (`scapp-update-banner`),
   - message du type : `Données mises à jour à HHhMM`.
 
+Mise à jour côté PUDO (annuaire PR / parquets associés) :
+
+- `GET /api/pudo/update-status` : liste les sources/destinations et indique `needs_update`.
+- `POST /api/pudo/update` : déclenche la conversion/copie vers `path_datan/<folder_name_app>`.
+
 ---
 
 ### 3.4. OL MODE DÉGRADÉ V2 (`ol_mode_degrade_v2.html`)
@@ -591,7 +663,7 @@ taskkill /PID <PID> /F
 
 ## 5. Livraison / déploiement de l'exécutable
 
-- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.6.1.exe`.
+- **Fichier à livrer** : `dist/SUPPLYCHAIN_APP_v1.6.2.exe`.
 - **Public cible** : postes Windows internes ne disposant pas forcément de Python.
 
 ### 5.1. Prérequis côté utilisateur
@@ -602,7 +674,7 @@ taskkill /PID <PID> /F
 
 ### 5.2. Mode opératoire recommandé
 
-1. Copier `SUPPLYCHAIN_APP_v1.6.1.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
+1. Copier `SUPPLYCHAIN_APP_v1.6.2.exe` dans un répertoire dédié (par exemple `C:\Applications\SupplyChainApp`).
 2. Créer éventuellement un raccourci sur le bureau ou dans le menu Démarrer.
 3. Double-cliquer sur l'exécutable :
    - une console s'ouvre avec les logs,
@@ -668,7 +740,7 @@ taskkill /PID <PID> /F
   - Version affichée dans le header : la version est alignée sur le **nom de l'exécutable** (si l'app tourne en mode EXE) et affichée à côté du logo.
   - Sécurité OL MODE DÉGRADÉ V2 : verrouillage possible par liste blanche de logins via `SCAPP_OL_ALLOWED_LOGINS`.
 
-- **1.6.1**
+- **1.6.2**
   - UI : harmonisation des badges de statut **ouvert/fermé** (CSS partagé).
   - Écran **CONSULTATION PR TECHNICIEN** : correction du filtre statut et anti-cache côté front.
   - Cycle de vie application : bouton **Quitter**, heartbeat et auto-stop (watchdog) pour éviter des processus persistants.

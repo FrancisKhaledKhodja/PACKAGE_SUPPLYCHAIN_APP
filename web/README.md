@@ -11,6 +11,7 @@ Notes:
 - The frontend port defaults to `8000` but may fall back to `8001`, `8002`, ... if `8000` is already in use.
 - The header includes a **Quitter** button which calls `POST /api/app/exit` to stop the application.
 - Pages send a heartbeat (`POST /api/app/ping`) so the server can auto-stop after a short inactivity delay.
+- The header also contains an **ADMINISTRATION** dropdown menu protected by a password (`12344321`) and cached in `localStorage`.
 
 Entry points:
 
@@ -21,6 +22,7 @@ Entry points:
 - `stores.html` (magasins & points relais)
 - `technician.html`, `technician_admin.html` (consultation magasin technicien + PR, distance/durée)
 - `technician_assignments.html` (affectations technicien ↔ PR, distance/durée)
+- `treatments.html` (lance des traitements backend)
 - `downloads.html` (téléchargements)
 - `ol_mode_degrade.html` (ordre de livraison en mode dégradé pour les techniciens, génération d'e-mails DAHER / LM2S)
 

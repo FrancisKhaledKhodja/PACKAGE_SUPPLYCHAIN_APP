@@ -2,12 +2,12 @@ import os
 import shutil
 import time
 from supplychain_app.constants import (path_exit,
-                                            folder_gestion_pr,  
-                                            path_exit_parquet,
-                                            path_datan, 
-                                            folder_name_app,
-                                            CONSO_OFFER_SRC_DIR,
-                                            CONSO_OFFER_PARQUET_DIR)
+                                       folder_gestion_pr,  
+                                       path_exit_parquet,
+                                       path_datan, 
+                                       folder_name_app,
+                                       CONSO_OFFER_SRC_DIR,
+                                       CONSO_OFFER_PARQUET_DIR)
 import polars as pl
 from supplychain_app.excel_csv_to_dataframe import read_excel
 from supplychain_app.my_loguru import logger
@@ -79,7 +79,7 @@ def _mtime(path: str):
 
 
 def get_update_status():
-    annuaire_dir = os.path.join(path_exit, folder_gestion_pr, "ANNUAIRE_PR")
+    annuaire_dir = os.path.join(path_exit, "GESTION_PR\GESTION_PR\ANNUAIRE_PR")
 
     src_annuaire = None
     try:

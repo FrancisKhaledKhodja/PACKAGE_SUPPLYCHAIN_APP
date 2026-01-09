@@ -12,8 +12,13 @@ def get_project_root_dir() -> Path:
     try:
         cwd = Path.cwd().resolve()
         for p in (cwd, *cwd.parents):
-            candidate = p / "web" / "article_request.html"
-            if candidate.exists():
+            web = p / "web"
+            expected = [
+                web / "article_request.html",
+                web / "home.html",
+                web / "treatments.html",
+            ]
+            if all(c.exists() for c in expected):
                 return p
     except Exception:
         pass

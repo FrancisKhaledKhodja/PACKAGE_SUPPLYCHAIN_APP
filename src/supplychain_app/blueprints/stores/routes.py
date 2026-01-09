@@ -29,24 +29,33 @@ def stores_nearby():
 @bp.post("/nearby-address")
 def stores_nearby_address():
     body = request.get_json(silent=True) or {}
-    address = body.get("address")
+    address = (body.get("address") or "").strip()
+    code_ig = (body.get("code_ig") or "").strip()
     radius = float(body.get("radius_km", body.get("radius", 10)))
     types = body.get("store_types")
 
-    if not address:
-        return jsonify({"error": "address is required"}), 400
+    coords = None
+    if address:
+        coords = get_latitude_and_longitude(address)
+    elif code_ig:
+        coords = get_coords_for_ig(code_ig)
+    else:
+        return jsonify({"error": "address or code_ig is required"}), 400
 
-    coords = get_latitude_and_longitude(address)
     lat = coords.get("latitude") if coords else None
     lon = coords.get("longitude") if coords else None
     if lat is None or lon is None:
-        return jsonify({"error": "could not geocode address"}), 400
+        return jsonify({"error": "could not resolve address/code_ig"}), 400
+
+    geocoded_address = coords.get("address") or coords.get("postal_address")
+    if not geocoded_address:
+        geocoded_address = address or code_ig
 
     # Si store_types est une liste vide, l'intention est "aucun type de magasin" ⇒ 0 résultat
     if isinstance(types, list) and not types:
         return jsonify({
             "rows": [],
-            "geocoded_address": coords.get("address"),
+            "geocoded_address": geocoded_address,
             "center_lat": float(lat),
             "center_lon": float(lon),
         }), 200
@@ -55,7 +64,7 @@ def stores_nearby_address():
     rows = [r for r in df.iter_rows(named=True)] if df is not None else []
     return jsonify({
         "rows": rows,
-        "geocoded_address": coords.get("address"),
+        "geocoded_address": geocoded_address,
         "center_lat": float(lat),
         "center_lon": float(lon),
     }), 200

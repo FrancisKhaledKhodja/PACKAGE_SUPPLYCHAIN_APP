@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form-stores");
   const addressInput = document.getElementById("address");
+  const codeIgInput = document.getElementById("code_ig");
   const radiusInput = document.getElementById("radius_km");
   const statusDiv = document.getElementById("stores-status");
   const countDiv = document.getElementById("stores-count");
@@ -21,12 +22,52 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentStoreRows = [];
   let currentPudoRows = [];
 
+  const modeRadios = Array.from(document.querySelectorAll("input[name='ref_mode']"));
+  const getMode = () => {
+    const r = modeRadios.find(x => x && x.checked);
+    return r ? r.value : "address";
+  };
+  const applyModeUi = () => {
+    const mode = getMode();
+    if (addressInput) addressInput.style.display = mode === "address" ? "" : "none";
+    if (codeIgInput) codeIgInput.style.display = mode === "ig" ? "" : "none";
+  };
+  modeRadios.forEach(r => {
+    try { r.addEventListener("change", applyModeUi); } catch (e) {}
+  });
+  applyModeUi();
+
   // Pré-remplissage de l'adresse depuis le paramètre q de l'URL (appelé par l'assistant)
   try {
     const params = new URLSearchParams(window.location.search);
     const qParam = params.get("q");
+    const igParam = params.get("ig");
+    if (igParam && codeIgInput) {
+      const igRadio = modeRadios.find(x => x && x.value === "ig");
+      if (igRadio) igRadio.checked = true;
+      codeIgInput.value = igParam;
+      applyModeUi();
+      setTimeout(() => {
+        if (statusDiv) {
+          statusDiv.textContent = "Recherche en cours...";
+        }
+        if (typeof form.requestSubmit === "function") {
+          form.requestSubmit();
+          return;
+        }
+        try {
+          form.dispatchEvent(new SubmitEvent("submit", { bubbles: true, cancelable: true }));
+        } catch (e) {
+          form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+        }
+      }, 0);
+      return;
+    }
     if (qParam && addressInput) {
+      const addrRadio = modeRadios.find(x => x && x.value === "address");
+      if (addrRadio) addrRadio.checked = true;
       addressInput.value = qParam;
+      applyModeUi();
       // Lancer automatiquement la recherche pour éviter à l'utilisateur de re-cliquer
       setTimeout(() => {
         if (statusDiv) {
@@ -88,15 +129,21 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   form.addEventListener("submit", async () => {
-    const address = addressInput.value.trim();
+    const mode = getMode();
+    const address = (addressInput && mode === "address") ? addressInput.value.trim() : "";
+    const code_ig = (codeIgInput && mode === "ig") ? codeIgInput.value.trim() : "";
     const radius = parseFloat(radiusInput.value || "10");
     const typeCheckboxes = Array.from(document.querySelectorAll("input[name='store_types']:checked"));
     const storeTypes = typeCheckboxes.map(cb => cb.value);
     const prCheckboxes = Array.from(document.querySelectorAll("input[name='pr_types']:checked"));
     const prTypes = prCheckboxes.map(cb => cb.value);
 
-    if (!address) {
+    if (mode === "address" && !address) {
       statusDiv.textContent = "Merci de saisir une adresse.";
+      return;
+    }
+    if (mode === "ig" && !code_ig) {
+      statusDiv.textContent = "Merci de saisir un code IG.";
       return;
     }
 
@@ -121,6 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
             credentials: "include",
             body: JSON.stringify({
               address,
+              code_ig,
               radius_km: radius,
               store_types: storeTypes,
             }),
@@ -145,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
             credentials: "include",
             body: JSON.stringify({
               address,
+              code_ig,
               radius_km: radius,
               enseignes: prTypes,
             }),

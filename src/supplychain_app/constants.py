@@ -122,10 +122,10 @@ file_name_backup_origin_destination = "backup_origin_destination.parquet"
 
 folder_name_app = "supply_chain_app" 
 
-LOGIN_LMLINE = os.environ.get("login_lmline", "")
-PASSWORD_LMLINE = os.environ.get("password_lmline", "")
+LOGIN_LMLINE = os.environ.get("login_lmline", "NOC_TDF")
+PASSWORD_LMLINE = os.environ.get("password_lmline", "NocTDF935")
 LOGIN_URL_LMLINE = os.environ.get("login_url_lmline", "http://lmline.lm2s.fr/login")
-DOWNLOAD_URL_LMLINE = os.environ.get("download_url_lmline", "http://lmline.lm2s.fr/export/pudo")
+DOWNLOAD_URL_LMLINE = os.environ.get("download_url_lmline", "http://lmline.lm2s.fr/tdf/liste_sites")
 PROXY_TDF = os.environ.get("proxy_tdf", "fproxy-vip.tdf.fr:8080")
 
 
@@ -133,6 +133,6 @@ path_supply_chain_app = r"D:\Datan\supply_chain_app"
 path_photos_local = os.path.join(path_supply_chain_app, "photos")
 path_photos_network = os.path.join(path_exit, "PHOTOS")
  
-CONSO_OFFER_SRC_DIR = os.environ.get("SCAPP_CONSO_OFFER_SRC_DIR", r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\OFFRE_CATALOGUE_CONSOMMABLES")
+CONSO_OFFER_SRC_DIR = os.environ.get("SCAPP_CONSO_OFFER_SRC_DIR", os.path.join(path_exit, r"FICHIERS_REFERENTIEL_ARTICLE\OFFRE_CATALOGUE_CONSOMMABLES"))
 CONSO_OFFER_PARQUET_DIR = os.environ.get("SCAPP_CONSO_OFFER_PARQUET_DIR", os.path.join(path_supply_chain_app, "offre_consommables"))
 CONSO_OFFER_DIR = CONSO_OFFER_PARQUET_DIR

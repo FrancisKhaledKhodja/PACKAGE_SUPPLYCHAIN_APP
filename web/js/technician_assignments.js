@@ -19,8 +19,29 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!row) {
       return { distanceText: "indisponible", durationText: "indisponible" };
     }
-    const distMNum = row.distance === null || row.distance === undefined || String(row.distance) === "" ? null : Number(row.distance);
-    const durSNum = row.duration === null || row.duration === undefined || String(row.duration) === "" ? null : Number(row.duration);
+    const pickNum = (val) => {
+      if (val === null || val === undefined) return null;
+      const s = String(val);
+      if (s.trim() === "") return null;
+      const n = Number(val);
+      return Number.isFinite(n) ? n : null;
+    };
+
+    // Supporte plusieurs schémas possibles du parquet:
+    // - distance (m) + duration (s)
+    // - distance_m (m) + duration_s (s)
+    // - distance_km (km) + duration_min (min)
+    const distMNum = (
+      pickNum(row.distance) ??
+      pickNum(row.distance_m) ??
+      (pickNum(row.distance_km) != null ? pickNum(row.distance_km) * 1000 : null)
+    );
+
+    const durSNum = (
+      pickNum(row.duration) ??
+      pickNum(row.duration_s) ??
+      (pickNum(row.duration_min) != null ? pickNum(row.duration_min) * 60 : null)
+    );
 
     const distanceText = distMNum !== null && Number.isFinite(distMNum) ? `${(distMNum / 1000).toFixed(1)} km` : "indisponible";
     const durationText = durSNum !== null && Number.isFinite(durSNum) ? `${Math.round(durSNum / 60)} min` : "indisponible";

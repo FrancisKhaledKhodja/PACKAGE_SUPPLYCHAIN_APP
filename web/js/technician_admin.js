@@ -1,37 +1,6 @@
-const ADMIN_PR_PASSWORD = "adminPR2025";
-
 function initAdminPRPage() {
   document.addEventListener("DOMContentLoaded", () => {
-    const loginBox = document.getElementById("admin-pr-login");
-    const content = document.getElementById("admin-pr-content");
-    const pwdInput = document.getElementById("admin-pr-password");
-    const loginBtn = document.getElementById("admin-pr-login-btn");
-    const msg = document.getElementById("admin-pr-login-msg");
-
-    if (!loginBox || !content || !pwdInput || !loginBtn) {
-      // si pour une raison quelconque le bloc n'existe pas,
-      // on lance quand même la logique
-      initAdminPRLogic();
-      return;
-    }
-
-    const tryUnlock = () => {
-      const val = (pwdInput.value || "").trim();
-      if (val === ADMIN_PR_PASSWORD) {
-        loginBox.style.display = "none";
-        content.style.display = "";
-        initAdminPRLogic();
-      } else {
-        if (msg) msg.textContent = "Mot de passe incorrect.";
-      }
-    };
-
-    loginBtn.addEventListener("click", tryUnlock);
-    pwdInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        tryUnlock();
-      }
-    });
+    initAdminPRLogic();
   });
 }
 

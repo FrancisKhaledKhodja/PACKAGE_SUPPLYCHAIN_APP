@@ -28,7 +28,15 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderKeyValueTable(obj) {
     const entries = Object.entries(obj || {});
     const rows = entries.map(([k, v]) => {
-      const key = escapeHtml(k);
+      let displayKey = k;
+      if (k === "poids_article") displayKey = "poids_article (kg)";
+      else if (k === "hauteur_article") displayKey = "hauteur_article (m)";
+      else if (k === "largeur_article") displayKey = "largeur_article (m)";
+      else if (k === "longueur_article") displayKey = "longueur_article (m)";
+      else if (k === "volume_article") displayKey = "volume_article (m3)";
+      else if (k === "delai_approvisionnement") displayKey = "delai_approvisionnement (jours)";
+
+      const key = escapeHtml(displayKey);
       let displayVal = v === null || v === undefined ? "" : String(v);
       let renderedVal = escapeHtml(displayVal);
       if (k === "criticite_pim") {

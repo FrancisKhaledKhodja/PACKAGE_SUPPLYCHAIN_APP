@@ -1,4 +1,7 @@
+import os
+
 from flask import render_template, request, jsonify, session, redirect
+from urllib.parse import quote
 from . import bp
 
 @bp.get("/")
@@ -29,4 +32,14 @@ def set_proxy_credentials():
 
     session["proxy_login"] = login
     session["proxy_password"] = password
+
+    proxy_tdf = os.environ.get("proxy_tdf") or os.environ.get("PROXY_TDF") or "fproxy-vip.tdf.fr:8080"
+    if proxy_tdf and login and password:
+        enc_login = quote(login, safe="")
+        enc_password = quote(password, safe="")
+        proxy_url = f"http://{enc_login}:{enc_password}@{proxy_tdf}"
+        os.environ["http_proxy"] = proxy_url
+        os.environ["https_proxy"] = proxy_url
+        os.environ["HTTP_PROXY"] = proxy_url
+        os.environ["HTTPS_PROXY"] = proxy_url
     return jsonify({"status": "ok"}), 200

@@ -1,6 +1,7 @@
 import os
 import datetime
 import re
+import threading
 from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from supplychain_app.constants import (
@@ -12,70 +13,93 @@ from supplychain_app.constants import (
     CHOIX_PR_TECH_FILE,
 )
 
-try:
-    pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
-except FileNotFoundError:
-    pudos = pl.DataFrame()
-
-try:
-    stores = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stores.parquet"))
-except FileNotFoundError:
-    stores = pl.DataFrame()
-
-try:
-    helios = pl.read_parquet(os.path.join(path_datan, folder_name_app, "helios.parquet"))
-except FileNotFoundError:
-    helios = pl.DataFrame()
-
-try:
-    items = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items.parquet"))
-except FileNotFoundError:
-    items = pl.DataFrame()
-
-try:
-    nomenclatures = pl.read_parquet(os.path.join(path_datan, folder_name_app, "nomenclatures.parquet"))
-except FileNotFoundError:
-    nomenclatures = pl.DataFrame()
-
-try:
-    manufacturers = pl.read_parquet(os.path.join(path_datan, folder_name_app, "manufacturers.parquet"))
-except FileNotFoundError:
-    manufacturers = pl.DataFrame()
-
-try:
-    equivalents = pl.read_parquet(os.path.join(path_datan, folder_name_app, "equivalents.parquet"))
-except FileNotFoundError:
-    equivalents = pl.DataFrame()
-
-try:
-    stats_exit = pl.read_parquet(os.path.join(path_datan, folder_name_app, "stats_exit.parquet"))
-    try:
-        stats_exit = stats_exit.with_columns(pl.col("date_mvt").dt.year().alias("annee"))
-    except Exception:
-        # si la colonne date_mvt n'existe pas ou n'est pas de type date/temps, on laisse stats_exit tel quel
-        pass
-except FileNotFoundError:
-    stats_exit = pl.DataFrame()
-
-try:
-    items_parent_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_parent_buildings.parquet"))
-except FileNotFoundError:
-    items_parent_buildings = pl.DataFrame()
-
-try:
-    items_son_buildings = pl.read_parquet(os.path.join(path_datan, folder_name_app, "items_son_buildings.parquet"))
-except FileNotFoundError:
-    items_son_buildings = pl.DataFrame()
-
-# Dictionnaires utiles (magasins/helios)
-dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
-dico_helios = {row["code_ig"]: row for row in helios.iter_rows(named=True)} if 'helios' in locals() else {}
-
-# Cache en mémoire pour certaines listes calculées une fois
-_ol_igs_cache: list[dict] | None = None
-
+_reload_lock = threading.Lock()
+_data_mtimes: dict[str, float | None] = {}
 _distance_tech_pr_df: pl.DataFrame | None = None
 _distance_tech_pr_mtime: float | None = None
+
+
+def _parquet_path(name: str) -> str:
+    return os.path.join(path_datan, folder_name_app, f"{name}.parquet")
+
+
+def _safe_mtime(path: str) -> float | None:
+    try:
+        return float(os.path.getmtime(path))
+    except OSError:
+        return None
+
+
+def reload_data(force: bool = False) -> bool:
+    """Recharge en mémoire les DataFrames globaux depuis les parquets.
+
+    L'app charge ces données une fois au démarrage. Sans reload, une mise à jour
+    des parquets (ETL) n'est pas visible tant que le process n'est pas relancé.
+
+    Retourne True si une recharge a été effectuée.
+    """
+    global pudos, stores, helios, items, nomenclatures, manufacturers, equivalents
+    global stats_exit, items_parent_buildings, items_son_buildings
+    global dico_stores, dico_helios
+    global _ol_igs_cache
+    global _data_mtimes
+
+    with _reload_lock:
+        mtimes = {
+            "pudo_directory": _safe_mtime(_parquet_path("pudo_directory")),
+            "stores": _safe_mtime(_parquet_path("stores")),
+            "helios": _safe_mtime(_parquet_path("helios")),
+            "items": _safe_mtime(_parquet_path("items")),
+            "nomenclatures": _safe_mtime(_parquet_path("nomenclatures")),
+            "manufacturers": _safe_mtime(_parquet_path("manufacturers")),
+            "equivalents": _safe_mtime(_parquet_path("equivalents")),
+            "stats_exit": _safe_mtime(_parquet_path("stats_exit")),
+            "items_parent_buildings": _safe_mtime(_parquet_path("items_parent_buildings")),
+            "items_son_buildings": _safe_mtime(_parquet_path("items_son_buildings")),
+        }
+
+        if (not force) and _data_mtimes and mtimes == _data_mtimes:
+            return False
+
+        def _read_or_empty(p: str) -> pl.DataFrame:
+            try:
+                return pl.read_parquet(p)
+            except Exception:
+                return pl.DataFrame()
+
+        pudos = _read_or_empty(_parquet_path("pudo_directory"))
+        stores = _read_or_empty(_parquet_path("stores"))
+        helios = _read_or_empty(_parquet_path("helios"))
+        items = _read_or_empty(_parquet_path("items"))
+        nomenclatures = _read_or_empty(_parquet_path("nomenclatures"))
+        manufacturers = _read_or_empty(_parquet_path("manufacturers"))
+        equivalents = _read_or_empty(_parquet_path("equivalents"))
+
+        stats_exit = _read_or_empty(_parquet_path("stats_exit"))
+        try:
+            stats_exit = stats_exit.with_columns(pl.col("date_mvt").dt.year().alias("annee"))
+        except Exception:
+            pass
+
+        items_parent_buildings = _read_or_empty(_parquet_path("items_parent_buildings"))
+        items_son_buildings = _read_or_empty(_parquet_path("items_son_buildings"))
+
+        dico_stores = (
+            {row["code_magasin"]: row for row in stores.iter_rows(named=True)}
+            if (not stores.is_empty()) and ("code_magasin" in stores.columns)
+            else {}
+        )
+        dico_helios = (
+            {row["code_ig"]: row for row in helios.iter_rows(named=True)}
+            if (not helios.is_empty()) and ("code_ig" in helios.columns)
+            else {}
+        )
+
+        # caches dérivés
+        _ol_igs_cache = None
+
+        _data_mtimes = mtimes
+        return True
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -101,6 +125,10 @@ def _get_col_name(df: pl.DataFrame, candidates: list[str]) -> str | None:
         if key in lower_map:
             return lower_map[key]
     return None
+
+
+# Initialisation des variables globales (au démarrage)
+reload_data(force=True)
 
 
 def _load_distance_tech_pr_df(force: bool = False) -> pl.DataFrame | None:

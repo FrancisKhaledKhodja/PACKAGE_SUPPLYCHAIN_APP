@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$Version = '1.6.1'
+$Version = '1.6.2'
 $ExeName = "SUPPLYCHAIN_APP_v$Version"
 
 # Build single EXE (without LLM/RAG libs)
@@ -18,6 +18,8 @@ try {
 uv run python -m PyInstaller --clean --noconfirm --onefile --noconsole --name $ExeName `
   --paths "src" `
   --add-data "web;web" `
+  --collect-submodules "package_pudo" `
+  --collect-submodules "supplychain_app.blueprints.treatments" `
   --collect-submodules "supplychain_app.blueprints.assistant" `
   --hidden-import "supplychain_app.blueprints.assistant.routes" `
   --exclude-module "chromadb" `

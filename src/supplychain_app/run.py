@@ -53,8 +53,6 @@ def run_frontend() -> None:
 
         def pick_port(start: int, max_tries: int = 20) -> int:
             for p in range(start, start + max_tries):
-                if probe_http(p):
-                    return p
                 try:
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                         s.bind((FRONTEND_HOST, p))
@@ -66,9 +64,6 @@ def run_frontend() -> None:
         global _frontend_port
         _frontend_port = pick_port(FRONTEND_DEFAULT_PORT)
         _frontend_port_ready.set()
-
-        if probe_http(_frontend_port):
-            return
 
         global _frontend_httpd
         with ReusableTCPServer((FRONTEND_HOST, _frontend_port), handler) as httpd:
@@ -142,7 +137,24 @@ def main() -> None:
     _frontend_port_ready.wait(timeout=3)
     port = _frontend_port or FRONTEND_DEFAULT_PORT
 
-    time.sleep(1)
+    # Wait until API is reachable to avoid frontend login failing due to race condition
+    try:
+        import urllib.request
+
+        api_url = "http://127.0.0.1:5001/api/health"
+        deadline = time.time() + 6.0
+        while time.time() < deadline:
+            try:
+                with urllib.request.urlopen(api_url, timeout=0.4) as r:
+                    if 200 <= int(getattr(r, "status", 200)) < 500:
+                        break
+            except Exception:
+                pass
+            time.sleep(0.2)
+    except Exception:
+        pass
+
+    time.sleep(0.5)
 
     try:
         webbrowser.open(f"http://{FRONTEND_HOST}:{port}/")

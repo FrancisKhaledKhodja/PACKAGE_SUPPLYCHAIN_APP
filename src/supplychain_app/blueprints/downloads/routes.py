@@ -8,15 +8,16 @@ from openpyxl import Workbook
 from openpyxl import load_workbook
 
 from . import bp
-from supplychain_app.constants import path_exit, folder_gestion_pr, path_lmline, path_datan, folder_name_app
+from supplychain_app.constants import (path_exit, 
+                                       folder_gestion_pr, 
+                                       path_datan, 
+                                       folder_name_app)
 
 
-CARNET_CHRONOPOST_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\GESTION_PR\CARNET_CHRONOPOST"
-CHRONO_FUSION_DIR = r"R:\24-DPR\11-Applications\04-Gestion_Des_Points_Relais\Data\CHRONOPOST\2_C9_C13_EXCEL_FUSION"
-
-
-ARTICLE_REQUESTS_DEMANDES_DIR = r"\\apps\Vol1\Data\011-BO_XI_entrees\07-DOR_DP\Sorties\FICHIERS_REFERENTIEL_ARTICLE\DEMANDES"
-
+CARNET_CHRONOPOST_DIR = os.path.join(path_exit, r"GESTION_PR\GESTION_PR\CARNET_CHRONOPOST")
+CHRONO_FUSION_DIR = os.path.join(path_exit, r"GESTION_PR\CHRONOPOST\2_C9_C13_EXCEL_FUSION")
+ARTICLE_REQUESTS_DEMANDES_DIR = os.path.join(path_exit, r"FICHIERS_REFERENTIEL_ARTICLE\DEMANDES")
+LMLINE_DIR = os.path.join(path_exit, r"GESTION_PR\LM2S")
 
 def _norm_header(h: str) -> str:
     s = "" if h is None else str(h)
@@ -135,11 +136,11 @@ def _latest_file_in_dir(directory: str, pattern_ext: tuple = (".xlsx", ".xls", "
 def list_latest_files():
     """Return the latest available business files for download (no parquets)."""
     # Annuaire PR
-    annuaire_dir = os.path.join(path_exit, folder_gestion_pr, "ANNUAIRE_PR")
+    annuaire_dir = os.path.join(path_exit, "GESTION_PR\GESTION_PR\ANNUAIRE_PR")
     latest_annuaire = _latest_file_in_dir(annuaire_dir)
 
     # LM2S
-    latest_lm2s = _latest_file_in_dir(path_lmline)
+    latest_lm2s = _latest_file_in_dir(LMLINE_DIR)
 
     # Chronopost fusionné (nouveau répertoire dédié)
     latest_chrono = _latest_file_in_dir(CHRONO_FUSION_DIR)
@@ -204,7 +205,7 @@ def download_stock_final_csv_api():
 
 @bp.get("/lm2s")
 def download_lm2s_api():
-    latest = _latest_file_in_dir(path_lmline)
+    latest = _latest_file_in_dir(LMLINE_DIR)
     if not latest:
         return jsonify({"error": "not_found"}), 404
     return send_file(latest, as_attachment=True, download_name=os.path.basename(latest))

@@ -1,10 +1,80 @@
 import os
-
+import threading
 from math import radians, sin, cos, sqrt, atan2
 import polars as pl
 from supplychain_app.data.pudo_etl import update_data
 
 from supplychain_app.constants import path_datan, folder_name_app
+
+_reload_lock = threading.Lock()
+_data_mtimes: dict[str, float | None] = {}
+
+
+def _parquet_path(name: str) -> str:
+    return os.path.join(path_datan, folder_name_app, f"{name}.parquet")
+
+
+def _safe_mtime(path: str) -> float | None:
+    try:
+        return float(os.path.getmtime(path))
+    except OSError:
+        return None
+
+
+def reload_data(force: bool = False) -> bool:
+    global pudos, stores, helios, items, items_parent_buildings, nomenclatures
+    global manufacturers, equivalents, stock_554, items_son_buildings
+    global dico_stores, dico_helios
+    global _data_mtimes
+
+    with _reload_lock:
+        mtimes = {
+            "pudo_directory": _safe_mtime(_parquet_path("pudo_directory")),
+            "stores": _safe_mtime(_parquet_path("stores")),
+            "helios": _safe_mtime(_parquet_path("helios")),
+            "items": _safe_mtime(_parquet_path("items")),
+            "items_parent_buildings": _safe_mtime(_parquet_path("items_parent_buildings")),
+            "nomenclatures": _safe_mtime(_parquet_path("nomenclatures")),
+            "manufacturers": _safe_mtime(_parquet_path("manufacturers")),
+            "equivalents": _safe_mtime(_parquet_path("equivalents")),
+            "stock_554": _safe_mtime(_parquet_path("stock_554")),
+            "items_son_buildings": _safe_mtime(_parquet_path("items_son_buildings")),
+        }
+
+        if (not force) and _data_mtimes and mtimes == _data_mtimes:
+            return False
+
+        def _read_or_empty(p: str) -> pl.DataFrame:
+            try:
+                return pl.read_parquet(p)
+            except Exception:
+                return pl.DataFrame()
+
+        pudos = _read_or_empty(_parquet_path("pudo_directory"))
+        stores = _read_or_empty(_parquet_path("stores"))
+        helios = _read_or_empty(_parquet_path("helios"))
+        items = _read_or_empty(_parquet_path("items"))
+        items_parent_buildings = _read_or_empty(_parquet_path("items_parent_buildings"))
+        nomenclatures = _read_or_empty(_parquet_path("nomenclatures"))
+        manufacturers = _read_or_empty(_parquet_path("manufacturers"))
+        equivalents = _read_or_empty(_parquet_path("equivalents"))
+        stock_554 = _read_or_empty(_parquet_path("stock_554"))
+        items_son_buildings = _read_or_empty(_parquet_path("items_son_buildings"))
+
+        dico_stores = (
+            {row["code_magasin"]: row for row in stores.iter_rows(named=True)}
+            if (not stores.is_empty()) and ("code_magasin" in stores.columns)
+            else {}
+        )
+        dico_helios = (
+            {row["code_ig"]: row for row in helios.iter_rows(named=True)}
+            if (not helios.is_empty()) and ("code_ig" in helios.columns)
+            else {}
+        )
+
+        _data_mtimes = mtimes
+        return True
+
 
 try:
     pudos = pl.read_parquet(os.path.join(path_datan, folder_name_app, "pudo_directory.parquet"))
@@ -68,6 +138,20 @@ except FileNotFoundError:
 # Dictionnaires utiles (magasins/helios)
 dico_stores = {row["code_magasin"]: row for row in stores.iter_rows(named=True)} if 'stores' in locals() else {}
 dico_helios = {row["code_ig"]: row for row in helios.iter_rows(named=True)} if 'helios' in locals() else {}
+
+# Snapshot mtimes initial (les DF ont été chargés ci-dessus)
+_data_mtimes = {
+    "pudo_directory": _safe_mtime(_parquet_path("pudo_directory")),
+    "stores": _safe_mtime(_parquet_path("stores")),
+    "helios": _safe_mtime(_parquet_path("helios")),
+    "items": _safe_mtime(_parquet_path("items")),
+    "items_parent_buildings": _safe_mtime(_parquet_path("items_parent_buildings")),
+    "nomenclatures": _safe_mtime(_parquet_path("nomenclatures")),
+    "manufacturers": _safe_mtime(_parquet_path("manufacturers")),
+    "equivalents": _safe_mtime(_parquet_path("equivalents")),
+    "stock_554": _safe_mtime(_parquet_path("stock_554")),
+    "items_son_buildings": _safe_mtime(_parquet_path("items_son_buildings")),
+}
 
 
 def haversine_distance(lat1, lon1, lat2, lon2):
@@ -604,6 +688,247 @@ def get_helios_active_sites_for_item(code_article: str) -> list[dict]:
         joined = per_site.join(helios, how="left", on="code_ig")
         for row in joined.iter_rows(named=True):
             out.append(row)
+        return out
+    except Exception:
+        return out
+
+
+def get_helios_parent_child_items_for_site(code_ig: str) -> dict:
+    """Retourne le parc Helios d'un site (code IG) sous forme hiérarchique parent -> fils.
+
+    La source est items_parent_buildings.parquet. Selon les versions, la colonne du parent
+    peut varier. On tente de détecter automatiquement une colonne "parent".
+
+    Sortie:
+      {
+        "parent_col": <str|None>,
+        "parents": [ {"code_article": str, "quantity_active": float} ],
+        "children_by_parent": {"PARENT": [ {"code_article": str, "quantity_active": float} ]}
+      }
+    """
+    result = {
+        "parent_col": None,
+        "parents": [],
+        "children_by_parent": {},
+    }
+    try:
+        norm = (code_ig or "").strip().upper()
+        if not norm:
+            return result
+        if 'items_parent_buildings' not in globals() or items_parent_buildings.is_empty():
+            return result
+
+        base_required = {"code_article_fils", "quantite_fils_actif", "code_ig"}
+        if not base_required.issubset(items_parent_buildings.columns):
+            return result
+
+        # Colonne parent attendue (on garde une détection par sécurité)
+        parent_candidate_cols = [
+            "code_article_pere",
+            "code_article_parent",
+            "code_article_mere",
+            "code_article_p",
+            "code_article_pere_fils",
+            "code_article_parent_building",
+            "code_article_pere_building",
+            "code_article",
+            "code_parent",
+            "article_parent",
+            "parent",
+        ]
+        parent_col = next((c for c in parent_candidate_cols if c in items_parent_buildings.columns), None)
+
+        qty_parent_candidate_cols = [
+            "quantite_pere_actif",
+            "quantite_article_pere_actif",
+            "quantite_parent_actif",
+            "quantite_article_parent_actif",
+        ]
+        qty_parent_col = next((c for c in qty_parent_candidate_cols if c in items_parent_buildings.columns), None)
+
+        if not parent_col or not qty_parent_col:
+            # Sans quantité père active, on ne peut pas appliquer les règles demandées.
+            return result
+
+        result["parent_col"] = parent_col
+
+        label_map: dict[str, str] = {}
+        try:
+            if 'items' in globals() and items is not None and (not items.is_empty()):
+                if {"code_article", "libelle_court_article"}.issubset(items.columns):
+                    for row in items.select(pl.col("code_article"), pl.col("libelle_court_article")).iter_rows(named=True):
+                        k = row.get("code_article")
+                        if not k:
+                            continue
+                        key = str(k).strip().upper()
+                        v = row.get("libelle_court_article")
+                        label_map[key] = str(v).strip() if v is not None else ""
+        except Exception:
+            label_map = {}
+
+        def _label_for(code: str | None) -> str:
+            if not code:
+                return ""
+            try:
+                return label_map.get(str(code).strip().upper(), "")
+            except Exception:
+                return ""
+
+        # --- Parents: règles demandées ---
+        # 1) Colonnes
+        df_parents = items_parent_buildings.filter(
+            (pl.col("code_ig") == norm)
+        )
+        if df_parents.is_empty():
+            return result
+
+        df_parents = df_parents.select(
+            pl.col("code_ig"),
+            pl.col(parent_col).alias("code_article_pere"),
+            pl.col(qty_parent_col).cast(pl.Float64, strict=False).alias("quantite_pere_actif"),
+        )
+
+        # 2) Supprimer quantite_pere_actif == 0
+        df_parents = df_parents.filter(pl.col("quantite_pere_actif") > 0)
+        if df_parents.is_empty():
+            result["parents"] = []
+        else:
+            # Ajouter libelle_long_ig depuis helios
+            if 'helios' in globals() and helios is not None and (not helios.is_empty()) and {"code_ig", "libelle_long_ig"}.issubset(helios.columns):
+                df_parents = df_parents.join(
+                    helios.select(pl.col("code_ig"), pl.col("libelle_long_ig")),
+                    how="left",
+                    on="code_ig",
+                )
+            else:
+                df_parents = df_parents.with_columns(pl.lit(None).alias("libelle_long_ig"))
+
+            # Ajouter libellé court père
+            df_parents = df_parents.with_columns(
+                pl.col("code_article_pere")
+                .cast(pl.Utf8)
+                .str.strip_chars()
+                .str.to_uppercase()
+                .map_elements(lambda x: _label_for(x), return_dtype=pl.Utf8)
+                .alias("libelle_court_article_pere")
+            )
+
+            # 4) Groupby + somme
+            df_parents = (
+                df_parents
+                .group_by(
+                    pl.col("code_ig"),
+                    pl.col("libelle_long_ig"),
+                    pl.col("code_article_pere"),
+                    pl.col("libelle_court_article_pere"),
+                )
+                .agg(pl.col("quantite_pere_actif").sum().alias("quantite_pere_actif"))
+                .sort(pl.col("quantite_pere_actif"), descending=True)
+            )
+
+            result["parents"] = [row for row in df_parents.iter_rows(named=True)]
+
+        # --- Fils par parent (indexés par code_article_pere) ---
+        children: dict[str, list[dict]] = {}
+        df_children = items_parent_buildings.filter(
+            (pl.col("code_ig") == norm) & (pl.col("quantite_fils_actif") > 0)
+        )
+        if df_children.is_empty():
+            result["children_by_parent"] = {}
+            return result
+
+        children_df = (
+            df_children
+            .with_columns(pl.col(parent_col).alias("code_article_pere"))
+            .group_by(pl.col("code_article_pere"), pl.col("code_article_fils"))
+            .agg(pl.col("quantite_fils_actif").cast(pl.Float64, strict=False).sum().alias("quantity_active"))
+        )
+        for row in children_df.iter_rows(named=True):
+            p = row.get("code_article_pere")
+            c = row.get("code_article_fils")
+            if not p or not c:
+                continue
+            p = str(p).strip().upper()
+            child_row = {
+                "code_article": c,
+                "libelle_court_article": _label_for(c),
+                "libelle_court_article_fils": _label_for(c),
+                "quantity_active": row.get("quantity_active"),
+            }
+            children.setdefault(p, []).append(child_row)
+        # tri local (desc quantité)
+        for p, rows in children.items():
+            try:
+                rows.sort(key=lambda r: float(r.get("quantity_active") or 0.0), reverse=True)
+            except Exception:
+                pass
+        result["children_by_parent"] = children
+        return result
+    except Exception:
+        return result
+
+
+def get_helios_active_items_for_site(code_ig: str) -> list[dict]:
+    """Retourne la liste des articles actifs (quantite_fils_actif > 0) pour un site (code IG).
+
+    Source: items_parent_buildings.parquet.
+    Sortie: liste de dicts au minimum {code_article, quantity_active}.
+    """
+    out: list[dict] = []
+    try:
+        norm = (code_ig or "").strip().upper()
+        if not norm:
+            return out
+        if 'items_parent_buildings' not in globals() or items_parent_buildings.is_empty():
+            return out
+
+        label_map: dict[str, str] = {}
+        try:
+            if 'items' in globals() and items is not None and (not items.is_empty()):
+                if {"code_article", "libelle_court_article"}.issubset(items.columns):
+                    for row in items.select(pl.col("code_article"), pl.col("libelle_court_article")).iter_rows(named=True):
+                        k = row.get("code_article")
+                        if not k:
+                            continue
+                        key = str(k).strip().upper()
+                        v = row.get("libelle_court_article")
+                        label_map[key] = str(v).strip() if v is not None else ""
+        except Exception:
+            label_map = {}
+
+        def _label_for(code: str | None) -> str:
+            if not code:
+                return ""
+            try:
+                return label_map.get(str(code).strip().upper(), "")
+            except Exception:
+                return ""
+
+        required_cols = {"code_article_fils", "quantite_fils_actif", "code_ig"}
+        if not required_cols.issubset(items_parent_buildings.columns):
+            return out
+
+        filtered = items_parent_buildings.filter(
+            (pl.col("code_ig") == norm) & (pl.col("quantite_fils_actif") > 0)
+        )
+        if filtered.is_empty():
+            return out
+
+        per_item = (
+            filtered
+            .group_by(pl.col("code_article_fils"))
+            .agg(pl.col("quantite_fils_actif").cast(pl.Float64, strict=False).sum().alias("quantity_active"))
+            .sort(pl.col("quantity_active"), descending=True)
+        )
+
+        for row in per_item.iter_rows(named=True):
+            code = row.get("code_article_fils")
+            out.append({
+                "code_article": code,
+                "libelle_court_article": _label_for(code),
+                "libelle_court_article_fils": _label_for(code),
+                "quantity_active": row.get("quantity_active"),
+            })
         return out
     except Exception:
         return out

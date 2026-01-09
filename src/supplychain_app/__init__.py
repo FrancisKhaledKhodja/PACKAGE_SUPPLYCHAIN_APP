@@ -10,6 +10,7 @@ from .blueprints.technicians import bp as technicians_bp
 from .blueprints.helios import bp as helios_bp
 from .blueprints.assistant import bp as assistant_bp
 from .blueprints.consommables import bp as consommables_bp
+from .blueprints.treatments import bp as treatments_bp
 import importlib.metadata
 import threading
 import time
@@ -17,6 +18,8 @@ import os
 import sys
 import re
 from supplychain_app.data.pudo_etl import update_data, get_last_update_summary
+from supplychain_app.services.pudo_service import reload_data as reload_services_data
+from supplychain_app.data.pudo_service import reload_data as reload_data_data
 
 
 def create_app(config_object: type[Config] = Config) -> Flask:
@@ -46,6 +49,7 @@ def create_app(config_object: type[Config] = Config) -> Flask:
     app.register_blueprint(helios_bp, url_prefix="/api/helios")
     app.register_blueprint(assistant_bp, url_prefix="/api/assistant")
     app.register_blueprint(consommables_bp, url_prefix="/api/consommables")
+    app.register_blueprint(treatments_bp, url_prefix="/api/treatments")
 
     @app.get("/api/health")
     def health():
@@ -106,6 +110,14 @@ def create_app(config_object: type[Config] = Config) -> Flask:
         while True:
             try:
                 update_data()
+                try:
+                    reload_services_data(force=True)
+                except Exception:
+                    pass
+                try:
+                    reload_data_data(force=True)
+                except Exception:
+                    pass
             except Exception:
                 pass
             time.sleep(1800)

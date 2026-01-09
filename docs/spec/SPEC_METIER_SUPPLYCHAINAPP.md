@@ -1,7 +1,7 @@
 
-# SupplyChainApp – Spécification des usages et besoins métiers (version 1.6.1)
+# SupplyChainApp – Spécification des usages et besoins métiers (version 1.6.2)
 
-> Cette version de la spécification correspond à l’application **SupplyChainApp 1.6.1**.
+> Cette version de la spécification correspond à l’application **SupplyChainApp 1.6.2**.
 
 ## 1. Contexte et objectifs
 
@@ -26,6 +26,15 @@ L’objectif métier est de **faciliter la décision opérationnelle** (gestion 
 Fermeture recommandée : cliquer sur **Quitter** dans le header.
 
 En alternative, si toutes les pages/onglets de l’application sont fermés, un mécanisme d’auto-arrêt coupe l’application après une courte période d’inactivité.
+
+### 1.4. Accès Administration (navigation)
+
+- L’application expose un menu **ADMINISTRATION** dans le header.
+- L’ouverture de ce menu est protégée par un **mot de passe** (en dur) : `12344321`.
+- Une fois le mot de passe validé, l’accès est mémorisé dans le navigateur via `localStorage` (clé `scapp_admin_unlocked`) afin de ne le demander qu’une seule fois.
+- Les écrans suivants sont regroupés sous ce menu :
+  - `treatments.html`
+  - `technician_admin.html`
 
 ---
 
@@ -72,6 +81,13 @@ En alternative, si toutes les pages/onglets de l’application sont fermés, un 
   - informations logistiques (poids, dimensions, transport, matières dangereuses, conditionnement…) ;
   - paramètres d’approvisionnement (quantités mini/maxi, délais, points de commande) ;
   - données de réparation et garanties (lieu, délais, RMA…).
+
+Affichage des unités (UI) :
+
+- `poids_article` : kg
+- `hauteur_article`, `largeur_article`, `longueur_article` : m
+- `volume_article` : m3
+- `delai_approvisionnement` : jours
 
 - **Nomenclature (BOM)** :
   - visualisation de l’arbre de nomenclature (articles fils, quantités) ;
@@ -150,7 +166,16 @@ Règles d'affichage du tableau "Stock" (synthèse) :
 - Analyser les **stocks par qualité** (bloqué, libre, défectueux…).
 - Disposer d’une granularité fine pour les **analyses logistiques**.
 
-#### 2.3.3. API "Stock ultra détaillé" (stock_final.parquet)
+#### 2.3.3. Filtres (UI)
+
+Le panneau de droite propose des filtres sur les lignes de stock affichées.
+
+- `code_magasin` : saisie libre.
+- `type_de_depot`, `flag_stock_d_m` (D/M) et `code_qualite` : **listes déroulantes**.
+- Les listes déroulantes sont **dynamiques** : elles sont alimentées par les valeurs distinctes présentes dans les lignes de stock de l’article actuellement chargé.
+- Une option « Tous… » permet de désactiver le filtre.
+
+#### 2.3.4. API "Stock ultra détaillé" (stock_final.parquet)
 
 Un besoin complémentaire consiste à disposer, pour un **code article** donné, d’un **état de stock ultra détaillé** au niveau de chaque ligne de stock (lot / série / projet / colis), en incluant la **date de stock**.
 
@@ -175,6 +200,30 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 ---
 
+### 2.3.b. Onglet `Stock hyper détaillé` (`stock_hyper_detaille.html`)
+
+#### 2.3.b.1. Objectif
+
+- Fournir une vue **ligne à ligne** du stock pour un article (niveau lot / série / colis / projet…)
+- Permettre le filtrage rapide et l’export des lignes filtrées.
+
+#### 2.3.b.2. Filtres (UI)
+
+- `code_magasin` : saisie libre.
+- `type_de_depot`, `flag_stock_d_m` (D/M), `qualite` : **listes déroulantes**.
+- Les listes déroulantes sont **dynamiques** : elles sont alimentées par les valeurs distinctes présentes dans les lignes de stock de l’article actuellement chargé.
+- Une option « Tous… » permet de désactiver le filtre.
+
+#### 2.3.b.3. Export CSV
+
+- L’UI permet d’exporter les lignes **filtrées** en CSV.
+
+#### 2.3.b.4. API associée
+
+- Endpoint backend : `GET /api/auth/stock/<code_article>/ultra-details`
+
+---
+
 ### 2.4. Onglet `Parc Helios` (`helios.html`)
 
 #### 2.4.1. Usages
@@ -186,10 +235,26 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
     - nombre de sites actifs,
     - autres indicateurs clés.
 
+- Pour un **code IG** donné :
+  - afficher le parc du site, sous forme de deux tables :
+    - **Parents** : codes articles pères et quantités actives,
+    - **Fils** : codes articles fils et quantités actives,
+  - comportement par défaut : la table **Fils** affiche **tous** les articles fils du site.
+  - en cliquant sur un parent, l’UI filtre les fils sur ce parent.
+
+Lien fonctionnel depuis la recherche par code article :
+
+- l’utilisateur peut cliquer sur un **site actif** (code IG) pour ouvrir automatiquement le parc Helios du site (même écran).
+
 #### 2.4.2. Besoins métiers
 
 - Connaître l’**importance du parc installé** pour un article.
 - Mettre en perspective les décisions de **gestion de stock** (maintien, réduction, obsolescence) avec l’ampleur du parc.
+
+#### 2.4.3. API associée
+
+- Synthèse parc par article : `GET /api/helios/<code_article>`
+- Parc par site : `GET /api/helios/site/<code_ig>`
 
 ---
 
@@ -210,6 +275,39 @@ Cet endpoint est destiné à alimenter des écrans ou exports avancés (analyse 
 
 - Obtenir rapidement les **contacts logistiques** pertinents.
 - Faciliter la **communication opérationnelle** (organisation de transferts, gestion d’incidents, clarifications de stock).
+
+#### 2.5.3. Intégration PUDO (package `package_pudo`)
+
+L'onglet `stores.html` intègre la recherche des **points relais (PUDO)** autour d'une adresse, en complément des magasins.
+
+- Entrée utilisateur :
+  - une **adresse** (ou une ville) ;
+  - un **rayon (km)** ;
+  - des **filtres d'enseignes** (Chronopost 9h00 / Chronopost 13h00 / LM2S / TDF).
+- Comportement :
+  - l'application géocode l'adresse ;
+  - elle recherche les PUDO dans le rayon et affiche :
+    - une **table** (code PR, enseigne, adresse, CP, ville, prestataire/catégorie, distance),
+    - des **marqueurs sur la carte** (Leaflet) avec un code couleur par prestataire.
+
+Endpoints utilisés par l'UI :
+
+- `POST /api/pudo/nearby-address`
+  - entrée : `{ "address": "...", "radius_km": 10, "enseignes": ["LM2S", "TDF", ...] }`
+  - sortie : `{ "rows": [...], "geocoded_address": "...", "center_lat": ..., "center_lon": ... }`
+
+#### 2.5.4. Annuaire points relais (UI) – `pudo_directory.html`
+
+Une page dédiée permet de consulter l'**annuaire des points relais** (usage administration / contrôle de complétude).
+
+- Fonctions :
+  - recherche plein texte (enseigne, ville, adresse, code PR…),
+  - filtres (enseigne, ville, code postal, type : Chronopost/LM2S/TDF/autre),
+  - export CSV.
+
+Endpoint utilisé :
+
+- `GET /api/pudo/directory` → `{ "rows": [...] }`
 
 ---
 
@@ -508,6 +606,20 @@ Notes d’UX :
 
 ---
 
+### 2.12. Module Traitements (`treatments.html`)
+
+#### 2.12.1. Objectif
+
+- Permettre de lancer, de manière simple, les traitements backend nécessaires à la génération/rafraîchissement de fichiers métiers.
+
+#### 2.12.2. UX / règles
+
+- L’interface propose un **unique bouton** : **“Tout lancer”**.
+- L’UI affiche un statut explicite :
+  - **Traitement démarré...** au lancement,
+  - puis **Terminé sans erreur** ou **Terminé avec erreur**.
+- Les logs d’exécution sont affichés dans la page pendant l’exécution.
+
 ### 2.7. Écrans techniciens / affectations PUDO
 
 #### 2.7.1. Usages
@@ -574,6 +686,10 @@ Règles d’affichage (UI) :
 - `technician.html`
 - `technician_admin.html`
 - `technician_assignments.html`
+
+Note d’accès :
+
+- L’écran `technician_admin.html` ne possède pas de mot de passe propre : l’accès est géré via le menu **ADMINISTRATION** (header).
 
 #### 2.6.2. Besoins métiers
 
@@ -855,6 +971,31 @@ Principales familles de fichiers :
   - `stock_554.parquet` (stock détaillé 554 enrichi),
   - `stock_final.parquet` (stock ultra détaillé avec informations lot/série/projet et date de stock, support des vues avancées telles que la carte de localisation du stock et l’API "stock ultra détaillé").
 
+#### 4.1.1. Spécification `package_pudo` (traitements PUDO)
+
+Le package `package_pudo` orchestre la construction de l'**annuaire points relais** à partir de plusieurs sources.
+
+Objectif métier : disposer d'un référentiel unique des PR (code, enseigne, adresse, statut, prestataire) enrichi avec **coordonnées GPS** afin de :
+
+- permettre la recherche de PR proches d'une adresse (`stores.html`) ;
+- alimenter les écrans d'affectation technicien ↔ PR (`technician.html`, `technician_assignments.html`) ;
+- faciliter les contrôles / exports via l'annuaire (`pudo_directory.html`).
+
+Chaîne de traitement (vue fonctionnelle) :
+
+- **Source Chronopost** : récupération de fichiers (CSV) puis conversions/fusions (C9/C13) ;
+- **Source LM2S** : récupération / lecture d'un export annuaire LM2S ;
+- **Source SPEED** : extraction depuis le fichier "545" (onglet `sheet_name_545_pudo`) et filtrage des PR actifs ;
+- **Normalisation des adresses** : construction d'une adresse "nettoyée" (`adresse_nettoyee`) ;
+- **Géocodage** : calcul/complétion `latitude` / `longitude` pour les PR dont les coordonnées sont manquantes, avec persistance d'un cache d'adresses ;
+- **Fusion** : concaténation des sources en un annuaire consolidé ;
+- **Sortie** : génération d'un fichier annuaire PR (Excel) puis mise à disposition côté app via `pudo_directory.parquet`.
+
+Notes d'implémentation (liens utiles dans le code) :
+
+- Orchestration : `src/package_pudo/main.py` (`run_etl`) ;
+- Fusion + enrichissements adresse/GPS + export annuaire : `src/package_pudo/pudo/pudo.py`.
+
 ### 4.2. Mécanisme de mise à jour
 
 - Toutes les **30 minutes**, un processus en arrière-plan :
@@ -864,16 +1005,11 @@ Principales familles de fichiers :
 - Un endpoint de statut :
   - `GET /api/updates/status` → `{ "has_changes": bool, "timestamp": UNIX }`.
 
-- Le frontend :
-  - interroge régulièrement cet endpoint,
-  - affiche un **bandeau dans le header** (`Données mises à jour à HHhMM`) quand une mise à jour a eu lieu récemment.
+- `GET /api/pudo/directory` : renvoie l'annuaire des points relais ;
+- `POST /api/pudo/nearby-address` : recherche de PR proches d'une adresse ;
+- `GET /api/pudo/update-status` : statut des sources/destinations de mise à jour ;
+- `POST /api/pudo/update` : déclenche la mise à jour des données.
 
-### 4.3. Besoin métier associé
-
-- Garantir que les **données consultées** (stock, articles, PUDO, Helios) sont **récemment rafraîchies**.
-- Informer l’utilisateur en temps réel lorsqu’une **nouvelle mouture** des données est disponible (éviter de travailler sur des données obsolètes sans le savoir).
-
-## 5. Projets d'évolution
 ### 5.1. Intégration d'un LLM et d'un RAG
   Affranchir l'utilisateur de maitriser l'application en lui appotant une assistance dans ces questions ou problèmatiques
   
@@ -921,6 +1057,34 @@ Principales familles de fichiers :
   - `intent` *(string)* : action à lancer (ex : `view_stock_article`, `view_stock_map`, `view_nearest_pudo`, `photos`, `helios`, `technicians`, `none`).
   - `params` *(object)* : paramètres de l’action.
   - `target_page` *(string|null)* : page à ouvrir (`stock.html`, `stock_map.html`, `stores.html`, `photos.html`, `helios.html`, `technician.html`, ou `null`).
+
+---
+
+### A.5. Domaine PUDO / points relais (`/api/pudo`)
+
+#### A.5.1. `POST /api/pudo/nearby-address`
+
+- **Description** : recherche de points relais (PUDO) proches d'une adresse (géocodage puis filtrage par distance).
+- **Entrée** (body JSON) :
+  - `address` *(string, obligatoire)* : adresse ou ville.
+  - `radius_km` *(number, optionnel, défaut 10)* : rayon en kilomètres.
+  - `enseignes` *(list[string], optionnel)* : filtres prestataires/catégories (ex : `LM2S`, `TDF`, `Chronopost 9H00`, `Chronopost 13H00`).
+- **Sortie** :
+  - `rows` *(list[object])* : PR trouvés avec `distance` (km), coordonnées et champs d'annuaire.
+  - `geocoded_address`, `center_lat`, `center_lon`.
+
+#### A.5.2. `GET /api/pudo/directory`
+
+- **Description** : renvoie l'annuaire des points relais (pour affichage / filtres / exports).
+- **Sortie** : `{ "rows": [...] }`.
+
+#### A.5.3. `GET /api/pudo/update-status`
+
+- **Description** : statut des sources/destinations de mise à jour (annuaire PR, stores, helios, items, etc.).
+
+#### A.5.4. `POST /api/pudo/update`
+
+- **Description** : déclenche la mise à jour des données (conversion/copies vers les parquets applicatifs).
 
 ---
 

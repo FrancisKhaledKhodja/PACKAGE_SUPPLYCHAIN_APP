@@ -220,18 +220,37 @@ async function scappRenderHeader() {
             <a href="technician.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION MAGASIN</a>
             <a href="stores.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">RECHERCHE PR ET MAGASINS PROCHES D'UNE ADRESSE</a>
             <a href="technician_assignments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CONSULTATION PR TECHNICIEN</a>
-            <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ADMINISTRATION PR</a>
             <a href="pudo_directory.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ANNUAIRE POINTS RELAIS</a>
+          </div>
+        </div>
+
+        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">HELIOS ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:240px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="helios.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">PARC HELIOS</a>
+          </div>
+        </div>
+
+        <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">CONSOMMABLE ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:300px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="catalogue_consommables.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CATALOGUE CONSOMMABLES</a>
           </div>
         </div>
 
         <div class="scapp-dropdown" style="position:relative; display:inline-block; margin-left:1rem;">
           <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">APPLICATIONS / OUTILS ▾</button>
           <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:280px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
-            <a href="helios.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">PARC HELIOS</a>
-            <a href="catalogue_consommables.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">CATALOGUE CONSOMMABLES</a>
             <a href="ol_mode_degrade_v2.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">OL MODE DÉGRADÉ</a>
             <a href="downloads.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TÉLÉCHARGEMENTS</a>
+          </div>
+        </div>
+
+        <div class="scapp-dropdown" data-admin="1" style="position:relative; display:inline-block; margin-left:1rem;">
+          <button type="button" class="scapp-dropdown-toggle" style="background:none; border:none; color:#fff; cursor:pointer; font:inherit; padding:0;">ADMINISTRATION ▾</button>
+          <div class="scapp-dropdown-menu" style="display:none; position:absolute; right:0; background:#111827; padding:0.5rem 0; min-width:260px; box-shadow:0 10px 15px -3px rgba(0,0,0,0.5); border-radius:0.375rem; z-index:50;">
+            <a href="treatments.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">TRAITEMENTS</a>
+            <a href="technician_admin.html" target="_blank" rel="noopener noreferrer" style="display:block; color:#fff; padding:0.35rem 0.75rem; text-decoration:none; white-space:nowrap;">ADMINISTRATION PR</a>
           </div>
         </div>
 
@@ -261,6 +280,35 @@ async function scappRenderHeader() {
     if (!toggle || !menu) return;
     let open = false;
 
+    const adminKey = "scapp_admin_unlocked";
+    const adminPassword = "12344321";
+    const isAdminMenu = (dd.getAttribute("data-admin") || "") === "1";
+
+    const isUnlocked = () => {
+      if (!isAdminMenu) return true;
+      try {
+        // Persist across tabs/windows
+        return localStorage.getItem(adminKey) === "1";
+      } catch (e) {
+        return false;
+      }
+    };
+
+    const unlock = () => {
+      if (!isAdminMenu) return true;
+      if (isUnlocked()) return true;
+      const val = prompt("Mot de passe Administration :");
+      if ((val || "").trim() !== adminPassword) {
+        alert("Mot de passe incorrect.");
+        return false;
+      }
+      try {
+        localStorage.setItem(adminKey, "1");
+      } catch (e) {
+      }
+      return true;
+    };
+
     const show = () => {
       menu.style.display = "block";
       open = true;
@@ -273,6 +321,7 @@ async function scappRenderHeader() {
 
     toggle.addEventListener("click", (e) => {
       e.preventDefault();
+      if (!unlock()) return;
       if (open) {
         hide();
       } else {

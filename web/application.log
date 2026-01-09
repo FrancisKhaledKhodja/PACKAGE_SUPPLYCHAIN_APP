@@ -290,3 +290,33 @@ it might also be that a value overflows the data-type's capacity
 2025-11-20 18:44:55.626 | INFO     | package_pudo_api.data.pudo_etl:update_data:249 - Data updated successfully
 2025-11-21 10:22:25.254 | INFO     | package_pudo_api.data.pudo_etl:update_data:167 - Update data
 2025-11-21 10:22:32.010 | INFO     | package_pudo_api.data.pudo_etl:update_data:249 - Data updated successfully
+2026-01-05 18:13:32.957 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 18:42:10.809 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 18:42:16.609 | INFO     | __main__:<module>:120 - End of call of the script step_0_mails_chronopost_recovery
+2026-01-05 18:42:16.969 | INFO     | __main__:<module>:92 - Call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 18:42:17.985 | INFO     | __main__:<module>:107 - End of call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 18:42:18.370 | INFO     | __main__:<module>:219 - Call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 18:42:19.412 | INFO     | __main__:<module>:232 - End of call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 18:54:29.608 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:00:02.541 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:00:05.310 | INFO     | __main__:<module>:120 - End of call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:00:05.666 | INFO     | __main__:<module>:92 - Call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:00:06.619 | INFO     | __main__:<module>:107 - End of call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:00:06.931 | INFO     | __main__:<module>:219 - Call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:00:07.800 | INFO     | __main__:<module>:232 - End of call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:00:08.212 | INFO     | __main__:<module>:72 - Call of the script step_3_add_gps_coordinate
+2026-01-05 19:05:36.291 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:05:39.355 | INFO     | __main__:<module>:120 - End of call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:05:39.642 | INFO     | __main__:<module>:92 - Call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:05:40.769 | INFO     | __main__:<module>:107 - End of call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:05:41.050 | INFO     | __main__:<module>:219 - Call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:05:41.916 | INFO     | __main__:<module>:232 - End of call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:05:42.275 | INFO     | __main__:<module>:72 - Call of the script step_3_add_gps_coordinate
+2026-01-05 19:11:58.914 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:14:12.357 | INFO     | __main__:<module>:106 - Call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:14:17.835 | INFO     | __main__:<module>:120 - End of call of the script step_0_mails_chronopost_recovery
+2026-01-05 19:14:18.217 | INFO     | __main__:<module>:92 - Call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:14:19.378 | INFO     | __main__:<module>:107 - End of call of the script step_1_transform_from_csv_to_xlsx
+2026-01-05 19:14:19.782 | INFO     | __main__:<module>:219 - Call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:14:20.821 | INFO     | __main__:<module>:232 - End of call of the script step_2_merge_C9_and_C13_xlsx
+2026-01-05 19:14:21.298 | INFO     | __main__:<module>:72 - Call of the script step_3_add_gps_coordinate

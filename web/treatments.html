@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TRAITEMENTS</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="js/api.js?v=4" defer></script>
+  <script src="js/treatments.js?v=1" defer></script>
+</head>
+<body>
+  <div id="scapp-header"></div>
+
+  <div class="card">
+    <h2 style="margin:0 0 8px; color:var(--muted)">Traitements</h2>
+    <div class="muted" style="margin-bottom: 0.75rem;">Lance des traitements backend (génération de fichiers, etc.).</div>
+
+    <div class="row" style="flex-wrap:wrap; gap:0.5rem;">
+      <button id="btn-run-all" type="button">Tout lancer</button>
+    </div>
+
+    <div class="section">
+      <div id="treatments-status" class="muted">Prêt.</div>
+      <div id="treatments-summary" style="margin-top:0.5rem; font-size:0.95rem;"></div>
+      <details style="margin-top:0.75rem;">
+        <summary class="muted">Détails (logs)</summary>
+        <pre id="treatments-output" style="white-space:pre-wrap; margin:0.75rem 0 0; font-size:0.85rem;"></pre>
+      </details>
+    </div>
+  </div>
+</body>
+</html>

@@ -23,7 +23,7 @@
 <body>
   <div id="scapp-header"></div>
 
-  <main class="layout" style="font-size:1rem; grid-template-columns: 22vw minmax(0, 1fr); align-items:stretch;">
+  <main class="layout" style="font-size:1rem; grid-template-columns: 22vw minmax(0, 1fr); align-items:start; grid-auto-rows:min-content;">
     <aside class="card" style="display:flex; flex-direction:column; gap:0.75rem;">
       <div>
         <h2 style="margin-top:0;">Recherche article</h2>
@@ -33,6 +33,16 @@
         </div>
         <button id="helios-search" type="button" style="margin-top:0.75rem;">Rechercher</button>
         <p class="muted" style="margin-top:0.75rem;">Saisissez un code article puis cliquez sur "Rechercher" pour voir le parc Helios associé.</p>
+      </div>
+
+      <div style="margin-top:0.75rem;">
+        <h2 style="margin-top:0;">Recherche site</h2>
+        <div class="section" style="display:flex; flex-direction:column; gap:0.25rem;">
+          <label for="helios-code-ig" class="muted">Code IG</label>
+          <input type="text" id="helios-code-ig" placeholder="Ex: IG12345" />
+        </div>
+        <button id="helios-search-ig" type="button" style="margin-top:0.75rem;">Rechercher site</button>
+        <p class="muted" style="margin-top:0.75rem;">Saisissez un code IG puis cliquez sur "Rechercher site" pour afficher le parc Helios du site.</p>
       </div>
 
       <div style="margin-top:0.75rem;">
@@ -70,9 +80,59 @@
       </div>
     </aside>
 
-    <section class="card" style="height:90vh; display:flex; flex-direction:column;">
+    <section class="card" style="height:70vh; display:flex; flex-direction:column;">
       <h2 style="margin-top:0;">Carte des sites actifs</h2>
       <div id="helios-map" style="flex:1 1 auto; min-height:0; border-radius:0.5rem; overflow:hidden;"></div>
+    </section>
+
+    <section class="card" style="grid-column:1 / -1; margin-top:0.75rem;">
+      <h2 style="margin-top:0;">Parc du site (code IG)</h2>
+      <p id="helios-ig-empty" class="muted">Aucun site sélectionné. Recherchez un code IG pour afficher le parc.</p>
+      <div id="helios-ig-content" style="display:none;">
+        <div class="section">
+          <table>
+            <tbody>
+              <tr><th style="text-align:left; width:220px;">Code IG</th><td id="helios-ig-code-display"></td></tr>
+              <tr><th style="text-align:left;">Libellé</th><td id="helios-ig-label"></td></tr>
+              <tr><th style="text-align:left;">Adresse</th><td id="helios-ig-address"></td></tr>
+              <tr><th style="text-align:left;">Quantité totale active</th><td id="helios-ig-qty-active"></td></tr>
+              <tr><th style="text-align:left;">Nombre d'articles actifs</th><td id="helios-ig-items-count"></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section">
+          <h3>Articles actifs</h3>
+          <div style="display:flex; gap:0.75rem; align-items:stretch;">
+            <div style="flex:1 1 0; overflow:auto; max-height:55vh;">
+              <h4 style="margin:0 0 0.5rem 0;">Parents</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code article père</th>
+                    <th>Libellé court</th>
+                    <th>Quantité père actif</th>
+                  </tr>
+                </thead>
+                <tbody id="helios-ig-parents-tbody"></tbody>
+              </table>
+            </div>
+            <div style="flex:1 1 0; overflow:auto; max-height:55vh;">
+              <h4 style="margin:0 0 0.5rem 0;">Fils</h4>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Code article fils</th>
+                    <th>Libellé court</th>
+                    <th>Quantité active</th>
+                  </tr>
+                </thead>
+                <tbody id="helios-ig-children-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 </body>

@@ -19,6 +19,51 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentStockRows = [];
 
+  function populateStockFilterOptions() {
+    const selects = [filterTypeDepot, filterQualite, filterFlagDM].filter(Boolean);
+    if (!selects.length) return;
+
+    function uniqueSorted(values) {
+      const s = new Set();
+      (values || []).forEach(v => {
+        if (v == null) return;
+        const x = String(v).trim();
+        if (!x) return;
+        s.add(x);
+      });
+      return Array.from(s).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }));
+    }
+
+    const typeDepots = uniqueSorted(currentStockRows.map(r => r.type_de_depot));
+    const qualites = uniqueSorted(currentStockRows.map(r => r.qualite));
+    const dms = uniqueSorted(currentStockRows.map(r => r.flag_stock_d_m));
+
+    function fillSelect(selectEl, options, allLabel) {
+      if (!selectEl) return;
+      const prev = selectEl.value;
+      selectEl.innerHTML = "";
+      const optAll = document.createElement("option");
+      optAll.value = "";
+      optAll.textContent = allLabel;
+      selectEl.appendChild(optAll);
+      options.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        selectEl.appendChild(opt);
+      });
+      if (prev && options.indexOf(prev) !== -1) {
+        selectEl.value = prev;
+      } else {
+        selectEl.value = "";
+      }
+    }
+
+    fillSelect(filterTypeDepot, typeDepots, "Tous dépôts");
+    fillSelect(filterQualite, qualites, "Toutes qualités");
+    fillSelect(filterFlagDM, dms, "Tous");
+  }
+
   function getCategorieSansSortieColor(value) {
     const v = (value || "").trim();
     switch (v) {
@@ -276,6 +321,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
       currentStockRows = rows;
 
+      populateStockFilterOptions();
+
       if (stockMeta) {
         const total = currentStockRows.reduce((acc, r) => acc + (Number(r.qte_stock) || 0), 0);
         const label = libelle ? ` - ${libelle}` : "";
@@ -297,9 +344,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  [filterCodeMagasin, filterTypeDepot, filterQualite, filterFlagDM].forEach(input => {
-    if (!input) return;
-    input.addEventListener("input", () => {
+  if (filterCodeMagasin) {
+    filterCodeMagasin.addEventListener("input", () => {
+      applyStockFilters();
+    });
+  }
+  [filterTypeDepot, filterQualite, filterFlagDM].forEach(selectEl => {
+    if (!selectEl) return;
+    selectEl.addEventListener("change", () => {
       applyStockFilters();
     });
   });
