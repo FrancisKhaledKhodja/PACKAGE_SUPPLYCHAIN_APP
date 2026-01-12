@@ -76,9 +76,7 @@ def get_lm2s_pudo_directory():
     password_lmline = PASSWORD_LMLINE
     login_url_lmline = LOGIN_URL_LMLINE
     download_url_lmline = DOWNLOAD_URL_LMLINE
-    print("download_url_lmline",download_url_lmline)
     proxy_tdf = PROXY_TDF
-    print("***** 1 *****")
 
     if not login_lmline or not password_lmline:
         raise RuntimeError(
@@ -87,20 +85,16 @@ def get_lm2s_pudo_directory():
         )
 
     login_windows, password_windows = _get_proxy_credentials_from_user()
-    print(login_windows, password_windows)
-    print("***** 2 *****")
+
     if login_windows and password_windows and proxy_tdf:
         os.environ["http_proxy"] = f"http://{login_windows}:{password_windows}@{proxy_tdf}"
         os.environ["https_proxy"] = f"http://{login_windows}:{password_windows}@{proxy_tdf}"
     
-    print("***** 3 *****")
-
     session = requests.Session()
     session.trust_env = False
     if os.environ.get("http_proxy"):
         session.proxies.update({"http": os.environ["http_proxy"], "https": os.environ["http_proxy"]})
     
-    print("***** 4 *****")
 
     # Auth via formulaire (/login -> POST /user_sessions) pour obtenir un cookie de session.
     login_url = login_url_lmline

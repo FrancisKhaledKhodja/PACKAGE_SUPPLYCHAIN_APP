@@ -13,8 +13,6 @@ from package_pudo.chronopost.constants import (
     )
 from package_pudo.chronopost.constants import FOLDER_C9_C13_FUSION_EXCEL
 from package_pudo.api_address_gps import get_cleaning_address, get_latitude_and_longitude
-from package_pudo.my_loguru import logger
-
 
 
 def get_gps_coordinate_pudo():
@@ -29,11 +27,8 @@ def get_gps_coordinate_pudo():
         backup_addresses = pl.DataFrame({"adresse": [], "address": [], "latitude": [], "longitude": []})
 
     dico_backup_addresses = {row.get("adresse"): row for row in backup_addresses.iter_rows(named=True) if row.get("adresse")}
-    logger.info(f"Backup GPS avant: {len(dico_backup_addresses)} adresse(s)")
 
     missing = df.filter(pl.col("latitude").is_null()).height
-    logger.info(f"Fichier {last_file}: {missing} ligne(s) sans latitude")
-    
 
     last_heartbeat = time.time()
     new_queries = 0
@@ -41,33 +36,22 @@ def get_gps_coordinate_pudo():
         address = f"{row.get('adresse_1', '')} {row.get('code_postal', '')}, {row.get('ville', '')}"
         address = get_cleaning_address(address)
         if address not in dico_backup_addresses:
-            new_queries += 1
-            if new_queries <= 3 or (new_queries % 25 == 0):
-                logger.info(f"Nouvelle requête geocodage #{new_queries} (i={i}) -> '{address}'")
+            new_queries += 1 
             t_call = time.time()
             response = get_latitude_and_longitude(address)
             dt_call = time.time() - t_call
-            if dt_call >= 10:
-                logger.info(f"Geocoding lent ({dt_call:.1f}s) pour: '{address}'")
             if response and response.get("latitude") is not None and response.get("longitude") is not None:
                 response["adresse"] = address
                 dico_backup_addresses[address] = response
 
-        if i % 50 == 0:
-            logger.info(f"Geocoding en cours: {i} adresse(s) traitée(s) (lat null initial)")
-
         # Heartbeat to avoid 'silent' periods between multiples of 50.
         now = time.time()
         if (now - last_heartbeat) >= 30:
-            logger.info(f"Geocoding en cours (heartbeat): {i} adresse(s) traitée(s)")
             last_heartbeat = now
-    
-    logger.info(f"Backup GPS après: {len(dico_backup_addresses)} adresse(s)")
+
     backup_addresses = pl.from_dicts([v for _, v in dico_backup_addresses.items()])
-    logger.info(f"Backup parquet shape: {backup_addresses.shape}")
-    logger.info("Écriture backup parquet...")
     backup_addresses.write_parquet(backup_path)
-    logger.info("Écriture backup parquet OK")
+
 
 
 def add_gps_coordinates_in_file():
@@ -102,12 +86,10 @@ def add_gps_coordinates_in_file():
     df = df.with_columns(expression.alias("longitude"))
     
     out_xlsx = os.path.join(path_pudo, "CHRONOPOST", FOLDER_C9_C13_FUSION_EXCEL, last_file)
-    logger.info(f"Écriture Excel: {out_xlsx}")
     df.write_excel(out_xlsx)
-    logger.info("Écriture Excel OK")
+
 
     null_after = df.filter(pl.col("latitude").is_null() | pl.col("longitude").is_null()).height
-    logger.info(f"Fichier {last_file}: reste {null_after} ligne(s) sans GPS après remplissage")
     
     
 def run():
@@ -115,8 +97,7 @@ def run():
     add_gps_coordinates_in_file()
 
 if __name__ == "__main__":
-    logger.info("Call of the script step_3_add_gps_coordinate")
-    
+
     today = dt.datetime.now().date().strftime("%Y%m%d")
     get_gps_coordinate_pudo()
     add_gps_coordinates_in_file()
@@ -127,6 +108,5 @@ if __name__ == "__main__":
                             os.path.join(path_exit_pr, folder_chronopost, FOLDER_C9_C13_FUSION_EXCEL, name_file))
             break
         
-    logger.info("End of call of the script step_3_add_gps_coordinate")
     
     

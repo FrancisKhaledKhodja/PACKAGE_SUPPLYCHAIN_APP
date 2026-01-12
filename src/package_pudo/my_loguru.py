@@ -8,8 +8,20 @@ except Exception:
     path_supply_chain_app = None
 
 logger.remove()
-_console_sink = sys.stderr if getattr(sys, "stderr", None) else (sys.stdout if getattr(sys, "stdout", None) else None)
-if _console_sink is not None:
+_is_frozen = bool(getattr(sys, "frozen", False))
+_console_sink = (
+    getattr(sys, "__stderr__", None)
+    or getattr(sys, "stderr", None)
+    or getattr(sys, "__stdout__", None)
+    or getattr(sys, "stdout", None)
+)
+_console_ok = (
+    (not _is_frozen)
+    and _console_sink is not None
+    and hasattr(_console_sink, "write")
+    and not bool(getattr(_console_sink, "closed", False))
+)
+if _console_ok:
     logger.add(_console_sink, level="INFO")
 
 _default_log_path = "application.log"

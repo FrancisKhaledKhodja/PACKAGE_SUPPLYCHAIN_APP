@@ -538,6 +538,7 @@ def save_demande_passage_rebut_xlsx():
             "lieu_de_reparation_pim",
             "rma",
             "retour_production",
+            "commentaire",
         ]
         ws.append(headers)
 
@@ -562,6 +563,7 @@ def save_demande_passage_rebut_xlsx():
                 _s(r.get("lieu_de_reparation_pim")),
                 _s(r.get("rma")),
                 _s(r.get("retour_production")),
+                _s(r.get("commentaire")),
             ])
 
         wb.save(out_path)

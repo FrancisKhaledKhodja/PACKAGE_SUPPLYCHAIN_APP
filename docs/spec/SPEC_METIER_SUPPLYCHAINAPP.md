@@ -448,6 +448,7 @@ Règles de saisie (UX / contrôles côté page) :
 - Normalisation des champs texte :
   - Par défaut, les saisies texte sont normalisées en **MAJUSCULES** et **sans accents** lors de la sortie du champ (blur).
   - Exception explicite : le champ **Commentaire technique** ne subit **aucune contrainte** (majuscules et accents conservés).
+  - Le champ **Commentaire technique** est **obligatoire** (la demande ne peut pas être validée si le commentaire est vide).
 - Contraintes de longueur (prévention des demandes non conformes) :
   - **Libellé court** : limité à **120 caractères** (textarea) avec compteur.
   - **Libellé long** : limité à **240 caractères** (textarea) avec compteur.
@@ -468,6 +469,46 @@ Contrôle anti-doublon « Référence fabricant » (PIM) :
   - un lien « Lien » est affiché et ouvre `items.html?ref_fab=<REF>` afin d'afficher la liste des articles correspondant à la référence fabricant.
 
 ---
+
+#### 2.10.2.c. Modification d'une criticité – règles métiers et contrôles
+
+Cette section décrit les règles métiers appliquées dans l'écran `article_request.html` lorsque le type de demande est **Modification d'une criticité**.
+
+- Champs requis par ligne :
+  - `code_article`
+  - `nouvelle_criticite_article`
+  - `causes`
+- Auto-remplissage :
+  - au renseignement du `code_article`, la page récupère automatiquement les informations article via `GET /api/items/<code>/details`.
+- UX / feedback :
+  - la demande ne contient **pas** de colonne d'état `statut` dans le tableau ;
+  - les messages de chargement/erreur (code inconnu, API indisponible, etc.) sont affichés dans la zone de feedback de la section.
+
+#### 2.10.2.d. Modification du statut achetable / non achetable – règles métiers et contrôles
+
+Cette section décrit les règles métiers appliquées dans l'écran `article_request.html` lorsque le type de demande est **Modification du statut achetable / non achetable**.
+
+- Champs requis par ligne :
+  - `code_article`
+  - `nouveau_statut_abrege_article`
+  - `causes`
+- Auto-remplissage :
+  - au renseignement du `code_article`, la page récupère automatiquement les informations article via `GET /api/items/<code>/details`.
+- UX / feedback :
+  - la demande ne contient **pas** de colonne d'état `statut` dans le tableau ;
+  - les messages de chargement/erreur (code inconnu, API indisponible, etc.) sont affichés dans la zone de feedback de la section.
+
+#### 2.10.2.e. Demande de passage en REBUT – règles métiers et contrôles
+
+Cette section décrit les règles métiers appliquées dans l'écran `article_request.html` lorsque le type de demande est **Demande de passage en REBUT**.
+
+- Champs requis par ligne :
+  - `code_article`
+  - `commentaire` (obligatoire)
+- Auto-remplissage :
+  - au renseignement du `code_article`, la page récupère automatiquement les informations article via `GET /api/items/<code>/details`.
+- Export Excel :
+  - le fichier généré contient une colonne `commentaire`.
 
 ### 2.11. Onglet `Catalogue consommables` (`catalogue_consommables.html`)
 

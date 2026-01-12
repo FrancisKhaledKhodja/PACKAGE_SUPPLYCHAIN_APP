@@ -4,7 +4,7 @@ import datetime as dt
 import polars as pl
 
 from package_pudo.chronopost.constants import *
-from package_pudo.my_loguru import logger
+
 
 def transform_file_C13(path_folder, name_file):
     lib_col = {"column_3": "code_point_relais", "column_4": "enseigne", "column_7": "latitude", "column_8": "longitude", 
@@ -89,7 +89,6 @@ def transform_csv_to_excel(path_folder_origin, path_folder_destination):
 
 
 if __name__ == "__main__":
-    logger.info("Call of the script step_1_transform_from_csv_to_xlsx")
     
     today = dt.datetime.now().date().strftime("%Y%m%d")
     transform_csv_to_excel(os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV), 
@@ -104,5 +103,4 @@ if __name__ == "__main__":
             if number_of_copy_files == 2:
                 break
             
-    logger.info("End of call of the script step_1_transform_from_csv_to_xlsx")
     

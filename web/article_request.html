@@ -191,7 +191,7 @@
               </div>
               <div class="scapp-creation-form-field scapp-field-wide">
                 <label class="muted">Commentaire technique</label>
-                <textarea id="creation-form-comm-tech" rows="2" placeholder="Commentaire technique"></textarea>
+                <textarea id="creation-form-comm-tech" rows="2" placeholder="Commentaire technique" required></textarea>
               </div>
             </div>
           </div>
@@ -459,7 +459,6 @@
             <col class="scapp-col-w-210" />
             <col class="scapp-col-w-340" />
             <col class="scapp-col-w-110" />
-            <col class="scapp-col-w-110" />
           </colgroup>
           <thead>
             <tr>
@@ -470,7 +469,6 @@
               <th>statut article</th>
               <th>nouveau statut article</th>
               <th>Cause(s) de la modification</th>
-              <th>statut</th>
               <th></th>
             </tr>
           </thead>
@@ -497,7 +495,6 @@
             <col class="scapp-col-w-150" />
             <col class="scapp-col-w-340" />
             <col class="scapp-col-w-110" />
-            <col class="scapp-col-w-110" />
           </colgroup>
           <thead>
             <tr>
@@ -508,7 +505,6 @@
               <th>criticité article</th>
               <th>nouvelle criticite_article</th>
               <th>Cause(s) de la modification</th>
-              <th>statut</th>
               <th></th>
             </tr>
           </thead>
@@ -576,6 +572,7 @@
             <col class="scapp-col-w-210" />
             <col class="scapp-col-w-90" />
             <col class="scapp-col-w-160" />
+            <col class="scapp-col-w-240" />
           </colgroup>
           <thead>
             <tr>
@@ -590,6 +587,7 @@
               <th>lieu_de_reparation_pim</th>
               <th>rma</th>
               <th>retour_production</th>
+              <th>commentaire</th>
             </tr>
           </thead>
           <tbody id="rebut-tbody"></tbody>
@@ -949,13 +947,6 @@
         inputCause.className = "scapp-excel-input";
         tdCause.appendChild(inputCause);
 
-        const tdStatus = document.createElement("td");
-        tdStatus.style.padding = "6px";
-        const status = document.createElement("span");
-        status.className = "muted";
-        status.textContent = "";
-        tdStatus.appendChild(status);
-
         const tdActions = document.createElement("td");
         tdActions.className = "scapp-excel-actions";
         const btnDel = document.createElement("button");
@@ -970,7 +961,6 @@
         tr.appendChild(tdCrit);
         tr.appendChild(tdNewCrit);
         tr.appendChild(tdCause);
-        tr.appendChild(tdStatus);
         tr.appendChild(tdActions);
 
         async function fillFromCode() {
@@ -980,28 +970,24 @@
           inputType.value = "";
           inputLib.value = "";
           inputCrit.value = "";
-          status.textContent = "";
-          status.style.color = "";
+          if (criticiteFeedback) criticiteFeedback.textContent = "";
 
           if (!code) return;
           if (typeof API !== "function") {
-            status.textContent = "API indisponible";
-            status.style.color = "#f87171";
+            if (criticiteFeedback) criticiteFeedback.textContent = "API indisponible";
             return;
           }
           try {
-            status.textContent = "Chargement...";
+            if (criticiteFeedback) criticiteFeedback.textContent = "Chargement...";
             const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
             if (!resp.ok) {
-              status.textContent = "Code inconnu / API";
-              status.style.color = "#f87171";
+              if (criticiteFeedback) criticiteFeedback.textContent = "Code inconnu / API";
               return;
             }
             const data = await resp.json().catch(() => null);
             const item = data && typeof data === "object" ? data.item : null;
             if (!item || typeof item !== "object") {
-              status.textContent = "Code inconnu";
-              status.style.color = "#f87171";
+              if (criticiteFeedback) criticiteFeedback.textContent = "Code inconnu";
               return;
             }
 
@@ -1013,11 +999,9 @@
             inputType.value = typeArticle ? String(typeArticle) : "";
             inputLib.value = lib ? String(lib) : "";
             inputCrit.value = crit ? String(crit) : "";
-            status.textContent = "OK";
-            status.style.color = "#34d399";
+            if (criticiteFeedback) criticiteFeedback.textContent = "";
           } catch (e) {
-            status.textContent = "Erreur";
-            status.style.color = "#f87171";
+            if (criticiteFeedback) criticiteFeedback.textContent = "Erreur";
             return;
           }
         }
@@ -1056,7 +1040,6 @@
           inputCrit,
           inputNewCrit,
           inputCause,
-          status,
         };
       }
 
@@ -1135,13 +1118,6 @@
         inputCause.className = "scapp-excel-input";
         tdCause.appendChild(inputCause);
 
-        const tdStatus = document.createElement("td");
-        tdStatus.style.padding = "6px";
-        const status = document.createElement("span");
-        status.className = "muted";
-        status.textContent = "";
-        tdStatus.appendChild(status);
-
         const tdActions = document.createElement("td");
         tdActions.className = "scapp-excel-actions";
         const btnDel = document.createElement("button");
@@ -1156,7 +1132,6 @@
         tr.appendChild(tdStatusArticle);
         tr.appendChild(tdNewStatus);
         tr.appendChild(tdCause);
-        tr.appendChild(tdStatus);
         tr.appendChild(tdActions);
 
         async function fillFromCode() {
@@ -1166,28 +1141,24 @@
           inputType.value = "";
           inputLib.value = "";
           inputStatusArticle.value = "";
-          status.textContent = "";
-          status.style.color = "";
+          if (achetableFeedback) achetableFeedback.textContent = "";
 
           if (!code) return;
           if (typeof API !== "function") {
-            status.textContent = "API indisponible";
-            status.style.color = "#f87171";
+            if (achetableFeedback) achetableFeedback.textContent = "API indisponible";
             return;
           }
           try {
-            status.textContent = "Chargement...";
+            if (achetableFeedback) achetableFeedback.textContent = "Chargement...";
             const resp = await fetch(API(`/items/${encodeURIComponent(code)}/details`), { credentials: "include" });
             if (!resp.ok) {
-              status.textContent = "Code inconnu / API";
-              status.style.color = "#f87171";
+              if (achetableFeedback) achetableFeedback.textContent = "Code inconnu / API";
               return;
             }
             const data = await resp.json().catch(() => null);
             const item = data && typeof data === "object" ? data.item : null;
             if (!item || typeof item !== "object") {
-              status.textContent = "Code inconnu";
-              status.style.color = "#f87171";
+              if (achetableFeedback) achetableFeedback.textContent = "Code inconnu";
               return;
             }
 
@@ -1199,11 +1170,9 @@
             inputType.value = typeArticle ? String(typeArticle) : "";
             inputLib.value = lib ? String(lib) : "";
             inputStatusArticle.value = statutAbrege ? String(statutAbrege) : "";
-            status.textContent = "OK";
-            status.style.color = "#34d399";
+            if (achetableFeedback) achetableFeedback.textContent = "";
           } catch (e) {
-            status.textContent = "Erreur";
-            status.style.color = "#f87171";
+            if (achetableFeedback) achetableFeedback.textContent = "Erreur";
             return;
           }
         }
@@ -1242,7 +1211,6 @@
           inputStatusArticle,
           inputNewStatus,
           inputCause,
-          status,
         };
       }
 
@@ -1491,6 +1459,15 @@
         const roRma = makeRo();
         const roRetourProd = makeRo();
 
+        const tdComment = document.createElement("td");
+        tdComment.style.padding = "6px";
+        const inpComment = document.createElement("input");
+        inpComment.type = "text";
+        inpComment.placeholder = "Commentaire";
+        inpComment.setAttribute("data-required", "1");
+        inpComment.className = "scapp-excel-input";
+        tdComment.appendChild(inpComment);
+
         tr.appendChild(tdCode);
         tr.appendChild(roLib.td);
         tr.appendChild(roFeuille.td);
@@ -1502,6 +1479,7 @@
         tr.appendChild(roLieuRepar.td);
         tr.appendChild(roRma.td);
         tr.appendChild(roRetourProd.td);
+        tr.appendChild(tdComment);
 
         async function fillFromCode() {
           const code = norm(inputCode.value).toUpperCase();
@@ -1583,7 +1561,7 @@
           }
         });
 
-        return { tr, inputCode };
+        return { tr, inputCode, inpComment };
       }
 
       function ensureOneRebutRow() {
@@ -2556,6 +2534,7 @@
             || !r.fabricant
             || !r.reference_fabricant
             || !r.prix_previsionnel
+            || !r.commentaire_technique
             || !r.article_datacenter
             || !r.peremption
             || !r.matiere_dangereuse;
@@ -2568,6 +2547,7 @@
           if (!missingRow.fabricant) missing.push("Fabricant");
           if (!missingRow.reference_fabricant) missing.push("Référence fabricant");
           if (!missingRow.prix_previsionnel) missing.push("Prix prévisionnel");
+          if (!missingRow.commentaire_technique) missing.push("Commentaire technique");
           if (!missingRow.libelle_court) missing.push("Libellé court");
           if (!missingRow.libelle_long) missing.push("Libellé long");
           if (!missingRow.type_article) missing.push("Type article");
@@ -2739,16 +2719,20 @@
               const lieuRep = norm(tr.querySelector("td:nth-child(9) input")?.value || "");
               const rma = norm(tr.querySelector("td:nth-child(10) input")?.value || "");
               const retourProd = norm(tr.querySelector("td:nth-child(11) input")?.value || "");
+              const commentaire = norm(tr.querySelector("td:nth-child(12) input")?.value || "");
 
               if (!code && !lib && !feuille && !typeArticle) return;
-              rows.push({ code, lib, feuille, typeArticle, statut, crit, cycleProd, cycleAchat, lieuRep, rma, retourProd });
+              rows.push({ code, lib, feuille, typeArticle, statut, crit, cycleProd, cycleAchat, lieuRep, rma, retourProd, commentaire });
             });
           }
 
           const missing = rows.some((r) => !r.code);
-          if (rows.length === 0 || missing) {
+          const missingComment = rows.some((r) => !r.commentaire);
+          if (rows.length === 0 || missing || missingComment) {
             if (rebutFeedback) {
-              rebutFeedback.textContent = "Veuillez renseigner au moins une ligne (code_article).";
+              rebutFeedback.textContent = missingComment
+                ? "Veuillez saisir un commentaire pour chaque ligne."
+                : "Veuillez renseigner au moins une ligne (code_article).";
             }
             return;
           }
@@ -2775,6 +2759,7 @@
                   lieu_de_reparation_pim: r.lieuRep,
                   rma: r.rma,
                   retour_production: r.retourProd,
+                  commentaire: r.commentaire,
                 })),
               };
 
@@ -2821,6 +2806,7 @@
             "lieu_de_reparation_pim",
             "rma",
             "retour_production",
+            "commentaire",
           ];
 
           const header = [
@@ -2846,6 +2832,7 @@
               cut(r.lieuRep, 80),
               cut(r.rma, 40),
               cut(r.retourProd, 60),
+              cut(r.commentaire, 240),
             ];
             return vals.join("\t");
           });

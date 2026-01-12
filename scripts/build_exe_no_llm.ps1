@@ -19,9 +19,12 @@ uv run python -m PyInstaller --clean --noconfirm --onefile --noconsole --name $E
   --paths "src" `
   --add-data "web;web" `
   --collect-submodules "package_pudo" `
+  --collect-submodules "fastexcel" `
+  --collect-all "fastexcel" `
   --collect-submodules "supplychain_app.blueprints.treatments" `
   --collect-submodules "supplychain_app.blueprints.assistant" `
   --hidden-import "supplychain_app.blueprints.assistant.routes" `
+  --hidden-import "fastexcel" `
   --exclude-module "chromadb" `
   --exclude-module "chroma_hnswlib" `
   --exclude-module "sentence_transformers" `

@@ -34,6 +34,8 @@ def _run_module_in_process(mod: str, log_f, env: dict) -> dict:
     """
     t0 = datetime.now().isoformat()
 
+    com_inited = False
+
     # Propager l'environnement (proxy, chemins, etc.) au process courant.
     old_env = os.environ.copy()
     try:
@@ -42,6 +44,22 @@ def _run_module_in_process(mod: str, log_f, env: dict) -> dict:
         old_argv = sys.argv[:]
         sys.argv = ["-m", mod]
         try:
+            # When running inside the Flask request thread (and especially in frozen mode),
+            # win32com requires COM to be initialized in the current thread.
+            try:
+                import pythoncom  # type: ignore
+
+                pythoncom.CoInitialize()
+                com_inited = True
+            except Exception:
+                com_inited = False
+
+            # Some pywin32 setups (notably frozen builds) may require this module to be present.
+            try:
+                import win32timezone  # type: ignore  # noqa: F401
+            except Exception:
+                pass
+
             with contextlib.redirect_stdout(log_f), contextlib.redirect_stderr(log_f):
                 runpy.run_module(mod, run_name="__main__")
             return {"module": mod, "ok": True, "started_at": t0, "ended_at": datetime.now().isoformat()}
@@ -66,6 +84,13 @@ def _run_module_in_process(mod: str, log_f, env: dict) -> dict:
             }
         finally:
             sys.argv = old_argv
+            if com_inited:
+                try:
+                    import pythoncom  # type: ignore
+
+                    pythoncom.CoUninitialize()
+                except Exception:
+                    pass
     finally:
         os.environ.clear()
         os.environ.update(old_env)

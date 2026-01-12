@@ -3,8 +3,23 @@ import shutil
 import datetime as dt
 
 import win32com.client
+
+try:
+    import win32timezone  # type: ignore  # noqa: F401
+except Exception:
+    win32timezone = None
+
+try:
+    import pywintypes  # type: ignore
+except Exception:
+    pywintypes = None
+
+try:
+    import pythoncom  # type: ignore
+except Exception:
+    pythoncom = None
 from package_pudo.chronopost.constants import *
-from package_pudo.my_loguru import logger
+
 
 
 def get_file_attachment(email_inbox: str, sender_email: list, list_folders_outlook: list, backup_recovery: str, list_files_already_saved: list):
@@ -17,27 +32,53 @@ def get_file_attachment(email_inbox: str, sender_email: list, list_folders_outlo
         backup_recovery (str): absolute path to save the files
         list_files_already_saved (list): list of files that you do not want to save again
     """
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+    if pythoncom is not None:
+        pythoncom.CoInitialize()
+    try:
+        outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-    for folder in list_folders_outlook:
-        inbox = outlook.Folders(email_inbox).Folders(folder)
-        messages = inbox.items
-        for message in messages:
+        for folder in list_folders_outlook:
             try:
-                sender_name = getattr(message, "SenderName", None)
-                if sender_name and message.SenderName in sender_email:
-                    files_attachment_number = message.Attachments.Count
-                    if files_attachment_number > 0:
-                        for i in range(1, files_attachment_number + 1):
-                            file_attachment_name = message.Attachments.item(i).FileName
-                            print("Fichier joint trouvé: {}".format(file_attachment_name))
-                            if file_attachment_name not in list_files_already_saved:
-                                file_name_path = os.path.join(backup_recovery, file_attachment_name)
-                                print("Sauvegarde du fichier: {}".format(file_attachment_name))
-                                message.Attachments.item(i).SaveAsFile(file_name_path)
-            except TypeError as e:
-                print("Probleme detecte: ", e)
+                inbox = outlook.Folders(email_inbox).Folders(folder)
+            except Exception as e:
+                # Mailbox or folder may not exist for the current profile.
+                print("Probleme ouverture dossier Outlook:", email_inbox, folder, e)
                 continue
+
+            try:
+                messages = inbox.items
+            except Exception as e:
+                print("Probleme accès messages Outlook:", email_inbox, folder, e)
+                continue
+
+            for message in messages:
+                try:
+                    sender_name = getattr(message, "SenderName", None)
+                    if sender_name and message.SenderName in sender_email:
+                        files_attachment_number = message.Attachments.Count
+                        if files_attachment_number > 0:
+                            for i in range(1, files_attachment_number + 1):
+                                file_attachment_name = message.Attachments.item(i).FileName
+                                print("Fichier joint trouvé: {}".format(file_attachment_name))
+                                if file_attachment_name not in list_files_already_saved:
+                                    file_name_path = os.path.join(backup_recovery, file_attachment_name)
+                                    print("Sauvegarde du fichier: {}".format(file_attachment_name))
+                                    message.Attachments.item(i).SaveAsFile(file_name_path)
+                except TypeError as e:
+                    print("Probleme detecte: ", e)
+                    continue
+                except Exception as e:
+                    # Includes pywintypes.com_error
+                    print("Probleme message Outlook:", email_inbox, folder, e)
+                    continue
+
+                
+    finally:
+        if pythoncom is not None:
+            try:
+                pythoncom.CoUninitialize()
+            except Exception:
+                pass
 
 
 def get_body_email(email_inbox: str, sender_email: list, list_folders_outlook: list, subject: str, backup_recovery: str, file_name_header, list_files_already_saved: list):
@@ -52,30 +93,52 @@ def get_body_email(email_inbox: str, sender_email: list, list_folders_outlook: l
         file_name_header ([type]): file name header given to the email's body
         list_files_already_saved (list): list of files that you do not want to save again
     """
-    outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+    if pythoncom is not None:
+        pythoncom.CoInitialize()
+    try:
+        outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
 
-    for folder in list_folders_outlook:
-        inbox = outlook.Folders(email_inbox).Folders(folder)
-        messages = inbox.items
-        for message in messages:
+        for folder in list_folders_outlook:
             try:
-                sender_name = getattr(message, "SenderName", None)
-                if sender_name and message.SenderName in sender_email:
-                    if message.Subject == subject:
-                        body = message.Body
-                        received_time_date = message.ReceivedTime.strftime("%Y%m%d")
-                        file_name = f"{file_name_header}_{received_time_date}.csv"
-                        print("Fichier dans corps du message trouvé: {}".format(file_name))
-                        if file_name not in list_files_already_saved:
-                            file_name_path = os.path.join(backup_recovery, file_name)
-                            print("Sauvegarde du fichier dans le corps du message: {}".format(file_name))
-                            with open(file_name_path, "w") as f:
-                                body = body.split("\r\n")
-                                for row in body:
-                                    f.write(row + "\n")
-            except TypeError as e:
-                print("Probleme detecte: ", e)
+                inbox = outlook.Folders(email_inbox).Folders(folder)
+            except Exception as e:
+                print("Probleme ouverture dossier Outlook:", email_inbox, folder, e)
                 continue
+
+            try:
+                messages = inbox.items
+            except Exception as e:
+                print("Probleme accès messages Outlook:", email_inbox, folder, e)
+                continue
+
+            for message in messages:
+                try:
+                    sender_name = getattr(message, "SenderName", None)
+                    if sender_name and message.SenderName in sender_email:
+                        if message.Subject == subject:
+                            body = message.Body
+                            received_time_date = message.ReceivedTime.strftime("%Y%m%d")
+                            file_name = f"{file_name_header}_{received_time_date}.csv"
+                            print("Fichier dans corps du message trouvé: {}".format(file_name))
+                            if file_name not in list_files_already_saved:
+                                file_name_path = os.path.join(backup_recovery, file_name)
+                                print("Sauvegarde du fichier dans le corps du message: {}".format(file_name))
+                                with open(file_name_path, "w") as f:
+                                    body = body.split("\r\n")
+                                    for row in body:
+                                        f.write(row + "\n")
+                except TypeError as e:
+                    print("Probleme detecte: ", e)
+                    continue
+                except Exception as e:
+                    print("Probleme message Outlook:", email_inbox, folder, e)
+                    continue
+    finally:
+        if pythoncom is not None:
+            try:
+                pythoncom.CoUninitialize()
+            except Exception:
+                pass
 
 
 
@@ -98,12 +161,20 @@ def ensure_pudo_dirs():
 def get_mail_chronopost():
     ensure_pudo_dirs()
     pudo_files = os.listdir(os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV))
-    get_file_attachment(EMAIL_INBOX, SENDER_EMAIL, [FOLDER_1], os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV), pudo_files)
-    get_body_email(EMAIL_INBOX, SENDER_EMAIL, [FOLDER_1], SUBJECT, os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV), FILE_NAME_HEADER_C13, pudo_files)
-    
+
+    for email_inbox in EMAIL_INBOXES:
+        try:
+            get_file_attachment(email_inbox, SENDER_EMAIL, [FOLDER_1], os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV), pudo_files)
+        except Exception as e:
+            print("Probleme boîte email:", email_inbox, e)
+        try:
+            get_body_email(email_inbox, SENDER_EMAIL, [FOLDER_1], SUBJECT, os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_CSV), FILE_NAME_HEADER_C13, pudo_files)
+        except Exception as e:
+            print("Probleme boîte email:", email_inbox, e)
+            continue
+
     
 if __name__ == "__main__":
-    logger.info("Call of the script step_0_mails_chronopost_recovery")
     
     today = dt.datetime.now().date().strftime("%Y%m%d")
     get_mail_chronopost()
@@ -117,4 +188,3 @@ if __name__ == "__main__":
             if number_of_copy_files == 2:
                 break
             
-    logger.info("End of call of the script step_0_mails_chronopost_recovery")

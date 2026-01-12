@@ -1,17 +1,23 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_submodules
+from PyInstaller.utils.hooks import collect_all
 
-hiddenimports = ['supplychain_app.blueprints.assistant.routes']
+datas = [('web', 'web')]
+binaries = []
+hiddenimports = ['supplychain_app.blueprints.assistant.routes', 'fastexcel']
 hiddenimports += collect_submodules('package_pudo')
+hiddenimports += collect_submodules('fastexcel')
 hiddenimports += collect_submodules('supplychain_app.blueprints.treatments')
 hiddenimports += collect_submodules('supplychain_app.blueprints.assistant')
+tmp_ret = collect_all('fastexcel')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
     ['src\\run_exe.py'],
     pathex=['src'],
-    binaries=[],
-    datas=[('web', 'web')],
+    binaries=binaries,
+    datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},

@@ -12,7 +12,7 @@ from package_pudo.chronopost.constants import (
     folder_chronopost, 
     path_exit_pr
     )
-from package_pudo.my_loguru import logger
+
 
 
 def correct_c9_c13_with_eligibility_chronopost(df):
@@ -216,7 +216,6 @@ def make_merge_xlsx_c9_c13(path_folder_excel, path_folder_fusion_excel):
 
 
 if __name__ == "__main__":
-    logger.info("Call of the script step_2_merge_C9_and_C13_xlsx")
     
     today = dt.datetime.now().date().strftime("%Y%m%d")
     make_merge_xlsx_c9_c13(os.path.join(path_pudo, folder_chronopost, FOLDER_C9_C13_EXCEL), 
@@ -229,5 +228,4 @@ if __name__ == "__main__":
                             os.path.join(path_exit_pr, folder_chronopost, FOLDER_C9_C13_FUSION_EXCEL, name_file))
             break
 
-    logger.info("End of call of the script step_2_merge_C9_and_C13_xlsx")
     

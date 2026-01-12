@@ -7,9 +7,10 @@ from package_pudo.chronopost.constants import (
     path_pudo, 
     folder_gestion_pr, 
     folder_notebook_chronopost, 
-    path_exit_pr
+    path_exit_pr,
+    path_datan
     )
-from package_pudo.my_loguru import logger
+
 
 
 def construire_table_carnet_chronopost():
@@ -21,9 +22,17 @@ def construire_table_carnet_chronopost():
 
     last_folder = os.listdir(path_output)[-1]
 
-    store_directory = pl.read_parquet(os.path.join(path_output, last_folder, "stores_final.parquet"))
-    last_file_pudo_directory = os.listdir(os.path.join(path_pudo, folder_gestion_pr, "ANNUAIRE_PR"))[-1]
-    pudo_directory = pl.read_excel(os.path.join(path_pudo, folder_gestion_pr, "ANNUAIRE_PR", last_file_pudo_directory))
+    try:
+        store_directory = pl.read_parquet(os.path.join(path_output, last_folder, "stores_final.parquet"))
+    except FileExistsError:
+        store_directory = pl.read_parquet(os.path.join(path_datan, "supply_chain_app", "stores.parquet"))   
+    try:
+        last_file_pudo_directory = os.listdir(os.path.join(path_pudo, folder_gestion_pr, "ANNUAIRE_PR"))[-1]
+        pudo_directory = pl.read_excel(os.path.join(path_pudo, folder_gestion_pr, "ANNUAIRE_PR", last_file_pudo_directory))
+    except:
+        pudo_directory = pl.read_parquet(os.path.join(path_datan, "supply_chain_app", "pudo_directory.parquet"))
+    
+
     dico_pudo_directory = {row["code_point_relais"]: row for row in pudo_directory.iter_rows(named=True)}
     
     df = store_directory.filter(
@@ -73,8 +82,6 @@ def run():
     construire_table_carnet_chronopost()
 
 if __name__ == "__main__":
-    logger.info("Call of the script step_4_creation_notebook_chronopost")
-    
     today = dt.datetime.now().date().strftime("%Y%m%d")
     construire_table_carnet_chronopost()
     
@@ -84,6 +91,5 @@ if __name__ == "__main__":
                             os.path.join(path_exit_pr, "GESTION_PR", folder_notebook_chronopost, name_file))
             break
     
-    logger.info("End of call of the script step_4_creation_notebook_chronopost")
     
         
